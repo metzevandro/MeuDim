@@ -1,0 +1,16 @@
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .button {
+    width: min-content;
+  }
+
+  .button-icon.warning.sm.default {
+    display: flex;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+  }
+}

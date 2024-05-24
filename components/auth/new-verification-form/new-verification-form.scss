@@ -1,0 +1,25 @@
+.card-verification {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-spacing-x-small);
+
+  .card-root {
+    width: 420px;
+
+    h1 {
+      font: var(--s-typography-heading-medium);
+      color: var(--s-color-content-default);
+      padding: var(--s-spacing-medium) 0 var(--s-spacing-small)
+        var(--s-spacing-medium);
+    }
+
+    p {
+      font: var(--s-typography-paragraph-regular);
+      color: var(--s-color-content-default);
+    }
+  }
+}

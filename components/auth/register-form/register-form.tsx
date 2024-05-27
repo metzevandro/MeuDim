@@ -9,7 +9,6 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import GoogleButton from "@/components/auth/google-button/googleButton";
 import "./register-form.scss";
 import { RegisterSchema } from "@/schemas/index";
 import { useState, useTransition } from "react";
@@ -51,12 +50,6 @@ export const RegisterForm = () => {
             Já tem uma conta?{" "}
             <Link content="Faça seu login." href="/auth/login" />
           </p>
-          <GoogleButton content="Criar conta com o Google" />
-          <div className="line">
-            <div />
-            <p>or</p>
-            <div />
-          </div>
           <form className="form-sign-up" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="input-field">
               <Input

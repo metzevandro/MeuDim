@@ -15,7 +15,6 @@ import {
 } from "design-system-zeroz";
 
 import "./login-form.scss";
-import GoogleButton from "@/components/auth/google-button/googleButton";
 import { LoginSchema } from "@/schemas";
 import { login } from "@/actions/login";
 import { useSearchParams } from "next/navigation";
@@ -60,12 +59,6 @@ export const LoginForm = () => {
             Não tem uma conta?
             <Link content="Crie a sua conta." href="/auth/criar-conta"></Link>
           </p>
-          <GoogleButton content="Entrar com o Google" />
-          <div className="line">
-            <div />
-            <p>or</p>
-            <div />
-          </div>
           <form className="form-login" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="input-field">
               <Input

@@ -1,5 +1,4 @@
 "use client";
-import { useCurrentUser } from "@/hooks/user-current-user";
 import React, { useCallback, useState } from "react";
 import { PieChart, Pie, Sector, Legend } from "recharts";
 
@@ -94,51 +93,11 @@ const renderActiveShape = (props: any) => {
   );
 };
 
-const Pizza = () => {
-  const user = useCurrentUser();
-
-  const categoryTotals: { [categoryId: string]: number } = {};
-
-  if (Array.isArray(user?.transactions) && user.transactions.length > 0) {
-    user.transactions.forEach((transaction: any) => {
-      const categoryId = transaction.categoryId;
-      const amountString =
-        typeof transaction.amount === "string"
-          ? transaction.amount.toString()
-          : "";
-      const amount = parseFloat(amountString.replace(",", ".")) || 0;
-
-      if (categoryTotals[categoryId]) {
-        categoryTotals[categoryId] += amount;
-      } else {
-        categoryTotals[categoryId] = amount;
-      }
-    });
-  }
-
-  const colors: any = [
-    "var(--s-color-fill-highlight)",
-    "#873BEC",
-    "#DB2777",
-    "#027AC7",
-    "#138480",
-  ];
-
-  const data = Object.keys(categoryTotals).map((categoryId, index) => ({
-    name:
-      user.categories.find((category: any) => category.id === categoryId)
-        ?.name || "Unknown Category",
-    amount: parseFloat(categoryTotals[categoryId].toFixed(2)),
-    fill: colors[index % colors.length],
-  }));
-
+const Pizza = ({ data }: { data: any }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const onPieEnter = useCallback(
-    (_: any, index: any) => {
-      setActiveIndex(index);
-    },
-    [setActiveIndex],
-  );
+  const onPieEnter = useCallback((_: any, index: any) => {
+    setActiveIndex(index);
+  }, []);
 
   return (
     <PieChart
@@ -147,7 +106,6 @@ const Pizza = () => {
       width={500}
     >
       <Legend />
-
       <Pie
         activeIndex={activeIndex}
         activeShape={renderActiveShape}

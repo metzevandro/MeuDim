@@ -63,7 +63,6 @@ const HomePage = () => {
       setError("");
       setSuccess("Operação realizada com sucesso");
       setProgressValue(100);
-      window.location.reload();
     }
     setNotificationOpen(true);
   };
@@ -104,15 +103,6 @@ const HomePage = () => {
       category: user.categories[0]?.name,
     },
   });
-
-  useEffect(() => {
-    if (isOpenAside) {
-      form.setValue("date", "");
-      form.setValue("amount", "");
-      form.setValue("category", user.categories[0]?.name || "");
-      setCurrentTransaction(null);
-    }
-  }, [isOpenAside, form, user.categories]);
 
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
@@ -390,7 +380,6 @@ const HomePage = () => {
             </div>
           ) : (
             <>
-            <Suspense fallback={<>Loading</>}>
               <DataTable
                 labelSecondButton=""
                 titleNoDataMessage="Não há dados"
@@ -412,7 +401,7 @@ const HomePage = () => {
                 descriptionNoDataFilteredMessage="This option does not exist in your store, remove the filter and try again."
                 labelButtonNoDataFilteredMessage="Remove filters"
                 titleNoDataFilteredMessage="Your filter did not return any results."
-              /></Suspense>
+              />
             </>
           )}
           <Aside

@@ -181,19 +181,21 @@ const HomePage = () => {
     const formattedDate = getFormattedDate(date);
     console.log("Formatted Date:", formattedDate);
 
-    const transactionsForDate = user.transactions.filter((transaction: any) => {
-      const transactionDate = new Date(transaction.date);
-      console.log("Transaction Date:", transactionDate);
-      console.log("Filtering for:", date);
-      return (
-        transactionDate.getDate() === date.getDate() &&
-        transactionDate.getMonth() === date.getMonth() &&
-        transactionDate.getFullYear() === date.getFullYear()
-      );
-    });
+    const transactionsForDate = user?.transactions.filter(
+      (transaction: any) => {
+        const transactionDate = new Date(transaction.date);
+        console.log("Transaction Date:", transactionDate);
+        console.log("Filtering for:", date);
+        return (
+          transactionDate.getDate() === date.getDate() &&
+          transactionDate.getMonth() === date.getMonth() &&
+          transactionDate.getFullYear() === date.getFullYear()
+        );
+      },
+    );
     console.log("Transactions for Date:", transactionsForDate);
 
-    const expensesForDate = user.expense.filter((expense: any) => {
+    const expensesForDate = user?.expense.filter((expense: any) => {
       const expenseDate = new Date(expense.date);
       console.log("Expense Date:", expenseDate);
       console.log("Filtering for:", date);
@@ -205,14 +207,14 @@ const HomePage = () => {
     });
     console.log("Expenses for Date:", expensesForDate);
 
-    const totalGanhos = transactionsForDate.reduce(
+    const totalGanhos = transactionsForDate?.reduce(
       (acc: any, transaction: any) =>
         acc + parseFloat(transaction.amount.replace(",", ".")),
       0,
     );
     console.log("Total Ganhos:", totalGanhos);
 
-    const totalDespesas = expensesForDate.reduce(
+    const totalDespesas = expensesForDate?.reduce(
       (acc: any, expense: any) =>
         acc + parseFloat(expense.amount.replace(",", ".")),
       0,

@@ -67,7 +67,7 @@ const LayoutPage = (props: LayoutProps) => {
     pathname === "/auth/reset" ||
     pathname === "/"
   ) {
-    return <>{props.children}</>;
+    return <div>{props.children}</div>;
   } else {
     return (
       <AppShell>

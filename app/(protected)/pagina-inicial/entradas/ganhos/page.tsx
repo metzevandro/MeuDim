@@ -309,7 +309,7 @@ const HomePage = () => {
     });
   };
 
-  const columns: string[] = ["id","Data", "Valor", "Fonte", "Ações"];
+  const columns: string[] = ["id", "Data", "Valor", "Fonte", "Ações"];
 
   const data: { [key: string]: any; id: string }[] = user?.transactions
     ? user.transactions.map((transaction: any) => {

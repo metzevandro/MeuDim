@@ -3,9 +3,6 @@ import * as z from "zod";
 import bcrypt from "bcrypt";
 import { RegisterSchema } from "@/schemas";
 import { db } from "@/lib/db";
-import { signIn } from "next-auth/react";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { AuthError } from "next-auth";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const validatedFields = RegisterSchema.safeParse(values);
@@ -25,6 +22,14 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     return { error: "Este e-mail já está cadastrado!" };
   }
 
+  const existingName = await db.user.findUnique({
+    where: { name },
+  });
+
+  if (existingName) {
+    return { error: "Este nome já está cadastrado!" };
+  }
+
   await db.user.create({
     data: {
       name,
@@ -33,23 +38,5 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     },
   });
 
-  try {
-    await signIn("credentials", {
-      email,
-      password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
-    });
-
-    return { success: "Conta criada e login efetuado com sucesso!" };
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return { error: "Usuário ou senha inválidos!" };
-        default:
-          return { error: "Ops! Algo deu errado!" };
-      }
-    }
-    throw error;
-  }
+  return { success: "Usuário criado" };
 };

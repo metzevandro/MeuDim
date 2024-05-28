@@ -7,8 +7,6 @@ import { signIn } from "@/auth";
 import { LoginSchema } from "@/schemas";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { getUserByEmail } from "@/data/user";
-import { generateVerificationToken } from "@/lib/tokens";
-import { sendVerificationEmail } from "../lib/mail";
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
   const validatedFields = LoginSchema.safeParse(values);
@@ -23,19 +21,6 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 
   if (!existingUser || !existingUser.email || !existingUser.password) {
     return { error: "Este email não existe" };
-  }
-
-  if (!existingUser.emailVerified) {
-    const verificationToken = await generateVerificationToken(
-      existingUser.email,
-    );
-
-    await sendVerificationEmail(
-      verificationToken.email,
-      verificationToken.token,
-    );
-
-    return { success: "O email foi enviado!" };
   }
 
   try {

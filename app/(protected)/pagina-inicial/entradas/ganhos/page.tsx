@@ -1,5 +1,5 @@
 "use client";
-import React, { startTransition, Suspense, useEffect, useState } from "react";
+import React, { startTransition, useState } from "react";
 import { Criar, Deletar, Atualizar } from "@/actions/transaction";
 import { TransactionSchema } from "@/schemas/index";
 import { z } from "zod";
@@ -25,8 +25,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "./ganhos.scss";
 import IntlCurrencyInput from "react-currency-input-field";
+import { useRouter } from "next/navigation";
+import { auth } from "@/auth";
 
 const HomePage = () => {
+  const router = useRouter();
   const user = useCurrentUser();
   const [isOpenAside, setIsOpenAside] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -35,10 +38,11 @@ const HomePage = () => {
     [key: string]: boolean;
   }>({});
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
-  const [progressValue, setProgressValue] = useState(0);
-  const [progressError, setProgressError] = useState(false);
 
-  const incrementProgress = () => {
+  /* const [progressValue, setProgressValue] = useState(0);
+  const [progressError, setProgressError] = useState(false); */
+
+  /*  const incrementProgress = () => {
     setProgressValue(0);
     setProgressError(false);
     let progress = 0.2;
@@ -52,17 +56,19 @@ const HomePage = () => {
       });
       progress *= 2;
     }, 100);
-  };
+  }; */
 
   const handleActionCompletion = (data: any) => {
     if (data.error) {
       setError(data.error);
       setSuccess("");
-      setProgressError(true);
+      router.refresh();
+      /*  setProgressError(true); */
     } else {
       setError("");
+      router.refresh();
       setSuccess("Operação realizada com sucesso");
-      setProgressValue(100);
+      /* setProgressValue(100); */
     }
     setNotificationOpen(true);
   };
@@ -263,7 +269,7 @@ const HomePage = () => {
   const { errors } = form.formState;
 
   const DeletarGanho = (categoryId: string) => {
-    incrementProgress();
+    /* incrementProgress(); */
     setError("");
     setSuccess("");
     toggleModal(categoryId);
@@ -275,32 +281,31 @@ const HomePage = () => {
   };
 
   const AtualizarGanho = (categoryId: string) => {
-    incrementProgress();
+    /* incrementProgress(); */
     setError("");
     setSuccess("");
     editingAside(categoryId, null);
     startTransition(() => {
       Atualizar(form.getValues(), categoryId).then((data) => {
         handleActionCompletion(data);
-        if (!data.error) {
-          window.location.reload();
-        }
       });
     });
   };
 
   const CriarGanho = (values: z.infer<typeof TransactionSchema>) => {
-    incrementProgress();
+    /*  incrementProgress(); */
     setError("");
     setSuccess("");
     toggleAside();
     startTransition(() => {
-      Criar(values).then((data) => {
-        handleActionCompletion(data);
-        if (!data.error) {
-          window.location.reload();
-        }
-      });
+      Criar(values)
+        .then((data) => {
+          console.log(data)
+          handleActionCompletion(data);
+        })
+        .finally(() => {
+          router.refresh();
+        });
     });
   };
 
@@ -354,9 +359,10 @@ const HomePage = () => {
           width: "100%",
         }}
       >
+        {/* 
         {progressValue > 0 && (
           <Progress value={progressValue} error={progressError}></Progress>
-        )}
+        )} */}
       </div>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <Page

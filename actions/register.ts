@@ -3,8 +3,9 @@ import * as z from "zod";
 import bcrypt from "bcrypt";
 import { RegisterSchema } from "@/schemas";
 import { db } from "@/lib/db";
-import { generateVerificationToken } from "@/lib/tokens";
-import { sendVerificationEmail } from "../lib/mail";
+import { signIn } from "next-auth/react";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { AuthError } from "next-auth";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const validatedFields = RegisterSchema.safeParse(values);
@@ -32,7 +33,23 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     },
   });
 
-  const verificationToken = await generateVerificationToken(email);
-  await sendVerificationEmail(verificationToken.email, verificationToken.token);
-  return { success: "User created" };
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: DEFAULT_LOGIN_REDIRECT,
+    });
+
+    return { success: "Conta criada e login efetuado com sucesso!" };
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return { error: "Usuário ou senha inválidos!" };
+        default:
+          return { error: "Ops! Algo deu errado!" };
+      }
+    }
+    throw error;
+  }
 };

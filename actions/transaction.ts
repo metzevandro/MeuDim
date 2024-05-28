@@ -4,6 +4,7 @@ import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
 import { TransactionSchema } from "@/schemas";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 
 export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
   try {
@@ -37,9 +38,14 @@ export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
         categoryId: categoryExists.id,
       },
     });
+    console.log("ok")
+    revalidatePath("/pagina-inicial/entradas/ganhos");
+    console.log("ok")
+
 
     return { success: "Ganho adicionado com sucesso" };
   } catch (error) {
+    revalidatePath("/pagina-inicial/entradas/ganhos");
     console.log("Erro ao criar a transação:", error);
     return { error: "Erro ao criar a transação" };
   }

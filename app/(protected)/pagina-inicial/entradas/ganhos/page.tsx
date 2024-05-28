@@ -125,7 +125,7 @@ const HomePage = () => {
     transactionDate: string,
     transactionCategory: string,
   ) => (
-    <div className="actions">
+    <div className="actions" key={categoryId}>
       <Button
         size="sm"
         variant="secondary"
@@ -300,7 +300,7 @@ const HomePage = () => {
     startTransition(() => {
       Criar(values)
         .then((data) => {
-          console.log(data)
+          console.log(data);
           handleActionCompletion(data);
         })
         .finally(() => {
@@ -309,7 +309,7 @@ const HomePage = () => {
     });
   };
 
-  const columns: string[] = ["Data", "Valor", "Fonte", "Ações"];
+  const columns: string[] = ["id","Data", "Valor", "Fonte", "Ações"];
 
   const data: { [key: string]: any; id: string }[] = user?.transactions
     ? user.transactions.map((transaction: any) => {
@@ -333,6 +333,7 @@ const HomePage = () => {
           ? category.name
           : "Categoria Desconhecida";
         return {
+          id: transaction.id,
           Data: formattedDate,
           Fonte: categoryName,
           Valor: "R$ " + formattedAmount,

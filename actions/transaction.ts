@@ -38,10 +38,9 @@ export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
         categoryId: categoryExists.id,
       },
     });
-    console.log("ok")
+    console.log("ok");
     revalidatePath("/pagina-inicial/entradas/ganhos");
-    console.log("ok")
-
+    console.log("ok");
 
     return { success: "Ganho adicionado com sucesso" };
   } catch (error) {

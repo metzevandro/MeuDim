@@ -1,3 +1,4 @@
+"use client"
 import {
   Button,
   Card,
@@ -14,8 +15,11 @@ import { RegisterSchema } from "@/schemas/index";
 import { useState, useTransition } from "react";
 import { register } from "@/actions/register";
 import React from "react";
+import { useRouter } from "next/navigation";
 
 export const RegisterForm = () => {
+  const router = useRouter();
+  const [notificationOpen, setNotificationOpen] = useState(false);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -34,7 +38,12 @@ export const RegisterForm = () => {
 
     startTransition(() => {
       register(values).then((data) => {
+        setNotificationOpen(true);
         setError(data.error), setSuccess(data.success);
+        console.log(error);
+        if (data.success) {
+          router.push("/auth/login");
+        }
       });
     });
   };
@@ -85,18 +94,20 @@ export const RegisterForm = () => {
             </div>
             {error && (
               <Notification
-                title="error"
-                type="inline"
+                title={error}
+                type="float"
                 variant="warning"
                 icon="warning"
+                isOpen={notificationOpen}
               />
             )}
             {success && (
               <Notification
-                title="Success"
-                type="inline"
+                title={success}
+                type="float"
                 variant="success"
                 icon="check_circle"
+                isOpen={notificationOpen}
               />
             )}
             <Button

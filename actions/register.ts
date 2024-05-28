@@ -3,8 +3,6 @@ import * as z from "zod";
 import bcrypt from "bcrypt";
 import { RegisterSchema } from "@/schemas";
 import { db } from "@/lib/db";
-import { generateVerificationToken } from "@/lib/tokens";
-import { sendVerificationEmail } from "../lib/mail";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const validatedFields = RegisterSchema.safeParse(values);
@@ -24,6 +22,14 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     return { error: "Este e-mail já está cadastrado!" };
   }
 
+  const existingName = await db.user.findUnique({
+    where: { name },
+  });
+
+  if (existingName) {
+    return { error: "Este nome já está cadastrado!" };
+  }
+
   await db.user.create({
     data: {
       name,
@@ -32,7 +38,5 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     },
   });
 
-  const verificationToken = await generateVerificationToken(email);
-  await sendVerificationEmail(verificationToken.email, verificationToken.token);
-  return { success: "User created" };
+  return { success: "Usuário criado" };
 };

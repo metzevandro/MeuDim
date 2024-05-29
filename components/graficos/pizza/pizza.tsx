@@ -1,6 +1,8 @@
 "use client";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { PieChart, Pie, Sector, Legend } from "recharts";
+
+import './pizza.scss'
 
 const renderActiveShape = (props: any) => {
   const RADIAN = Math.PI / 180;
@@ -99,11 +101,32 @@ const Pizza = ({ data }: { data: any }) => {
     setActiveIndex(index);
   }, []);
 
+  const [chartWidth, setChartWidth] = useState(0);
+  const [chartHeight, setChartHeight] = useState(0);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (chartContainerRef.current) {
+        setChartWidth(chartContainerRef.current.offsetWidth);
+        setChartHeight(chartContainerRef.current.offsetHeight);
+      }
+    };
+
+    updateDimensions(); // Set initial dimensions
+
+    window.addEventListener("resize", updateDimensions); // Update on resize
+
+    return () => {
+      window.removeEventListener("resize", updateDimensions);
+    };
+  }, []);
+
   return (
+    <div ref={chartContainerRef} className="pizza-container">
     <PieChart
-      style={{ height: "100%", width: "100%" }}
-      height={280}
-      width={500}
+      width={chartWidth}
+        height={chartHeight}
     >
       <Legend />
       <Pie
@@ -118,7 +141,7 @@ const Pizza = ({ data }: { data: any }) => {
         dataKey="amount"
         onMouseEnter={onPieEnter}
       />
-    </PieChart>
+    </PieChart></div>
   );
 };
 

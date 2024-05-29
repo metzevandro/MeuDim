@@ -7,7 +7,6 @@ import {
   CardHeader,
   Page,
 } from "design-system-zeroz";
-import LayoutPage from "../_components/layout";
 import { useCurrentUser } from "@/hooks/user-current-user";
 import React from "react";
 import { useRouter } from "next/navigation";
@@ -164,65 +163,63 @@ const HomePage = () => {
   );
 
   const getFormattedDate = (date: any) => {
-    const options = { day: "numeric", month: "numeric", year: "numeric" };
+    const options = { day: "numeric", month: "numeric" };
     return date.toLocaleDateString("pt-BR", options);
   };
 
   const currentDate = new Date();
-  const dates = [];
+  const firstDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1,
+  );
+  const lastDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth() + 1,
+    0,
+  );
 
-  for (let i = -4; i <= 4; i++) {
-    const date = new Date(currentDate);
-    date.setDate(currentDate.getDate() + i);
+  const dates = [];
+  for (let i = firstDayOfMonth.getDate(); i <= lastDayOfMonth.getDate(); i++) {
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
     dates.push(date);
   }
 
   const dataBarras = dates.map((date) => {
     const formattedDate = getFormattedDate(date);
-    console.log("Formatted Date:", formattedDate);
 
     const transactionsForDate = user.transactions.filter((transaction: any) => {
-      const transactionDate = new Date(transaction.date);
-      console.log("Transaction Date:", transactionDate);
-      console.log("Filtering for:", date);
+      const transactionDate = new Date(transaction.createdAt);
       return (
         transactionDate.getDate() === date.getDate() &&
-        transactionDate.getMonth() === date.getMonth() &&
-        transactionDate.getFullYear() === date.getFullYear()
+        transactionDate.getMonth() === date.getMonth()
       );
     });
-    console.log("Transactions for Date:", transactionsForDate);
-
-    const expensesForDate = user.expense.filter((expense: any) => {
-      const expenseDate = new Date(expense.date);
-      console.log("Expense Date:", expenseDate);
-      console.log("Filtering for:", date);
-      return (
-        expenseDate.getDate() === date.getDate() &&
-        expenseDate.getMonth() === date.getMonth() &&
-        expenseDate.getFullYear() === date.getFullYear()
-      );
-    });
-    console.log("Expenses for Date:", expensesForDate);
 
     const totalGanhos = transactionsForDate.reduce(
       (acc: any, transaction: any) =>
         acc + parseFloat(transaction.amount.replace(",", ".")),
       0,
     );
-    console.log("Total Ganhos:", totalGanhos);
+
+    const expensesForDate = user.expense.filter((expense: any) => {
+      const expenseDate = new Date(expense.createdAt);
+      return (
+        expenseDate.getDate() === date.getDate() &&
+        expenseDate.getMonth() === date.getMonth()
+      );
+    });
 
     const totalDespesas = expensesForDate.reduce(
       (acc: any, expense: any) =>
         acc + parseFloat(expense.amount.replace(",", ".")),
       0,
     );
-    console.log("Total Despesas:", totalDespesas);
 
     return {
       name: formattedDate,
-      ganhos: totalGanhos,
-      despesas: totalDespesas,
+      Ganhos: totalGanhos,
+      Despesas: totalDespesas,
     };
   });
 

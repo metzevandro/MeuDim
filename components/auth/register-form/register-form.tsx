@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import {
   Button,
   Card,
@@ -16,6 +16,7 @@ import { useState, useTransition } from "react";
 import { register } from "@/actions/register";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { login } from "@/actions/login";
 
 export const RegisterForm = () => {
   const router = useRouter();
@@ -42,7 +43,10 @@ export const RegisterForm = () => {
         setError(data.error), setSuccess(data.success);
         console.log(error);
         if (data.success) {
-          router.push("/auth/login");
+          login(values).then((data) => {
+            setError(data?.error);
+            setSuccess(data?.success);
+          });
         }
       });
     });

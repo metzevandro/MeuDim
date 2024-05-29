@@ -282,9 +282,6 @@ const HomePage = () => {
     startTransition(() => {
       Atualizar(form.getValues(), categoryId).then((data) => {
         handleActionCompletion(data);
-        if (!data.error) {
-          window.location.reload();
-        }
       });
     });
   };
@@ -297,49 +294,52 @@ const HomePage = () => {
     startTransition(() => {
       Criar(values).then((data) => {
         handleActionCompletion(data);
-        if (!data.error) {
-          window.location.reload();
-        }
       });
     });
   };
 
   const columns: string[] = ["Data", "Valor", "Fonte", "Ações"];
 
-  const data: { [key: string]: any; id: string }[] = user?.transactions
-    ? user.transactions.map((transaction: any) => {
-        const amountString =
-          typeof transaction.amount === "string"
-            ? transaction.amount.toString()
-            : "";
-        const amount = parseFloat(amountString.replace(",", ".")) || 0;
-        const formattedAmount = amount.toLocaleString("pt-BR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-        const formattedDate = new Date(
-          transaction.createdAt,
-        ).toLocaleDateString("pt-BR");
-        const categoryId = transaction.categoryId;
-        const category = user.categories.find(
-          (cat: any) => cat.id === categoryId,
-        );
-        const categoryName = category
-          ? category.name
-          : "Categoria Desconhecida";
-        return {
-          Data: formattedDate,
-          Fonte: categoryName,
-          Valor: "R$ " + formattedAmount,
-          Ações: renderCategoryActions(
-            transaction.id,
-            formattedAmount,
-            formattedDate,
-            categoryName,
-          ),
-        };
-      })
-    : [];
+  const data: { [key: string]: any; id: string }[] = user.transactions.map(
+    (transaction: any) => {
+      // Obtém o valor da transação como uma string e o converte para um número
+      const amountString =
+        typeof transaction.amount === "string"
+          ? transaction.amount.toString()
+          : "";
+      const amount = parseFloat(amountString.replace(",", ".")) || 0;
+
+      // Formata o valor da transação em real brasileiro
+      const formattedAmount = amount.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+      // Formata a data da transação em português brasileiro
+      const formattedDate = new Date(transaction.createdAt).toLocaleDateString(
+        "pt-BR",
+      );
+
+      // Busca o nome da categoria da transação
+      const category = user.categories.find(
+        (cat: any) => cat.id === transaction.categoryId,
+      );
+      const categoryName = category ? category.name : "Categoria Desconhecida";
+
+      // Retorna um objeto com os dados formatados da transação
+      return {
+        Data: formattedDate,
+        Fonte: categoryName,
+        Valor: `R$ ${formattedAmount}`,
+        Ações: renderCategoryActions(
+          transaction.id,
+          formattedAmount,
+          formattedDate,
+          categoryName,
+        ),
+      };
+    },
+  );
 
   const expandedData: { [key: string]: any; id: string }[] = [];
 

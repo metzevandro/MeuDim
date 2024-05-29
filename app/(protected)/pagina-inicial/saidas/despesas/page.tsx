@@ -77,7 +77,7 @@ const HomePage = () => {
       valor: "",
       formaDePagamento: user?.formaDePagamento[0]?.name,
       categoria: user?.categoria[0]?.name,
-      subcategoria: user.categoria[0].Subcategorias[0].name,
+      subcategoria: user?.categoria[0]?.Subcategorias[0].name,
     },
   });
 

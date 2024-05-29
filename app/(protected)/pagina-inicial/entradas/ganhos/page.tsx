@@ -379,7 +379,6 @@ const HomePage = () => {
               />
             </div>
           ) : (
-            <>
               <DataTable
                 labelSecondButton=""
                 titleNoDataMessage="Não há dados"
@@ -402,7 +401,6 @@ const HomePage = () => {
                 labelButtonNoDataFilteredMessage="Remove filters"
                 titleNoDataFilteredMessage="Your filter did not return any results."
               />
-            </>
           )}
           <Aside
             isOpen={isOpenAside}

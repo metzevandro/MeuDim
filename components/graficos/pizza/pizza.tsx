@@ -113,9 +113,9 @@ const Pizza = ({ data }: { data: any }) => {
       }
     };
 
-    updateDimensions(); // Set initial dimensions
+    updateDimensions();
 
-    window.addEventListener("resize", updateDimensions); // Update on resize
+    window.addEventListener("resize", updateDimensions); 
 
     return () => {
       window.removeEventListener("resize", updateDimensions);
@@ -125,7 +125,6 @@ const Pizza = ({ data }: { data: any }) => {
   return (
     <div ref={chartContainerRef} className="pizza-container">
       <PieChart width={chartWidth} height={chartHeight}>
-        <Legend />
         <Pie
           activeIndex={activeIndex}
           activeShape={renderActiveShape}

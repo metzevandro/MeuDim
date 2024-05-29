@@ -30,12 +30,19 @@ export default function Barras(props: BarrasProps) {
     };
   }, []);
 
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: string }[]; label?: string }) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean;
+    payload?: { value: string }[];
+    label?: string;
+  }) => {
     if (active && payload && payload.length) {
-  
-      const ganhos = (payload[0].value).toString().replace('.',",");
-      const despesas = (payload[1].value).toString().replace('.',",");
-  
+      const ganhos = payload[0].value.toString().replace(".", ",");
+      const despesas = payload[1].value.toString().replace(".", ",");
+
       return (
         <div className="barras-tooltip">
           <p className="label">{label}</p>
@@ -45,9 +52,8 @@ export default function Barras(props: BarrasProps) {
       );
     }
     return null;
-};
+  };
 
-  
   return (
     <div ref={chartContainerRef} className="chart-container">
       <BarChart

@@ -2,3 +2,18 @@
   width: 100%;
   height: 328px;
 }
+
+.legend {
+  display: flex;
+  .item-legend {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: var(--s-spacing-xx-small);
+
+    p {
+      color: var(--s-color-content-default);
+      font: var(--s-typography-paragraph-strong);
+    }
+  }
+}

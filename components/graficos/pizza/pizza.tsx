@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { PieChart, Pie, Sector, Legend } from "recharts";
 
-import './pizza.scss'
+import "./pizza.scss";
 
 const renderActiveShape = (props: any) => {
   const RADIAN = Math.PI / 180;
@@ -124,24 +124,22 @@ const Pizza = ({ data }: { data: any }) => {
 
   return (
     <div ref={chartContainerRef} className="pizza-container">
-    <PieChart
-      width={chartWidth}
-        height={chartHeight}
-    >
-      <Legend />
-      <Pie
-        activeIndex={activeIndex}
-        activeShape={renderActiveShape}
-        data={data}
-        cx="50%"
-        cy="50%"
-        innerRadius={60}
-        outerRadius={80}
-        fill="var(--s-color-content-highlight)"
-        dataKey="amount"
-        onMouseEnter={onPieEnter}
-      />
-    </PieChart></div>
+      <PieChart width={chartWidth} height={chartHeight}>
+        <Legend />
+        <Pie
+          activeIndex={activeIndex}
+          activeShape={renderActiveShape}
+          data={data}
+          cx="50%"
+          cy="50%"
+          innerRadius={60}
+          outerRadius={80}
+          fill="var(--s-color-content-highlight)"
+          dataKey="amount"
+          onMouseEnter={onPieEnter}
+        />
+      </PieChart>
+    </div>
   );
 };
 

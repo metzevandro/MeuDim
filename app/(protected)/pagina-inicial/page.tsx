@@ -218,8 +218,8 @@ const HomePage = () => {
 
     return {
       name: formattedDate,
-      Ganhos: totalGanhos,
       Despesas: totalDespesas,
+      Ganhos: totalGanhos,
     };
   });
 

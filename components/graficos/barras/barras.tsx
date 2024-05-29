@@ -30,6 +30,24 @@ export default function Barras(props: BarrasProps) {
     };
   }, []);
 
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: string }[]; label?: string }) => {
+    if (active && payload && payload.length) {
+  
+      const ganhos = (payload[0].value).toString().replace('.',",");
+      const despesas = (payload[1].value).toString().replace('.',",");
+  
+      return (
+        <div className="barras-tooltip">
+          <p className="label">{label}</p>
+          <p className="ganhos">Ganhos: R$ {ganhos}</p>
+          <p className="despesas">Despesas: R$ {despesas}</p>
+        </div>
+      );
+    }
+    return null;
+};
+
+  
   return (
     <div ref={chartContainerRef} className="chart-container">
       <BarChart
@@ -43,15 +61,26 @@ export default function Barras(props: BarrasProps) {
           bottom: 5,
         }}
       >
-      <CartesianGrid horizontalCoordinatesGenerator={(props) => props.height > 250 ? [88, 156.5, 224.5] : [100, 200]} verticalPoints={[0]}/>
-        <XAxis dataKey="name" style={{font: 'var(--s-typography-caption-regular)'}}/>
+        <CartesianGrid
+          horizontalCoordinatesGenerator={(props) =>
+            props.height > 250 ? [88, 156.5, 224.5] : [100, 200]
+          }
+          verticalPoints={[0]}
+        />
+        <XAxis
+          dataKey="name"
+          style={{ font: "var(--s-typography-caption-regular)" }}
+        />
         <YAxis
           type="number"
           name="R$"
           tickFormatter={(value) => `R$${value}`}
-          style={{font: 'var(--s-typography-caption-regular)', color: 'var(--s-color-content-default)'}}
+          style={{
+            font: "var(--s-typography-caption-regular)",
+            color: "var(--s-color-content-default)",
+          }}
         />
-        <Tooltip contentStyle={{font: 'var(--s-typography-paragraph-regular)', borderRadius: 'var(--s-border-radius-small)', boxShadow: 'var(--s-shadow-level-2)'}} cursor={{  fill: 'var(--s-color-fill-default-hover)', strokeWidth: 2 }} formatter={(value) => `R$ ${value}`.replace(".", ",")} />
+        <Tooltip content={<CustomTooltip />} />
         <Bar dataKey="Ganhos" stackId="a" fill="var(--s-color-fill-success)" />
         <Bar
           dataKey="Despesas"

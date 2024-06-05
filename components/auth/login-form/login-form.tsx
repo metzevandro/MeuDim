@@ -87,7 +87,7 @@ export const LoginForm = () => {
             {error && (
               <Notification
                 title={error || urlError}
-                type="inline"
+                type="float"
                 variant="warning"
                 icon="warning"
               />
@@ -95,7 +95,7 @@ export const LoginForm = () => {
             {success && (
               <Notification
                 title={success}
-                type="inline"
+                type="float"
                 variant="success"
                 icon="check_circle"
               />

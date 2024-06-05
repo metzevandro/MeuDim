@@ -4,7 +4,6 @@ import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
 import { TransactionSchema } from "@/schemas";
 import { z } from "zod";
-import { revalidatePath } from "next/cache";
 
 export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
   try {
@@ -39,12 +38,9 @@ export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
       },
     });
 
-    revalidatePath("/pagina-inicial/entradas/ganhos");
-
     return { success: "Ganho adicionado com sucesso" };
   } catch (error) {
-    console.log("Erro ao criar a transação:", error);
-    return { error: "Erro ao criar a transação" };
+    return { error: "Erro ao criar o ganho" };
   }
 };
 
@@ -68,8 +64,6 @@ export const Deletar = async (categoryId: string) => {
         accountId: dbUser.id,
       },
     });
-
-    revalidatePath("/pagina-inicial/entradas/ganhos");
 
     return { success: "Ganho excluído com sucesso" };
   } catch (error) {
@@ -108,6 +102,8 @@ export const Atualizar = async (
     return { error: "A fonte de renda especificada não existe" };
   }
 
+  console.log(date, amount, category);
+
   try {
     await db.transaction.update({
       where: { id: categoryId },
@@ -118,11 +114,9 @@ export const Atualizar = async (
         categoryId: categoryExists.id,
       },
     });
-    console.log("tchau");
-    revalidatePath("/pagina-inicial/entradas/ganhos");
-    console.log("oi");
-    return { success: "Criado com sucesso" };
+
+    return { success: "Ganho atualizado com sucesso" };
   } catch (error) {
-    return { error: "Erro ao criar a categoria" };
+    return { error: "Erro ao atualizar o ganho" };
   }
 };

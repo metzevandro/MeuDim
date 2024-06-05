@@ -115,7 +115,7 @@ const Pizza = ({ data }: { data: any }) => {
 
     updateDimensions();
 
-    window.addEventListener("resize", updateDimensions); 
+    window.addEventListener("resize", updateDimensions);
 
     return () => {
       window.removeEventListener("resize", updateDimensions);

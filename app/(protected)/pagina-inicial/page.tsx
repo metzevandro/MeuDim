@@ -7,31 +7,91 @@ import {
   CardHeader,
   Page,
 } from "design-system-zeroz";
-import { useCurrentUser } from "@/hooks/user-current-user";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import "./pagina-inicial.scss";
 import Pizza from "@/components/graficos/pizza/pizza";
 import Barras from "@/components/graficos/barras/barras";
+import AreaGraphic from "@/components/graficos/area/area";
+
+interface Category {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+}
+
+interface Transaction {
+  id: string;
+  name: string;
+  amount: string;
+  createdAt: string;
+  userId: string;
+  categoryId: string;
+  category: Category;
+}
+
+interface Expense {
+  id: string;
+  name: string;
+  amount: string;
+  createdAt: string;
+  userId: string;
+  categoriaId: string;
+  categoria: Category;
+}
+
+interface User {
+  name: string;
+  email: string;
+  image: string | null;
+  id: string;
+  role: string;
+  categories: Category[];
+  transactions: Transaction[];
+  expense: Expense[];
+}
+
+interface UserData {
+  user: User;
+  expires: string;
+}
+
+const API = process.env.NEXT_PUBLIC_APP_URL;
 
 const HomePage = () => {
   const router = useRouter();
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  async function fetchUserData() {
+    try {
+      const response = await fetch(`${API}/api/auth/session`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setUserData(userData);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
   const navigateTo = (route: string) => {
     router.push(route);
   };
 
   const sumGanhos = () => {
-    if (!user || !Array.isArray(user.transactions)) {
+    if (!userData?.user || !Array.isArray(userData.user.transactions)) {
       return "0,00";
     }
 
-    const total = user.transactions.reduce((acc: any, transaction: any) => {
-      const amountString =
-        typeof transaction.amount === "string"
-          ? transaction.amount.toString()
-          : "";
+    const total = userData.user.transactions.reduce((acc, transaction) => {
+      const amountString = typeof transaction.amount === "string" ? transaction.amount : "";
       const amount = parseFloat(amountString.replace(",", ".")) || 0;
       return acc + amount;
     }, 0);
@@ -43,13 +103,12 @@ const HomePage = () => {
   };
 
   const sumDespesas = () => {
-    if (!user || !Array.isArray(user.expense)) {
+    if (!userData?.user || !Array.isArray(userData.user.expense)) {
       return "0,00";
     }
 
-    const total = user.expense.reduce((acc: any, expense: any) => {
-      const amountString =
-        typeof expense.amount === "string" ? expense.amount.toString() : "";
+    const total = userData.user.expense.reduce((acc, expense) => {
+      const amountString = typeof expense.amount === "string" ? expense.amount : "";
       const amount = parseFloat(amountString.replace(",", ".")) || 0;
       return acc + amount;
     }, 0);
@@ -62,30 +121,26 @@ const HomePage = () => {
 
   const sumSaldo = () => {
     if (
-      !user ||
-      !Array.isArray(user.transactions) ||
-      !Array.isArray(user.expense)
+      !userData?.user ||
+      !Array.isArray(userData.user.transactions) ||
+      !Array.isArray(userData.user.expense)
     ) {
       return "0,00";
     }
 
-    const totalTransactions = user.transactions.reduce(
-      (acc: any, transaction: any) => {
-        const amountString =
-          typeof transaction.amount === "string"
-            ? transaction.amount.toString()
-            : "";
+    const totalTransactions = userData.user.transactions.reduce(
+      (acc, transaction) => {
+        const amountString = typeof transaction.amount === "string" ? transaction.amount : "";
         const amount = parseFloat(amountString.replace(",", ".")) || 0;
         return acc + amount;
       },
-      0,
+      0
     );
 
-    const totalExpenses = user.expense.reduce((acc: any, expense: any) => {
-      const amountString =
-        typeof expense.amount === "string" ? expense.amount.toString() : "";
+    const totalExpenses = userData.user.expense.reduce((acc, expense) => {
+      const amountString = typeof expense.amount === "string" ? expense.amount : "";
       const amount = parseFloat(amountString.replace(",", ".")) || 0;
-      return acc + amount;
+        return acc + amount;
     }, 0);
 
     const saldo = totalTransactions - totalExpenses;
@@ -96,17 +151,12 @@ const HomePage = () => {
     });
   };
 
-  const user = useCurrentUser();
-
   const categoryTotals: { [categoryId: string]: number } = {};
 
-  if (Array.isArray(user?.transactions) && user.transactions.length > 0) {
-    user.transactions.forEach((transaction: any) => {
+  if (Array.isArray(userData?.user?.transactions) && userData.user.transactions.length > 0) {
+    userData.user.transactions.forEach((transaction) => {
       const categoryId = transaction.categoryId;
-      const amountString =
-        typeof transaction.amount === "string"
-          ? transaction.amount.toString()
-          : "";
+      const amountString = typeof transaction.amount === "string" ? transaction.amount : "";
       const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
       if (categoryTotals[categoryId]) {
@@ -117,7 +167,7 @@ const HomePage = () => {
     });
   }
 
-  const colors: any = [
+  const colors = [
     "var(--s-color-fill-highlight)",
     "#873BEC",
     "#DB2777",
@@ -125,23 +175,18 @@ const HomePage = () => {
     "#138480",
   ];
 
-  const dataFonteDeRenda = Object.keys(categoryTotals).map(
-    (categoryId, index) => ({
-      name:
-        user.categories.find((category: any) => category.id === categoryId)
-          ?.name || "Unknown Category",
-      amount: parseFloat(categoryTotals[categoryId].toFixed(2)),
-      fill: colors[index % colors.length],
-    }),
-  );
+  const dataFonteDeRenda = Object.keys(categoryTotals).map((categoryId, index) => ({
+    name: userData?.user.categories.find((category) => category.id === categoryId)?.name || "Unknown Category",
+    amount: parseFloat(categoryTotals[categoryId].toFixed(2)),
+    fill: colors[index % colors.length],
+  }));
 
   const categoriaTotals: { [categoriaId: string]: number } = {};
 
-  if (Array.isArray(user?.expense) && user.expense.length > 0) {
-    user.expense.forEach((expense: any) => {
+  if (Array.isArray(userData?.user?.expense) && userData.user.expense.length > 0) {
+    userData.user.expense.forEach((expense) => {
       const categoriaId = expense.categoriaId;
-      const amountString =
-        typeof expense.amount === "string" ? expense.amount.toString() : "";
+      const amountString = typeof expense.amount === "string" ? expense.amount : "";
       const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
       if (categoriaTotals[categoriaId]) {
@@ -152,32 +197,20 @@ const HomePage = () => {
     });
   }
 
-  const dataDespesas = Object.keys(categoriaTotals).map(
-    (categoryId, index) => ({
-      name:
-        user.categoria.find((category: any) => category.id === categoryId)
-          ?.name || "Unknown Category",
-      amount: parseFloat(categoriaTotals[categoryId].toFixed(2)),
-      fill: colors[index % colors.length],
-    }),
-  );
+  const dataDespesas = Object.keys(categoriaTotals).map((categoriaId, index) => ({
+    name: userData?.user.categories.find((category) => category.id === categoriaId)?.name || "Unknown Category",
+    amount: parseFloat(categoriaTotals[categoriaId].toFixed(2)),
+    fill: colors[index % colors.length],
+  }));
 
-  const getFormattedDate = (date: any) => {
-    const options = { day: "numeric", month: "numeric" };
+  const getFormattedDate = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "numeric" };
     return date.toLocaleDateString("pt-BR", options);
-  };
+  };  
 
   const currentDate = new Date();
-  const firstDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    1,
-  );
-  const lastDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() + 1,
-    0,
-  );
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
 
   const dates = [];
   for (let i = firstDayOfMonth.getDate(); i <= lastDayOfMonth.getDate(); i++) {
@@ -185,35 +218,60 @@ const HomePage = () => {
     dates.push(date);
   }
 
+  const dataArea = dates.map((date) => {
+    const formattedDate = getFormattedDate(date);
+
+    const transactionsUntilDate = userData?.user?.transactions?.filter(
+      (transaction) => {
+        const transactionDate = new Date(transaction.createdAt);
+        return transactionDate <= date;
+      }
+    ) || [];
+
+    const totalGanhos = transactionsUntilDate.reduce(
+      (acc, transaction) => acc + parseFloat(transaction.amount.replace(",", ".")),
+      0
+    );
+
+    const expensesUntilDate = userData?.user?.expense?.filter((expense) => {
+      const expenseDate = new Date(expense.createdAt);
+      return expenseDate <= date;
+    }) || [];
+
+    const totalDespesas = expensesUntilDate.reduce(
+      (acc, expense) => acc + parseFloat(expense.amount.replace(",", ".")),
+      0
+    );
+
+    const saldoTotal = totalGanhos - totalDespesas;
+
+    return {
+      name: formattedDate,
+      Saldo: saldoTotal,
+    };
+  });
+
   const dataBarras = dates.map((date) => {
     const formattedDate = getFormattedDate(date);
 
-    const transactionsForDate = user.transactions.filter((transaction: any) => {
+    const transactionsForDate = userData?.user?.transactions?.filter((transaction) => {
       const transactionDate = new Date(transaction.createdAt);
-      return (
-        transactionDate.getDate() === date.getDate() &&
-        transactionDate.getMonth() === date.getMonth()
-      );
-    });
+      return transactionDate.getDate() === date.getDate() && transactionDate.getMonth() === date.getMonth();
+    }) || [];
 
     const totalGanhos = transactionsForDate.reduce(
-      (acc: any, transaction: any) =>
-        acc + parseFloat(transaction.amount.replace(",", ".")),
-      0,
+      (acc, transaction) => acc + parseFloat(transaction.amount.replace(",", ".")),
+      0
     );
 
-    const expensesForDate = user.expense.filter((expense: any) => {
+    const expensesForDate = userData?.user?.expense?.filter((expense) => {
       const expenseDate = new Date(expense.createdAt);
-      return (
-        expenseDate.getDate() === date.getDate() &&
-        expenseDate.getMonth() === date.getMonth()
-      );
-    });
+      return expenseDate.getDate() === date.getDate() && expenseDate.getMonth() === date.getMonth();
+    }) || [];
 
     const totalDespesas = expensesForDate.reduce(
-      (acc: any, expense: any) =>
-        acc + parseFloat(expense.amount.replace(",", ".")),
-      0,
+      (acc, expense) => acc + parseFloat(expense.amount.replace(",", ".")),
+      0
     );
 
     return {
@@ -225,7 +283,7 @@ const HomePage = () => {
 
   return (
     <>
-      <Page columnLayout="1" namePage={`Confira suas finanças, ${user?.name}!`}>
+      <Page columnLayout="1" namePage={`Confira suas finanças, ${userData?.user?.name}!`}>
         <div className="layout-page">
           <div className="layout-sub-page">
             <div className="col-4">
@@ -239,9 +297,7 @@ const HomePage = () => {
                       label="Ver mais"
                       variant="primary"
                       size="md"
-                      onClick={() =>
-                        navigateTo("/pagina-inicial/entradas/ganhos")
-                      }
+                      onClick={() => navigateTo("/pagina-inicial/entradas/ganhos")}
                     />
                   </div>
                 </CardContent>
@@ -258,9 +314,7 @@ const HomePage = () => {
                       label="Ver mais"
                       variant="primary"
                       size="md"
-                      onClick={() =>
-                        navigateTo("/pagina-inicial/saidas/despesas")
-                      }
+                      onClick={() => navigateTo("/pagina-inicial/saidas/despesas")}
                     />
                   </div>
                 </CardContent>
@@ -287,15 +341,20 @@ const HomePage = () => {
           <div className="col-12">
             <Card>
               <CardHeader title="Ganhos x Despesas" description={``} />
-              <div
-                style={{
-                  display: "flex",
-                  width: "100%",
-                  justifyContent: "center",
-                }}
-              >
+              <CardContent>
                 <Barras data={dataBarras} />
-              </div>
+              </CardContent>
+              <CardFooter>
+                <div></div>
+              </CardFooter>
+            </Card>
+          </div>
+          <div className="col-12">
+            <Card>
+              <CardHeader title="Saldo Total" description={``} />
+              <CardContent>
+                <AreaGraphic data={dataArea} />
+              </CardContent>
               <CardFooter>
                 <div></div>
               </CardFooter>
@@ -305,15 +364,9 @@ const HomePage = () => {
             <div className="col-6">
               <Card>
                 <CardHeader title="Fontes de Renda" description={``} />
-                <div
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                    justifyContent: "center",
-                  }}
-                >
+                <CardContent>
                   <Pizza data={dataFonteDeRenda} />
-                </div>
+                </CardContent>
                 <CardFooter>
                   <div></div>
                 </CardFooter>
@@ -322,15 +375,9 @@ const HomePage = () => {
             <div className="col-6">
               <Card>
                 <CardHeader title="Despesas" description={``} />
-                <div
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                    justifyContent: "center",
-                  }}
-                >
+                <CardContent>
                   <Pizza data={dataDespesas} />
-                </div>
+                </CardContent>
                 <CardFooter>
                   <div></div>
                 </CardFooter>

@@ -4,6 +4,7 @@ import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
 import { NewCategorySchema } from "@/schemas";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 
 export const CriarFonteDeRenda = async (
   values: z.infer<typeof NewCategorySchema>,
@@ -35,9 +36,15 @@ export const CriarFonteDeRenda = async (
       },
     });
 
-    return { success: "Criado com sucesso" };
+    revalidatePath("/pagina-inicial/entradas/fonte-de-renda");
+
+    return {
+      success: "Fonte de renda criada com sucesso",
+      data: { createdAt: date, name: name, id: dbUser.id },
+      user,
+    };
   } catch (error) {
-    return { error: "Erro ao criar a categoria" };
+    return { error: "Erro ao criar a fonte de renda" };
   }
 };
 
@@ -54,6 +61,17 @@ export const ExcluirFonteDeRenda = async (categoryId: string) => {
   }
 
   try {
+    const fonteDeRendaExiste = await db.fonteDeRenda.findUnique({
+      where: {
+        id: categoryId,
+        userId: dbUser.id,
+      },
+    });
+
+    if (!fonteDeRendaExiste) {
+      return { error: "Fonte de renda inexistente!" };
+    }
+
     await db.fonteDeRenda.delete({
       where: {
         id: categoryId,
@@ -61,9 +79,11 @@ export const ExcluirFonteDeRenda = async (categoryId: string) => {
       },
     });
 
-    return { success: "Categoria excluída com sucesso" };
+    return {
+      success: "Fonte de renda excluída com sucesso",
+    };
   } catch (error) {
-    return { error: "Não foi possível excluir a categoria!" };
+    return { error: "Não foi possível excluir a fonte de renda!", data: null };
   }
 };
 
@@ -75,6 +95,7 @@ export const AtualizarFonteDeRenda = async (
   const user = await currentUser();
 
   if (!validatedFields.success) {
+    console.log("Validation error:", validatedFields.error);
     return { error: "Os itens estão informados incorretamente" };
   }
 
@@ -99,8 +120,11 @@ export const AtualizarFonteDeRenda = async (
       },
     });
 
-    return { success: "Criado com sucesso" };
+    return {
+      success: "Fonte de renda atualizada com sucesso",
+      data: { createdAt: date, name: name },
+    };
   } catch (error) {
-    return { error: "Erro ao criar a categoria" };
+    return { error: "Erro ao atualizar a fonte de renda", data: null };
   }
 };

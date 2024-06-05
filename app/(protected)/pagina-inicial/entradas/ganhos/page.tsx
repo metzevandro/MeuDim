@@ -1,5 +1,5 @@
 "use client";
-import React, { startTransition, Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Criar, Deletar, Atualizar } from "@/actions/transaction";
 import { TransactionSchema } from "@/schemas/index";
 import { z } from "zod";
@@ -16,55 +16,94 @@ import {
   EmptyState,
   FooterModal,
   InputSelect,
+  Loading,
   Modal,
   Notification,
   Page,
-  Progress,
 } from "design-system-zeroz";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import "./ganhos.scss";
 import IntlCurrencyInput from "react-currency-input-field";
+import AuthProgress from "@/components/auth/Progress/progress";
+import Skeleton from "@/components/auth/Skeleton/Skeleton";
+
+interface UserData {
+  user: {
+    name: string;
+    email: string;
+    image: string | null;
+    id: string;
+    role: string;
+    categories: {
+      id: string;
+      name: string;
+      userId: string;
+      createdAt: string;
+    }[];
+    transactions: {
+      id: string;
+      name: string;
+      createdAt: string;
+      userId: string;
+      category: {
+        id: string;
+        name: string;
+        userId: string;
+        createdAt: string;
+      };
+    }[];
+  };
+  expires: string;
+}
+
+const API = process.env.NEXT_PUBLIC_APP_URL;
 
 const HomePage = () => {
-  const user = useCurrentUser();
   const [isOpenAside, setIsOpenAside] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
-  const [editAsideOpen, setEditAsideOpen] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [currentTransaction, setCurrentTransaction] = useState<any>(null);
-  const [progressValue, setProgressValue] = useState(0);
-  const [progressError, setProgressError] = useState(false);
+  const [editFormStates, setEditFormStates] = useState<{ [key: string]: any }>(
+    {},
+  );
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(0);
+  const [loadingError, setLoadingError] = useState(false);
 
-  const incrementProgress = () => {
-    setProgressValue(0);
-    setProgressError(false);
-    let progress = 0.2;
-    const interval = setInterval(() => {
-      setProgressValue((prev) => {
-        const newValue = Math.min(prev + progress, 100);
-        if (newValue >= 100) {
-          clearInterval(interval);
-        }
-        return newValue;
-      });
-      progress *= 2;
-    }, 100);
-  };
-
-  const handleActionCompletion = (data: any) => {
-    if (data.error) {
-      setError(data.error);
-      setSuccess("");
-      setProgressError(true);
-    } else {
-      setError("");
-      setSuccess("Operação realizada com sucesso");
-      setProgressValue(100);
+  async function fetchUserData() {
+    try {
+      const response = await fetch(`${API}/api/auth/session`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setUserData(userData);
+      setLoading(0);
+    } catch (error) {
+      console.log(error);
     }
-    setNotificationOpen(true);
+  }
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const form = useForm<z.infer<typeof TransactionSchema>>({
+    resolver: zodResolver(TransactionSchema),
+    defaultValues: {
+      date: "",
+      amount: "",
+      category: userData?.user.categories[0]?.name,
+    },
+  });
+
+  const toggleAside = () => {
+    setIsOpenAside(!isOpenAside);
+    form.reset({
+      date: "",
+      amount: "",
+      category: userData?.user.categories[0]?.name,
+    });
   };
 
   const toggleModal = (categoryId: string) => {
@@ -74,35 +113,34 @@ const HomePage = () => {
     }));
   };
 
-  const editingAside = (categoryId: string, transaction: any) => {
-    setCurrentTransaction(transaction);
-    setEditAsideOpen((prev) => ({
+  const editingAside = (
+    categoryId: string,
+    transactionCategory: string,
+    transactionAmount: string,
+    transactionDate: string,
+  ) => {
+    setEditFormStates((prev) => ({
       ...prev,
-      [categoryId]: !prev[categoryId],
+      [categoryId]: {
+        ...prev[categoryId],
+        isOpen: !prev[categoryId]?.isOpen,
+        amount: prev[categoryId]?.isOpen
+          ? prev[categoryId]?.amount
+          : transactionAmount,
+        date: prev[categoryId]?.isOpen
+          ? prev[categoryId]?.date
+          : transactionDate,
+      },
     }));
 
-    if (transaction) {
-      form.setValue("date", transaction.date);
-      form.setValue(
-        "amount",
-        transaction.amount.replace(/\./g, "").replace(",", "."),
-      );
-      form.setValue("category", transaction.category);
+    if (!editFormStates[categoryId]?.isOpen) {
+      form.reset({
+        date: transactionDate,
+        amount: transactionAmount.replace(/\./g, "").replace(",", "."),
+        category: transactionCategory,
+      });
     }
   };
-
-  const toggleAside = () => {
-    setIsOpenAside(!isOpenAside);
-  };
-
-  const form = useForm<z.infer<typeof TransactionSchema>>({
-    resolver: zodResolver(TransactionSchema),
-    defaultValues: {
-      date: "",
-      amount: "",
-      category: user.categories[0]?.name,
-    },
-  });
 
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
@@ -112,6 +150,8 @@ const HomePage = () => {
   const category = form.watch("category");
 
   const isFormValid = date && amount && category;
+
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const renderCategoryActions = (
     categoryId: string,
@@ -125,20 +165,30 @@ const HomePage = () => {
         variant="secondary"
         label="Editar"
         onClick={() =>
-          editingAside(categoryId, {
-            date: transactionDate,
-            amount: transactionAmount,
-            category: transactionCategory,
-          })
+          editingAside(
+            categoryId,
+            transactionCategory,
+            transactionAmount,
+            transactionDate,
+          )
         }
       />
       <Aside
-        isOpen={editAsideOpen[categoryId] || false}
-        toggleAside={() => editingAside(categoryId, null)}
+        isOpen={editFormStates[categoryId]?.isOpen || false}
+        toggleAside={() =>
+          editingAside(
+            categoryId,
+            transactionCategory,
+            transactionAmount,
+            transactionDate,
+          )
+        }
         content={
           <AsideContent>
             <DataPicker
-              onDateChange={(date) => form.setValue("date", date.toISOString())}
+              onDateChange={(date) => {
+                setSelectedDate(date), console.log(date);
+              }}
               date={form.watch("date")}
               placeholder="Ex: 14/02/2023"
               label="Data"
@@ -168,7 +218,9 @@ const HomePage = () => {
                 form.setValue("category", value || "")
               }
               options={
-                user?.categories.map((category: any) => category.name) || []
+                userData?.user.categories.map(
+                  (category: any) => category.name,
+                ) || []
               }
               label="Fonte de Renda"
               errorMessage={errors.category?.message}
@@ -189,14 +241,29 @@ const HomePage = () => {
                 size="md"
                 variant="primary"
                 label="Atualizar"
-                onClick={() => AtualizarGanho(categoryId)}
+                onClick={() =>
+                  AtualizarGanho(
+                    categoryId,
+                    transactionAmount,
+                    transactionDate,
+                    transactionCategory,
+                    selectedDate,
+                  )
+                }
                 disabled={!isFormValid}
               />
               <Button
                 size="md"
                 variant="secondary"
                 label="Cancelar"
-                onClick={() => editingAside(categoryId, null)}
+                onClick={() =>
+                  editingAside(
+                    categoryId,
+                    transactionCategory,
+                    transactionAmount,
+                    transactionDate,
+                  )
+                }
               />
             </div>
           </AsideFooter>
@@ -260,113 +327,221 @@ const HomePage = () => {
     </div>
   );
 
+  const startLoading = () => {
+    setLoading(0);
+    const interval = setInterval(() => {
+      setLoading((prevLoading) => {
+        if (prevLoading >= 80) {
+          clearInterval(interval);
+          return prevLoading;
+        }
+        return prevLoading + 1;
+      });
+    }, 50);
+    return interval;
+  };
+
+  const stopLoading = (interval: NodeJS.Timeout, success: boolean) => {
+    clearInterval(interval);
+    setLoading(success ? 100 : 0);
+  };
+
   const { errors } = form.formState;
 
-  const DeletarGanho = (categoryId: string) => {
-    incrementProgress();
+  const DeletarGanho = async (categoryId: string) => {
     setError("");
     setSuccess("");
     toggleModal(categoryId);
-    startTransition(() => {
-      Deletar(categoryId).then((data) => {
-        handleActionCompletion(data);
-      });
-    });
+    const loadingInterval = startLoading();
+
+    try {
+      const data: any = await Deletar(categoryId);
+      if (data.error) {
+        setNotificationOpen(true);
+        setError(data.error);
+        setSuccess("");
+        setLoadingError(true);
+        setLoading(100);
+      } else {
+        setError("");
+        setLoading(100);
+        setNotificationOpen(true);
+        setSuccess(data.success);
+        fetchUserData();
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao criar a fonte de renda.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
-  const AtualizarGanho = (categoryId: string) => {
-    incrementProgress();
+  const AtualizarGanho = async (
+    categoryId: string,
+    transactionAmount: string,
+    transactionDate: string,
+    transactionCategory: string,
+    selectdate: Date | null,
+  ) => {
     setError("");
     setSuccess("");
-    editingAside(categoryId, null);
-    startTransition(() => {
-      Atualizar(form.getValues(), categoryId).then((data) => {
-        handleActionCompletion(data);
-      });
-    });
+    editingAside(
+      categoryId,
+      transactionCategory,
+      transactionAmount,
+      transactionDate,
+    );
+    const loadingInterval = startLoading();
+    setError("");
+    setSuccess("");
+
+    try {
+      if (selectdate !== null) {
+        const data: any = await Atualizar(
+          { ...form.getValues(), date: selectdate.toString() },
+          categoryId,
+        );
+        if (data.error) {
+          setNotificationOpen(true);
+          setError(data.error);
+          setSuccess("");
+        } else {
+          setError("");
+          setNotificationOpen(true);
+          setSuccess(data.success);
+          fetchUserData();
+        }
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao criar a fonte de renda.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
-  const CriarGanho = (values: z.infer<typeof TransactionSchema>) => {
-    incrementProgress();
+  const CriarGanho = async (values: z.infer<typeof TransactionSchema>) => {
     setError("");
     setSuccess("");
+    setLoadingError(false);
+
+    const loadingInterval = startLoading();
     toggleAside();
-    startTransition(() => {
-      Criar(values).then((data) => {
-        handleActionCompletion(data);
-      });
-    });
+    try {
+      const data = await Criar(values);
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+        setNotificationOpen(true);
+        setLoadingError(true);
+      } else {
+        setError("");
+        setSuccess(data.success);
+        setNotificationOpen(true);
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao criar a fonte de renda.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
   const columns: string[] = ["Data", "Valor", "Fonte", "Ações"];
 
-  const data: { [key: string]: any; id: string }[] = user.transactions.map(
-    (transaction: any) => {
-      // Obtém o valor da transação como uma string e o converte para um número
-      const amountString =
-        typeof transaction.amount === "string"
-          ? transaction.amount.toString()
-          : "";
-      const amount = parseFloat(amountString.replace(",", ".")) || 0;
+  const userDataIsValid = userData && userData.user;
 
-      // Formata o valor da transação em real brasileiro
-      const formattedAmount = amount.toLocaleString("pt-BR", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
+  const data =
+    userDataIsValid && userData.user.transactions
+      ? userData.user.transactions.map((transaction: any, index) => {
+          const amountString =
+            typeof transaction.amount === "string"
+              ? transaction.amount.toString()
+              : "";
+          const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
-      // Formata a data da transação em português brasileiro
-      const formattedDate = new Date(transaction.createdAt).toLocaleDateString(
-        "pt-BR",
-      );
+          const formattedAmount = amount.toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
 
-      // Busca o nome da categoria da transação
-      const category = user.categories.find(
-        (cat: any) => cat.id === transaction.categoryId,
-      );
-      const categoryName = category ? category.name : "Categoria Desconhecida";
+          const formattedDate = new Date(
+            transaction.createdAt,
+          ).toLocaleDateString("pt-BR");
 
-      // Retorna um objeto com os dados formatados da transação
-      return {
-        Data: formattedDate,
-        Fonte: categoryName,
-        Valor: `R$ ${formattedAmount}`,
-        Ações: renderCategoryActions(
-          transaction.id,
-          formattedAmount,
-          formattedDate,
-          categoryName,
-        ),
-      };
-    },
-  );
+          const category = userData.user.categories.find(
+            (cat: any) => cat.id === transaction.categoryId,
+          );
+          const categoryName = category
+            ? category.name
+            : "Categoria Desconhecida";
+
+          return {
+            id: transaction.id,
+            Data: formattedDate,
+            Fonte: categoryName,
+            Valor: `R$ ${formattedAmount}`,
+            Ações: renderCategoryActions(
+              transaction.id,
+              formattedAmount,
+              formattedDate,
+              categoryName,
+            ),
+          };
+        })
+      : [
+          {
+            id: "1",
+            Valor: <Skeleton height="32" width="100"/>,
+            Data: <Skeleton height="32" width="100"/>,
+            Fonte: <Skeleton height="32" width="100"/>,
+            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+          },
+          {
+            id: "2",
+            Valor: <Skeleton height="32" width="100"/>,
+            Data: <Skeleton height="32" width="100"/>,
+            Fonte: <Skeleton height="32" width="100"/>,
+            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+          },
+          {
+            id: "3",
+            Valor: <Skeleton height="32" width="100"/>,
+            Data: <Skeleton height="32" width="100"/>,
+            Fonte: <Skeleton height="32" width="100"/>,
+            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+          },
+          {
+            id: "4",
+            Valor: <Skeleton height="32" width="100"/>,
+            Data: <Skeleton height="32" width="100"/>,
+            Fonte: <Skeleton height="32" width="100"/>,
+            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+          },
+        ];
 
   const expandedData: { [key: string]: any; id: string }[] = [];
 
+  const userCurrent = useCurrentUser();
+
   return (
     <>
-      <div
-        style={{
-          position: "absolute",
-          top: "0",
-          zIndex: "999",
-          left: "0",
-          width: "100%",
-        }}
-      >
-        {progressValue > 0 && (
-          <Progress value={progressValue} error={progressError}></Progress>
-        )}
-      </div>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <Page
           onClickActionPrimary={toggleAside}
-          withActionPrimary={user?.transactions.length > 0}
-          buttonContentPrimary="Adicionar"
+          withActionPrimary={
+            userDataIsValid ? userData.user.transactions.length > 0 : undefined
+          }          buttonContentPrimary="Adicionar"
           columnLayout="1"
           namePage="Seus ganhos"
         >
-          {user?.transactions.length < 1 ? (
+          <AuthProgress loading={loading} error={loadingError} />
+
+          {(userDataIsValid ? userData.user.transactions.length < 1 : undefined) ? (
             <div
               style={{ display: "flex", alignItems: "center", height: "200%" }}
             >
@@ -379,6 +554,7 @@ const HomePage = () => {
               />
             </div>
           ) : (
+            <>
               <DataTable
                 labelSecondButton=""
                 titleNoDataMessage="Não há dados"
@@ -401,6 +577,7 @@ const HomePage = () => {
                 labelButtonNoDataFilteredMessage="Remove filters"
                 titleNoDataFilteredMessage="Your filter did not return any results."
               />
+            </>
           )}
           <Aside
             isOpen={isOpenAside}
@@ -442,7 +619,9 @@ const HomePage = () => {
                     form.setValue("category", value || "")
                   }
                   options={
-                    user?.categories.map((category: any) => category.name) || []
+                    userData?.user.categories.map(
+                      (category: any) => category.name,
+                    ) || []
                   }
                   label="Fonte de Renda"
                   errorMessage={errors.category?.message}
@@ -464,7 +643,6 @@ const HomePage = () => {
                     variant="primary"
                     label="Adicionar"
                     onClick={() => CriarGanho(form.getValues())}
-                    disabled={!isFormValid}
                   />
                   <Button
                     size="md"

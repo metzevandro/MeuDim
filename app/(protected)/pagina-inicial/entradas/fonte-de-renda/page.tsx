@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Aside,
   AsideContent,
@@ -13,6 +13,7 @@ import {
   Modal,
   Notification,
   Page,
+  Progress,
 } from "design-system-zeroz";
 import { useCurrentUser } from "@/hooks/user-current-user";
 import {
@@ -20,7 +21,6 @@ import {
   CriarFonteDeRenda,
   ExcluirFonteDeRenda,
 } from "@/actions/fonte-de-dinheiro";
-import LayoutPage from "@/app/(protected)/_components/layout";
 import { NewCategorySchema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,19 +28,50 @@ import { startTransition } from "react";
 import { z } from "zod";
 
 import "./fonte-de-renda.scss";
+import AuthProgress from "@/components/auth/Progress/progress";
+import Skeleton from "@/components/auth/Skeleton/Skeleton";
+
+interface UserData {
+  user: {
+    name: string;
+    email: string;
+    image: string | null;
+    id: string;
+    role: string;
+    categories: {
+      id: string;
+      name: string;
+      userId: string;
+      createdAt: string;
+    }[];
+    transactions: {
+      id: string;
+      name: string;
+      createdAt: string;
+      userId: string;
+      categories: {
+        id: string;
+        name: string;
+        userId: string;
+        createdAt: string;
+      };
+    };
+  };
+  expires: string;
+}
+
+const API = process.env.NEXT_PUBLIC_APP_URL;
 
 export default function Categorias() {
-  const user = useCurrentUser();
-
   const [isOpenAside, setIsOpenAside] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
   const [notificationOpen, setNotificationOpen] = useState(false);
 
   const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
-  const [editAsideOpen, setEditAsideOpen] = useState<{
-    [key: string]: boolean;
-  }>({});
+  const [editFormStates, setEditFormStates] = useState<{ [key: string]: any }>(
+    {},
+  );
   const form = useForm<z.infer<typeof NewCategorySchema>>({
     resolver: zodResolver(NewCategorySchema),
     defaultValues: {
@@ -49,8 +80,31 @@ export default function Categorias() {
     },
   });
 
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(0);
+  const [loadingError, setLoadingError] = useState(false);
+
+  async function fetchUserData() {
+    try {
+      const response = await fetch(`${API}/api/auth/session`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setUserData(userData);
+      setLoading(0);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
   const toggleAside = () => {
     setIsOpenAside(!isOpenAside);
+    form.reset({ name: "", date: new Date() });
   };
 
   const toggleModal = (categoryId: string) => {
@@ -60,68 +114,129 @@ export default function Categorias() {
     }));
   };
 
-  const editingAside = (categoryId: string) => {
-    setEditAsideOpen((prev) => ({
+  const editingAside = (categoryId: string, categoryName: string) => {
+    setEditFormStates((prev) => ({
       ...prev,
-      [categoryId]: !prev[categoryId],
+      [categoryId]: {
+        ...prev[categoryId],
+        isOpen: !prev[categoryId]?.isOpen,
+        name: prev[categoryId]?.isOpen ? prev[categoryId]?.name : categoryName,
+      },
     }));
+
+    if (!editFormStates[categoryId]?.isOpen) {
+      form.reset({ name: categoryName, date: new Date() });
+    }
   };
 
-  const onSubmit = (values: z.infer<typeof NewCategorySchema>) => {
+  const startLoading = () => {
+    setLoading(0);
+    const interval = setInterval(() => {
+      setLoading((prevLoading) => {
+        if (prevLoading >= 80) {
+          clearInterval(interval);
+          return prevLoading;
+        }
+        return prevLoading + 1;
+      });
+    }, 50);
+    return interval;
+  };
+
+  const stopLoading = (interval: NodeJS.Timeout, success: boolean) => {
+    clearInterval(interval);
+    setLoading(success ? 100 : 0);
+  };
+
+  const onSubmit = async (values: z.infer<typeof NewCategorySchema>) => {
     setError("");
     setSuccess("");
     toggleAside();
+    setLoadingError(false);
 
-    startTransition(() => {
-      CriarFonteDeRenda(values).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Criado com sucesso");
-          setNotificationOpen(true);
-          window.location.reload();
-        }
-      });
-    });
+    const loadingInterval = startLoading();
+
+    try {
+      const data = await CriarFonteDeRenda(values);
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+        setNotificationOpen(true);
+        setLoadingError(true);
+      } else {
+        setError("");
+        setSuccess(data.success);
+        setNotificationOpen(true);
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao criar a fonte de renda.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
-  const atualizarCategoria = (categoryId: string) => {
-    editingAside(categoryId);
-    startTransition(() => {
-      AtualizarFonteDeRenda(form.getValues(), categoryId).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Categoria atualizada com sucesso");
-          setNotificationOpen(true);
-          window.location.reload();
-        }
-      });
-    });
+  const atualizarCategoria = async (
+    categoryId: string,
+    categoryName: string,
+  ) => {
+    setError("");
+    setSuccess("");
+    setLoadingError(false);
+    editingAside(categoryId, categoryName);
+
+    const loadingInterval = startLoading();
+
+    try {
+      const values = form.getValues();
+      const data = await AtualizarFonteDeRenda(values, categoryId);
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+        setNotificationOpen(true);
+        setLoadingError(true);
+      } else {
+        setError("");
+        setSuccess(data.success);
+        setNotificationOpen(true);
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao atualizar a fonte de renda.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
-  const onDeleteCategory = (categoryId: string) => {
+  const onDeleteCategory = async (categoryId: string) => {
+    setError("");
+    setSuccess("");
     toggleModal(categoryId);
-    startTransition(() => {
-      ExcluirFonteDeRenda(categoryId).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Categoria excluída com sucesso");
-          setNotificationOpen(true);
-          window.location.reload();
-        }
-      });
-    });
+    setLoadingError(false);
+
+    const loadingInterval = startLoading();
+
+    try {
+      const data = await ExcluirFonteDeRenda(categoryId);
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+        setNotificationOpen(true);
+        setLoadingError(true);
+      } else {
+        setError("");
+        setSuccess(data.success);
+        setNotificationOpen(true);
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao excluir a fonte de renda.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
   const { errors } = form.formState;
@@ -132,52 +247,50 @@ export default function Categorias() {
         size="sm"
         variant="secondary"
         label="Editar"
-        onClick={() => editingAside(categoryId)}
+        onClick={() => editingAside(categoryId, categoryName)}
       />
-      <form>
-        <Aside
-          isOpen={editAsideOpen[categoryId] || false}
-          toggleAside={() => editingAside(categoryId)}
-          content={
-            <AsideContent>
-              <Input
-                label="Nome"
-                placeholder="Ex: Investimentos"
-                value={form.watch("name") || categoryName || ""}
-                onChange={(e) => form.setValue("name", e.target.value)}
-                error={!!errors.name}
-                textError={errors.name?.message}
+      <Aside
+        isOpen={editFormStates[categoryId]?.isOpen || false}
+        toggleAside={() => editingAside(categoryId, categoryName)}
+        content={
+          <AsideContent>
+            <Input
+              label="Nome"
+              placeholder="Ex: Investimentos"
+              value={form.watch("name") || ""}
+              onChange={(e) => form.setValue("name", e.target.value)}
+              error={!!errors.name}
+              textError={errors.name?.message}
+            />
+          </AsideContent>
+        }
+        footer={
+          <AsideFooter>
+            <div
+              style={{
+                width: "min-content",
+                display: "flex",
+                gap: "var(--s-spacing-x-small)",
+              }}
+            >
+              <Button
+                size="md"
+                variant="primary"
+                label="Atualizar"
+                onClick={() => atualizarCategoria(categoryId, categoryName)}
               />
-            </AsideContent>
-          }
-          footer={
-            <AsideFooter>
-              <div
-                style={{
-                  width: "min-content",
-                  display: "flex",
-                  gap: "var(--s-spacing-x-small)",
-                }}
-              >
-                <Button
-                  size="md"
-                  variant="primary"
-                  label="Atualizar"
-                  onClick={() => atualizarCategoria(categoryId)}
-                />
-                <Button
-                  size="md"
-                  variant="secondary"
-                  label="Cancelar"
-                  onClick={() => editingAside(categoryId)}
-                />
-              </div>
-            </AsideFooter>
-          }
-          title="Editar fonte de renda"
-          description="Edite a fonte de renda para os seus ganhos."
-        />
-      </form>
+              <Button
+                size="md"
+                variant="secondary"
+                label="Cancelar"
+                onClick={() => editingAside(categoryId, categoryName)}
+              />
+            </div>
+          </AsideFooter>
+        }
+        title="Editar fonte de renda"
+        description="Edite a fonte de renda para os seus ganhos."
+      />
       <ButtonIcon
         size="sm"
         type="default"
@@ -221,19 +334,48 @@ export default function Categorias() {
 
   const columns: string[] = ["Data", "Fonte", "Ações"];
 
-  const data: { [key: string]: any; id: string }[] = user?.categories
-    ? user.categories.map((category: any, index: number) => {
-        const formattedDate = new Date(category.createdAt).toLocaleDateString(
-          "pt-BR",
-        );
+  const userDataIsValid = userData && userData.user;
 
-        return {
-          Data: formattedDate,
-          Fonte: category.name,
-          Ações: renderCategoryActions(category.id, category.name),
-        };
-      })
-    : [];
+  const data =
+    userDataIsValid && userData.user.categories
+      ? userData.user.categories.map((category, index) => {
+          const formattedDate = new Date(
+            category?.createdAt,
+          ).toLocaleDateString("pt-BR");
+
+          return {
+            id: category.id,
+            Data: formattedDate,
+            Fonte: category?.name,
+            Ações: renderCategoryActions(category.id, category.name),
+          };
+        })
+      : [
+          {
+            id: "1",
+            Data: <Skeleton height="32" width="100"/>,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+          },
+          {
+            id: "2",
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+          },
+          {
+            id: "3",
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+          },
+          {
+            id: "4",
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+          },
+        ];
 
   const expandedData: { [key: string]: any; id: string }[] = [];
 
@@ -243,10 +385,13 @@ export default function Categorias() {
         buttonContentPrimary="Adicionar"
         columnLayout="1"
         namePage="Fonte de Renda"
-        withActionPrimary={user?.categories.length > 0}
+        withActionPrimary={
+          userDataIsValid ? userData.user.categories.length > 0 : undefined
+        }
         onClickActionPrimary={toggleAside}
       >
-        {user?.categories.length < 1 ? (
+        <AuthProgress loading={loading} error={loadingError} />
+        {(userDataIsValid ? userData.user.categories.length < 1 : undefined) ? (
           <>
             <div
               style={{ display: "flex", alignItems: "center", height: "200%" }}
@@ -261,28 +406,30 @@ export default function Categorias() {
             </div>
           </>
         ) : (
-          <DataTable
-            labelSecondButton=""
-            titleNoDataMessage="Não há dados"
-            descriptionNoDataMessage="Não há dados ainda..."
-            itemPerPage={10}
-            pagesText="Página"
-            columns={columns}
-            data={data}
-            expandedData={expandedData}
-            selectable={false}
-            expandable={false}
-            inputPlaceholder="Procurar"
-            typeIconSecondButton="filter_alt"
-            selectableLabelSecondButton="Delete"
-            selectableIconSecondButton="delete"
-            asideTitle="Filters"
-            firstButtonLabelAside="Aplicar"
-            secondButtonLabelAside="Cancel"
-            descriptionNoDataFilteredMessage="This option does not exist in your store, remove the filter and try again."
-            labelButtonNoDataFilteredMessage="Remove filters"
-            titleNoDataFilteredMessage="Your filter did not return any results."
-          />
+          <>
+            <DataTable
+              labelSecondButton=""
+              titleNoDataMessage="Não há dados"
+              descriptionNoDataMessage="Não há dados ainda..."
+              itemPerPage={10}
+              pagesText="Página"
+              columns={columns}
+              data={data}
+              expandedData={expandedData}
+              selectable={false}
+              expandable={false}
+              inputPlaceholder="Procurar"
+              typeIconSecondButton="filter_alt"
+              selectableLabelSecondButton="Delete"
+              selectableIconSecondButton="delete"
+              asideTitle="Filters"
+              firstButtonLabelAside="Aplicar"
+              secondButtonLabelAside="Cancel"
+              descriptionNoDataFilteredMessage="This option does not exist in your store, remove the filter and try again."
+              labelButtonNoDataFilteredMessage="Remove filters"
+              titleNoDataFilteredMessage="Your filter did not return any results."
+            />
+          </>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Aside
@@ -295,7 +442,7 @@ export default function Categorias() {
                 <Input
                   label="Nome"
                   placeholder="Ex: Investimentos"
-                  value={form.watch("name")}
+                  value={form.watch("name") || ""}
                   onChange={(e) => form.setValue("name", e.target.value)}
                 />
               </AsideContent>
@@ -340,7 +487,6 @@ export default function Categorias() {
         <Notification
           icon="warning"
           title={error}
-          description="A fonte de renda está sendo utilizada."
           variant="warning"
           type="float"
           isOpen={notificationOpen}

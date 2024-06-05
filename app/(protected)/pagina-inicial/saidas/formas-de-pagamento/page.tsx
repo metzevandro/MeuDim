@@ -82,7 +82,6 @@ export default function CategoryPage() {
           setError("");
           setSuccess("Forma de pagamento criado com sucesso");
           setNotificationOpen(true);
-          window.location.reload();
         }
       });
     });
@@ -100,7 +99,6 @@ export default function CategoryPage() {
           setError("");
           setSuccess("Forma de pagamento atualizado com sucesso");
           setNotificationOpen(true);
-          window.location.reload();
         }
       });
     });
@@ -118,7 +116,6 @@ export default function CategoryPage() {
           setError("");
           setSuccess("Forma de pagamento excluída com sucesso");
           setNotificationOpen(true);
-          window.location.reload();
         }
       });
     });
@@ -134,48 +131,46 @@ export default function CategoryPage() {
         label="Editar"
         onClick={() => editingAside(categoryId)}
       />
-      <form>
-        <Aside
-          isOpen={editAsideOpen[categoryId] || false}
-          toggleAside={() => editingAside(categoryId)}
-          content={
-            <AsideContent>
-              <Input
-                label="Nome"
-                placeholder="Ex: Investimentos"
-                value={form.watch("name") || categoryName || ""}
-                onChange={(e) => form.setValue("name", e.target.value)}
+      <Aside
+        isOpen={editAsideOpen[categoryId] || false}
+        toggleAside={() => editingAside(categoryId)}
+        content={
+          <AsideContent>
+            <Input
+              label="Nome"
+              placeholder="Ex: Cartão de Crédito"
+              value={form.watch("name") || categoryName || ""}
+              onChange={(e) => form.setValue("name", e.target.value)}
+            />
+          </AsideContent>
+        }
+        footer={
+          <AsideFooter>
+            <div
+              style={{
+                width: "min-content",
+                display: "flex",
+                gap: "var(--s-spacing-x-small)",
+              }}
+            >
+              <Button
+                size="md"
+                variant="primary"
+                label="Atualizar"
+                onClick={() => atualizar(categoryId)}
               />
-            </AsideContent>
-          }
-          footer={
-            <AsideFooter>
-              <div
-                style={{
-                  width: "min-content",
-                  display: "flex",
-                  gap: "var(--s-spacing-x-small)",
-                }}
-              >
-                <Button
-                  size="md"
-                  variant="primary"
-                  label="Atualizar"
-                  onClick={() => atualizar(categoryId)}
-                />
-                <Button
-                  size="md"
-                  variant="secondary"
-                  label="Cancelar"
-                  onClick={() => editingAside(categoryId)}
-                />
-              </div>
-            </AsideFooter>
-          }
-          title="Editar forma de pagamento"
-          description="Edite a forma de pagamento para os seus ganhos."
-        />
-      </form>
+              <Button
+                size="md"
+                variant="secondary"
+                label="Cancelar"
+                onClick={() => editingAside(categoryId)}
+              />
+            </div>
+          </AsideFooter>
+        }
+        title="Editar forma de pagamento"
+        description="Edite a forma de pagamento para os seus ganhos."
+      />
       <ButtonIcon
         size="sm"
         type="default"

@@ -1,0 +1,28 @@
+.barras-tooltip {
+  background-color: var(--s-color-fill-default);
+  border: var(--s-border-width-hairline) solid var(--s-color-border-default);
+  padding: var(--s-spacing-small);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--s-border-radius-small);
+  box-shadow: var(--s-shadow-level-2);
+
+  .label {
+    color: var(--s-color-content-default);
+    font: var(--s-typography-caption-strong);
+  }
+
+  .ganhos {
+    color: var(--s-color-content-success);
+    font: var(--s-typography-caption-regular);
+  }
+
+  .despesas {
+    color: var(--s-color-content-warning);
+    font: var(--s-typography-caption-regular);
+  }
+}
+
+.recharts-rectangle.recharts-tooltip-cursor {
+  fill: var(--s-color-fill-default-hover);
+}

@@ -403,7 +403,7 @@ export default function Categorias() {
       <Page
         buttonContentPrimary="Adicionar"
         columnLayout="1"
-        namePage="Fonte de Renda"
+        namePage="Fonte de renda"
         withActionPrimary={
           userDataIsValid ? userData.user.categories.length > 0 : undefined
         }
@@ -411,21 +411,32 @@ export default function Categorias() {
       >
         <AuthProgress loading={loading} error={loadingError} />
         {(userDataIsValid ? userData.user.categories.length < 1 : undefined) ? (
-          <>
+          <div style={{ display: "flex", justifyContent: "center" }}>
             <div
-              style={{ display: "flex", alignItems: "center", height: "200%" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                height: "100%",
+                maxWidth: "600px",
+              }}
             >
               <EmptyState
-                title="Você não possui nenhuma fonte de renda ainda"
+                title="Informe a fonte de renda dos seus ganhos!"
                 description="Registre uma nova fonte de renda para classificar os pagamentos ou valores que receber, garantindo que seu controle financeiro esteja sempre atualizado."
                 icon="savings"
                 buttonContentPrimary="Adicionar fonte de renda"
                 onClickActionPrimary={toggleAside}
               />
             </div>
-          </>
+          </div>
         ) : (
-          <>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              height: "fit-content",
+            }}
+          >
             <DataTable
               labelSecondButton=""
               titleNoDataMessage="Não há dados"
@@ -448,50 +459,48 @@ export default function Categorias() {
               labelButtonNoDataFilteredMessage="Remove filters"
               titleNoDataFilteredMessage="Your filter did not return any results."
             />
-          </>
+          </div>
         )}
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <Aside
-            isOpen={isOpenAside}
-            toggleAside={toggleAside}
-            title="Adicionar fonte de renda"
-            description="Crie uma fonte de renda para os seus ganhos."
-            content={
-              <AsideContent>
-                <Input
-                  label="Nome"
-                  placeholder="Ex: Investimentos"
-                  value={form.watch("name") || ""}
-                  onChange={(e) => form.setValue("name", e.target.value)}
+        <Aside
+          isOpen={isOpenAside}
+          toggleAside={toggleAside}
+          title="Adicionar fonte de renda"
+          description="Crie uma fonte de renda para os seus ganhos."
+          content={
+            <AsideContent>
+              <Input
+                label="Nome"
+                placeholder="Ex: Investimentos"
+                value={form.watch("name") || ""}
+                onChange={(e) => form.setValue("name", e.target.value)}
+              />
+            </AsideContent>
+          }
+          footer={
+            <AsideFooter>
+              <div
+                style={{
+                  width: "min-content",
+                  display: "flex",
+                  gap: "var(--s-spacing-x-small)",
+                }}
+              >
+                <Button
+                  size="md"
+                  variant="primary"
+                  label="Adicionar"
+                  onClick={() => form.handleSubmit(onSubmit)}
                 />
-              </AsideContent>
-            }
-            footer={
-              <AsideFooter>
-                <div
-                  style={{
-                    width: "min-content",
-                    display: "flex",
-                    gap: "var(--s-spacing-x-small)",
-                  }}
-                >
-                  <Button
-                    size="md"
-                    variant="primary"
-                    label="Adicionar"
-                    type="submit"
-                  />
-                  <Button
-                    size="md"
-                    variant="secondary"
-                    label="Cancelar"
-                    onClick={toggleAside}
-                  />
-                </div>
-              </AsideFooter>
-            }
-          />
-        </form>
+                <Button
+                  size="md"
+                  variant="secondary"
+                  label="Cancelar"
+                  onClick={toggleAside}
+                />
+              </div>
+            </AsideFooter>
+          }
+        />
       </Page>
       {success && (
         <Notification

@@ -385,7 +385,7 @@ export default function CategoryPage() {
   return (
     <>
       <Page
-        namePage="Formas de Pagamento"
+        namePage="Formas de pagamento"
         columnLayout="1"
         withActionPrimary={
           userDataIsValid
@@ -402,42 +402,55 @@ export default function CategoryPage() {
             ? userData.user.formaDePagamento.length < 1
             : undefined
         ) ? (
-          <>
+          <div style={{ display: "flex", justifyContent: "center" }}>
             <div
-              style={{ display: "flex", alignItems: "center", height: "200%" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                height: "100%",
+                maxWidth: "700px",
+              }}
             >
               <EmptyState
-                title="Você não possui nenhuma forma de pagamento ainda"
+                title="Adicione as formas de pagamentos das suas despesas!"
                 description="Indique a forma de pagamento utilizada nos seus pagamentos, seja em dinheiro, cartão ou transferência, para manter um registro detalhado e preciso das suas movimentações financeiras."
                 icon="local_atm"
                 buttonContentPrimary="Adicionar forma de pagamento"
                 onClickActionPrimary={toggleAside}
               />
             </div>
-          </>
+          </div>
         ) : (
-          <DataTable
-            labelSecondButton=""
-            titleNoDataMessage="Não há dados"
-            descriptionNoDataMessage="Não há dados ainda..."
-            itemPerPage={10}
-            pagesText="Página"
-            columns={columns}
-            data={data}
-            expandedData={expandedData}
-            selectable={false}
-            expandable={false}
-            inputPlaceholder="Procurar"
-            typeIconSecondButton="filter_alt"
-            selectableLabelSecondButton="Delete"
-            selectableIconSecondButton="delete"
-            asideTitle="Filters"
-            firstButtonLabelAside="Aplicar"
-            secondButtonLabelAside="Cancel"
-            descriptionNoDataFilteredMessage="This option does not exist in your store, remove the filter and try again."
-            labelButtonNoDataFilteredMessage="Remove filters"
-            titleNoDataFilteredMessage="Your filter did not return any results."
-          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              height: "fit-content",
+            }}
+          >
+            <DataTable
+              labelSecondButton=""
+              titleNoDataMessage="Não há dados"
+              descriptionNoDataMessage="Não há dados ainda..."
+              itemPerPage={10}
+              pagesText="Página"
+              columns={columns}
+              data={data}
+              expandedData={expandedData}
+              selectable={false}
+              expandable={false}
+              inputPlaceholder="Procurar"
+              typeIconSecondButton="filter_alt"
+              selectableLabelSecondButton="Delete"
+              selectableIconSecondButton="delete"
+              asideTitle="Filters"
+              firstButtonLabelAside="Aplicar"
+              secondButtonLabelAside="Cancel"
+              descriptionNoDataFilteredMessage="This option does not exist in your store, remove the filter and try again."
+              labelButtonNoDataFilteredMessage="Remove filters"
+              titleNoDataFilteredMessage="Your filter did not return any results."
+            />
+          </div>
         )}
         <Aside
           isOpen={isAsideOpen}

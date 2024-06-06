@@ -156,7 +156,7 @@ const HomePage = () => {
       valor: "",
       formaDePagamento: userData?.user.formaDePagamento[0]?.name,
       categoria: userData?.user.categoria[0]?.name,
-      subcategoria: userData?.user.categoria[0]?.Subcategorias?.[0]?.name,
+      subcategoria: subcategorias[0] || "",
     },
   });
 
@@ -243,7 +243,7 @@ const HomePage = () => {
     editingAside(categoryId, null);
 
     try {
-      const data = await Atualizar(form.getValues(), categoryId)
+      const data = await Atualizar(form.getValues(), categoryId);
       if (data.error) {
         setNotificationOpen(true);
         setError(data.error);
@@ -621,40 +621,55 @@ const HomePage = () => {
       >
         <AuthProgress loading={loading} error={loadingError} />
         {(userDataIsValid ? userData.user.expense.length < 1 : undefined) ? (
-          <div
-            style={{ display: "flex", alignItems: "center", height: "200%" }}
-          >
-            <EmptyState
-              title="Você não possui nenhuma despesa ainda"
-              description="Adicione uma despesa sempre que fizer um pagamento ou tiver algum gasto para manter seu controle financeiro em dia."
-              icon="local_mall"
-              buttonContentPrimary="Adicionar despesa"
-              onClickActionPrimary={toggleAside}
-            />
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                height: "100%",
+                maxWidth: "500px",
+              }}
+            >
+              <EmptyState
+                title="Não deixe de registrar as suas despesas!"
+                description="Adicione uma despesa sempre que fizer um pagamento ou tiver algum gasto para manter seu controle financeiro em dia."
+                icon="local_mall"
+                buttonContentPrimary="Adicionar despesa"
+                onClickActionPrimary={toggleAside}
+              />
+            </div>
           </div>
         ) : (
-          <DataTable
-            labelSecondButton=""
-            titleNoDataMessage="Não há dados"
-            descriptionNoDataMessage="Não há dados ainda..."
-            itemPerPage={10}
-            pagesText="Página"
-            columns={columns}
-            data={data}
-            expandedData={expandedData}
-            selectable={false}
-            expandable={false}
-            inputPlaceholder="Procurar"
-            typeIconSecondButton="filter_alt"
-            selectableLabelSecondButton="Delete"
-            selectableIconSecondButton="delete"
-            asideTitle="Filters"
-            firstButtonLabelAside="Aplicar"
-            secondButtonLabelAside="Cancel"
-            descriptionNoDataFilteredMessage="This option does not exist in your store, remove the filter and try again."
-            labelButtonNoDataFilteredMessage="Remove filters"
-            titleNoDataFilteredMessage="Your filter did not return any results."
-          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              height: "fit-content",
+            }}
+          >
+            <DataTable
+              labelSecondButton=""
+              titleNoDataMessage="Não há dados"
+              descriptionNoDataMessage="Não há dados ainda..."
+              itemPerPage={10}
+              pagesText="Página"
+              columns={columns}
+              data={data}
+              expandedData={expandedData}
+              selectable={false}
+              expandable={false}
+              inputPlaceholder="Procurar"
+              typeIconSecondButton="filter_alt"
+              selectableLabelSecondButton="Delete"
+              selectableIconSecondButton="delete"
+              asideTitle="Filters"
+              firstButtonLabelAside="Aplicar"
+              secondButtonLabelAside="Cancel"
+              descriptionNoDataFilteredMessage="This option does not exist in your store, remove the filter and try again."
+              labelButtonNoDataFilteredMessage="Remove filters"
+              titleNoDataFilteredMessage="Your filter did not return any results."
+            />
+          </div>
         )}
         <Aside
           isOpen={isOpenAside}

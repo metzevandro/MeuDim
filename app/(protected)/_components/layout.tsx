@@ -96,7 +96,7 @@ const LayoutPage = (props: LayoutProps) => {
                 onClick={() => navigateTo("/pagina-inicial/entradas/ganhos")}
               />
               <SidebarSubItem
-                title="Fonte de Renda"
+                title="Fonte de renda"
                 active={pathname === "/pagina-inicial/entradas/fonte-de-renda"}
                 onClick={() =>
                   navigateTo("/pagina-inicial/entradas/fonte-de-renda")
@@ -120,7 +120,7 @@ const LayoutPage = (props: LayoutProps) => {
                 onClick={() => navigateTo("/pagina-inicial/saidas/categorias")}
               />
               <SidebarSubItem
-                title="Formas de Pagamento"
+                title="Formas de pagamento"
                 active={
                   pathname === "/pagina-inicial/saidas/formas-de-pagamento"
                 }

@@ -546,152 +546,163 @@ const HomePage = () => {
 
   return (
     <>
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <Page
-          onClickActionPrimary={toggleAside}
-          withActionPrimary={
-            userDataIsValid ? userData.user.transactions.length > 0 : undefined
-          }
-          buttonContentPrimary="Adicionar"
-          columnLayout="1"
-          namePage="Seus ganhos"
-        >
-          <AuthProgress loading={loading} error={loadingError} />
-          {(
-            userDataIsValid ? userData.user.transactions.length < 1 : undefined
-          ) ? (
+      <Page
+        onClickActionPrimary={toggleAside}
+        withActionPrimary={
+          userDataIsValid ? userData.user.transactions.length > 0 : undefined
+        }
+        buttonContentPrimary="Adicionar"
+        columnLayout="1"
+        namePage="Seus ganhos"
+      >
+        <AuthProgress loading={loading} error={loadingError} />
+        {(
+          userDataIsValid ? userData.user.transactions.length < 1 : undefined
+        ) ? (
+          <div style={{ display: "flex", justifyContent: "center" }}>
             <div
-              style={{ display: "flex", alignItems: "center", height: "200%" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                height: "100%",
+                maxWidth: "500px",
+              }}
             >
               <EmptyState
-                title="Você não possui nenhum ganho ainda"
+                title="Adicione todos os seus ganhos!"
                 description="Quando receber seu salário ou qualquer outro dinheiro, adicione-o como um ganho para manter suas finanças organizadas."
                 icon="trending_up"
                 buttonContentPrimary="Adicionar ganho"
                 onClickActionPrimary={toggleAside}
               />
             </div>
-          ) : (
-            <>
-              <DataTable
-                labelSecondButton=""
-                titleNoDataMessage="Não há dados"
-                descriptionNoDataMessage="Não há dados ainda..."
-                itemPerPage={10}
-                pagesText="Página"
-                columns={columns}
-                data={data}
-                expandedData={expandedData}
-                selectable={false}
-                expandable={false}
-                inputPlaceholder="Procurar"
-                typeIconSecondButton="filter_alt"
-                selectableLabelSecondButton="Delete"
-                selectableIconSecondButton="delete"
-                asideTitle="Filters"
-                firstButtonLabelAside="Aplicar"
-                secondButtonLabelAside="Cancel"
-                descriptionNoDataFilteredMessage="This option does not exist in your store, remove the filter and try again."
-                labelButtonNoDataFilteredMessage="Remove filters"
-                titleNoDataFilteredMessage="Your filter did not return any results."
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              height: "fit-content",
+            }}
+          >
+            <DataTable
+              labelSecondButton=""
+              titleNoDataMessage="Não há dados"
+              descriptionNoDataMessage="Não há dados ainda..."
+              itemPerPage={10}
+              pagesText="Página"
+              columns={columns}
+              data={data}
+              expandedData={expandedData}
+              selectable={false}
+              expandable={false}
+              inputPlaceholder="Procurar"
+              typeIconSecondButton="filter_alt"
+              selectableLabelSecondButton="Delete"
+              selectableIconSecondButton="delete"
+              asideTitle="Filters"
+              firstButtonLabelAside="Aplicar"
+              secondButtonLabelAside="Cancel"
+              descriptionNoDataFilteredMessage="This option does not exist in your store, remove the filter and try again."
+              labelButtonNoDataFilteredMessage="Remove filters"
+              titleNoDataFilteredMessage="Your filter did not return any results."
+            />
+          </div>
+        )}
+        <Aside
+          isOpen={isOpenAside}
+          toggleAside={toggleAside}
+          title="Adicionar entrada"
+          description="Preencha detalhadamente o seu ganho."
+          content={
+            <AsideContent>
+              <DataPicker
+                onDateChange={(date) =>
+                  form.setValue("date", date.toISOString())
+                }
+                date={form.watch("date")}
+                placeholder="Ex: 14/02/2023"
+                label="Data"
               />
-            </>
-          )}
-          <Aside
-            isOpen={isOpenAside}
-            toggleAside={toggleAside}
-            title="Adicionar entrada"
-            description="Preencha detalhadamente o seu ganho."
-            content={
-              <AsideContent>
-                <DataPicker
-                  onDateChange={(date) =>
-                    form.setValue("date", date.toISOString())
-                  }
-                  date={form.watch("date")}
-                  placeholder="Ex: 14/02/2023"
-                  label="Data"
-                />
-                <div className="input-root">
-                  <div className="input-header">
-                    <label>Valor</label>
-                  </div>
-                  <div>
-                    <div className="input-content">
-                      <IntlCurrencyInput
-                        placeholder="Ex: 100,00"
-                        decimalsLimit={2}
-                        value={form.watch("amount")}
-                        onValueChange={(value) =>
-                          form.setValue("amount", value || "0")
-                        }
-                        intlConfig={{ locale: "pt-BR", currency: "BRL" }}
-                        decimalSeparator=","
-                      />
-                    </div>
+              <div className="input-root">
+                <div className="input-header">
+                  <label>Valor</label>
+                </div>
+                <div>
+                  <div className="input-content">
+                    <IntlCurrencyInput
+                      placeholder="Ex: 100,00"
+                      decimalsLimit={2}
+                      value={form.watch("amount")}
+                      onValueChange={(value) =>
+                        form.setValue("amount", value || "0")
+                      }
+                      intlConfig={{ locale: "pt-BR", currency: "BRL" }}
+                      decimalSeparator=","
+                    />
                   </div>
                 </div>
-                <InputSelect
-                  value={form.watch("category") || ""}
-                  onChange={(value: string) =>
-                    form.setValue("category", value || "")
-                  }
-                  options={
-                    userData?.user.categories.map(
-                      (category: any) => category.name,
-                    ) || []
-                  }
-                  label="Fonte de Renda"
-                  errorMessage={errors.category?.message}
-                  error={!!errors.category}
+              </div>
+              <InputSelect
+                value={form.watch("category") || ""}
+                onChange={(value: string) =>
+                  form.setValue("category", value || "")
+                }
+                options={
+                  userData?.user.categories.map(
+                    (category: any) => category.name,
+                  ) || []
+                }
+                label="Fonte de Renda"
+                errorMessage={errors.category?.message}
+                error={!!errors.category}
+              />
+            </AsideContent>
+          }
+          footer={
+            <AsideFooter>
+              <div
+                style={{
+                  width: "min-content",
+                  display: "flex",
+                  gap: "var(--s-spacing-x-small)",
+                }}
+              >
+                <Button
+                  size="md"
+                  variant="primary"
+                  label="Adicionar"
+                  onClick={() => CriarGanho(form.getValues())}
                 />
-              </AsideContent>
-            }
-            footer={
-              <AsideFooter>
-                <div
-                  style={{
-                    width: "min-content",
-                    display: "flex",
-                    gap: "var(--s-spacing-x-small)",
-                  }}
-                >
-                  <Button
-                    size="md"
-                    variant="primary"
-                    label="Adicionar"
-                    onClick={() => CriarGanho(form.getValues())}
-                  />
-                  <Button
-                    size="md"
-                    variant="secondary"
-                    label="Cancelar"
-                    onClick={toggleAside}
-                  />
-                </div>
-              </AsideFooter>
-            }
-          />
-        </Page>
-        {success && (
-          <Notification
-            icon="check_circle"
-            title={success}
-            variant="success"
-            type="float"
-            isOpen={notificationOpen}
-          />
-        )}
-        {error && (
-          <Notification
-            icon="warning"
-            title={error}
-            variant="warning"
-            type="float"
-            isOpen={notificationOpen}
-          />
-        )}
-      </div>
+                <Button
+                  size="md"
+                  variant="secondary"
+                  label="Cancelar"
+                  onClick={toggleAside}
+                />
+              </div>
+            </AsideFooter>
+          }
+        />
+      </Page>
+      {success && (
+        <Notification
+          icon="check_circle"
+          title={success}
+          variant="success"
+          type="float"
+          isOpen={notificationOpen}
+        />
+      )}
+      {error && (
+        <Notification
+          icon="warning"
+          title={error}
+          variant="warning"
+          type="float"
+          isOpen={notificationOpen}
+        />
+      )}
     </>
   );
 };

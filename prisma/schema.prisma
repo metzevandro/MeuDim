@@ -60,15 +60,6 @@ model Transaction {
   user       User         @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
 
-model FonteDeRenda {
-  id          String        @id @default(cuid())
-  name        String        @unique
-  userId      String
-  createdAt   DateTime
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Transaction Transaction[]
-}
-
 model Expense {
   id                 String            @id @default(cuid())
   amount             String
@@ -83,20 +74,13 @@ model Expense {
   formaDePagamentoId String?
 }
 
-model FormaDePagamento {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  userId    String
-  createdAt DateTime
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Expense   Expense[]
-}
-
 model Categoria {
   id        String   @id @default(cuid())
-  name      String   @unique
+  name      String
   userId    String
   createdAt DateTime
+
+  @@unique([name, userId])
 
   Expense       Expense[]
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -105,12 +89,37 @@ model Categoria {
 
 model Subcategoria {
   id          String    @id @default(cuid())
-  name        String    @unique
+  name        String
   categoriaId String
-  categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
-  Expense     Expense[]
 
   @@unique([name, categoriaId])
+
+  categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  Expense     Expense[]
+}
+
+model FormaDePagamento {
+  id        String    @id @default(cuid())
+  name      String
+  userId    String
+  createdAt DateTime
+
+  @@unique([name, userId])
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Expense   Expense[]
+}
+
+model FonteDeRenda {
+  id        String    @id @default(cuid())
+  name      String
+  userId    String
+  createdAt DateTime
+
+  @@unique([name, userId])
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Transaction Transaction[]
 }
 
 model VerificationToken {

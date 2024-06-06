@@ -22,15 +22,37 @@ import {
   FooterModal,
   ButtonIcon,
 } from "design-system-zeroz";
-import React, { startTransition, useState } from "react";
+import React, { startTransition, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import "./forma-de-pagamento.scss";
+import Skeleton from "@/components/auth/Skeleton/Skeleton";
+import AuthProgress from "@/components/auth/Progress/progress";
+
+interface FormaDePagamento {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+}
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  role: string;
+  formaDePagamento: FormaDePagamento[];
+}
+
+interface UserData {
+  user: User;
+  expires: string;
+}
+
+const API = process.env.NEXT_PUBLIC_APP_URL;
 
 export default function CategoryPage() {
-  const user = useCurrentUser();
-
   const [isAsideOpen, setIsAsideOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
   const [editAsideOpen, setEditAsideOpen] = useState<{
@@ -48,6 +70,28 @@ export default function CategoryPage() {
       date: new Date(),
     },
   });
+
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(0);
+  const [loadingError, setLoadingError] = useState(false);
+
+  async function fetchUserData() {
+    try {
+      const response = await fetch(`${API}/api/auth/session`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setUserData(userData);
+      setLoading(0);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
   const toggleAside = () => {
     setIsAsideOpen(!isAsideOpen);
@@ -67,58 +111,111 @@ export default function CategoryPage() {
     }));
   };
 
-  const criar = (values: z.infer<typeof NewCategorySchema>) => {
+  const startLoading = () => {
+    setLoading(0);
+    const interval = setInterval(() => {
+      setLoading((prevLoading) => {
+        if (prevLoading >= 80) {
+          clearInterval(interval);
+          return prevLoading;
+        }
+        return prevLoading + 1;
+      });
+    }, 50);
+    return interval;
+  };
+
+  const stopLoading = (interval: NodeJS.Timeout, success: boolean) => {
+    clearInterval(interval);
+    setLoading(success ? 100 : 0);
+  };
+
+  const criar = async (values: z.infer<typeof NewCategorySchema>) => {
     setError("");
     setSuccess("");
     toggleAside();
+    setLoadingError(false);
 
-    startTransition(() => {
-      CriarFormaDePagamento(values).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Forma de pagamento criado com sucesso");
-          setNotificationOpen(true);
-        }
-      });
-    });
+    const loadingInterval = startLoading();
+    try {
+      const data = await CriarFormaDePagamento(values);
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+        setNotificationOpen(true);
+        setLoadingError(true);
+      } else {
+        setError("");
+        setSuccess(data.success);
+        setNotificationOpen(true);
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao criar a categoria.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
-  const atualizar = (categoryId: string) => {
+  const atualizar = async (categoryId: string) => {
+    setError("");
+    setSuccess("");
     editingAside(categoryId);
-    startTransition(() => {
-      AtualizarFormaDePagamento(form.getValues(), categoryId).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Forma de pagamento atualizado com sucesso");
-          setNotificationOpen(true);
-        }
-      });
-    });
+
+    setLoadingError(false);
+
+    const loadingInterval = startLoading();
+    try {
+      const data = await AtualizarFormaDePagamento(
+        form.getValues(),
+        categoryId,
+      );
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+        setNotificationOpen(true);
+        setLoadingError(true);
+      } else {
+        setError("");
+        setSuccess(data.success);
+        setNotificationOpen(true);
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao excluir a forma de pagamento.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
-  const excluir = (categoryId: string) => {
+  const excluir = async (categoryId: string) => {
+    setError("");
+    setSuccess("");
     toggleModal(categoryId);
-    startTransition(() => {
-      ExcluirFormaDePagamento(categoryId).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Forma de pagamento excluída com sucesso");
-          setNotificationOpen(true);
-        }
-      });
-    });
+    setLoadingError(false);
+
+    const loadingInterval = startLoading();
+    try {
+      const data = await ExcluirFormaDePagamento(categoryId);
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+        setNotificationOpen(true);
+        setLoadingError(true);
+      } else {
+        setError("");
+        setSuccess(data.success);
+        setNotificationOpen(true);
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao excluir a fonte de renda.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
   const columns: string[] = ["Data", "Forma", "Ações"];
@@ -212,22 +309,76 @@ export default function CategoryPage() {
     </div>
   );
 
-  const data: { [key: string]: any; id: string }[] = user?.formaDePagamento
-    ? user.formaDePagamento.map((formaDePagamento: any, index: number) => {
-        const formattedDate = new Date(
-          formaDePagamento.createdAt,
-        ).toLocaleDateString("pt-BR");
+  const userDataIsValid = userData && userData.user;
 
-        return {
-          Data: formattedDate,
-          Forma: formaDePagamento.name,
-          Ações: renderCategoryActions(
-            formaDePagamento.id,
-            formaDePagamento.name,
+  const data: { [key: string]: any; id: string }[] = userData?.user
+    ?.formaDePagamento
+    ? userData?.user.formaDePagamento.map(
+        (formaDePagamento: any, index: number) => {
+          const formattedDate = new Date(
+            formaDePagamento.createdAt,
+          ).toLocaleDateString("pt-BR");
+
+          return {
+            id: formaDePagamento.id,
+            Data: formattedDate,
+            Forma: formaDePagamento.name,
+            Ações: renderCategoryActions(
+              formaDePagamento.id,
+              formaDePagamento.name,
+            ),
+          };
+        },
+      )
+    : [
+        {
+          id: "1",
+          Data: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
           ),
-        };
-      })
-    : [];
+        },
+        {
+          id: "2",
+          Data: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+        {
+          id: "3",
+          Data: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+        {
+          id: "4",
+          Data: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+      ];
 
   const expandedData: { [key: string]: any; id: string }[] = [];
 
@@ -236,11 +387,21 @@ export default function CategoryPage() {
       <Page
         namePage="Formas de Pagamento"
         columnLayout="1"
-        withActionPrimary={user?.formaDePagamento.length > 0}
+        withActionPrimary={
+          userDataIsValid
+            ? userData.user.formaDePagamento.length > 0
+            : undefined
+        }
         buttonContentPrimary="Adicionar"
         onClickActionPrimary={toggleAside}
       >
-        {user?.formaDePagamento.length < 1 ? (
+        <AuthProgress loading={loading} error={loadingError} />
+
+        {(
+          userDataIsValid
+            ? userData.user.formaDePagamento.length < 1
+            : undefined
+        ) ? (
           <>
             <div
               style={{ display: "flex", alignItems: "center", height: "200%" }}
@@ -331,7 +492,6 @@ export default function CategoryPage() {
           <Notification
             icon="warning"
             title={error}
-            description="A fonte de renda está sendo utilizada."
             variant="warning"
             type="float"
             isOpen={notificationOpen}

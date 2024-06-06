@@ -28,6 +28,39 @@ import {
   CriarCategoria,
   ExcluirCategoria,
 } from "@/actions/categoria";
+import Skeleton from "@/components/auth/Skeleton/Skeleton";
+import AuthProgress from "@/components/auth/Progress/progress";
+interface Subcategoria {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+}
+
+interface Categoria {
+  id: string;
+  name: string;
+  createdAt: string;
+  userId: string;
+  subcategoria: Subcategoria[];
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  role: string;
+  subcategoria: Subcategoria[];
+  categoria: Categoria[];
+}
+
+interface UserData {
+  user: User;
+  expires: string;
+}
+
+const API = process.env.NEXT_PUBLIC_APP_URL;
 
 export default function CategoryPage() {
   const user = useCurrentUser();
@@ -50,13 +83,35 @@ export default function CategoryPage() {
     },
   });
 
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(0);
+  const [loadingError, setLoadingError] = useState(false);
+
+  async function fetchUserData() {
+    try {
+      const response = await fetch(`${API}/api/auth/session`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setUserData(userData);
+      setLoading(0);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
   const [subcategoriasMap, setSubcategoriasMap] = useState<{
     [categoryId: string]: string[];
   }>({});
 
   useEffect(() => {
-    if (user?.categoria) {
-      const initialSubcategoriasMap = user.categoria.reduce(
+    if (userData?.user?.categoria) {
+      const initialSubcategoriasMap = userData?.user.categoria.reduce(
         (acc: { [categoryId: string]: string[] }, categoria: any) => {
           acc[categoria.id] =
             categoria.Subcategorias?.map((sub: any) => sub.name) || [];
@@ -66,7 +121,7 @@ export default function CategoryPage() {
       );
       setSubcategoriasMap(initialSubcategoriasMap);
     }
-  }, [user]);
+  }, [userData?.user]);
 
   const toggleAside = () => {
     setIsAsideOpen(!isAsideOpen);
@@ -107,68 +162,113 @@ export default function CategoryPage() {
     }));
   };
 
-  const criar = async (values: z.infer<typeof NovaCategoriaSchema>) => {
+  const startLoading = () => {
+    setLoading(0);
+    const interval = setInterval(() => {
+      setLoading((prevLoading) => {
+        if (prevLoading >= 80) {
+          clearInterval(interval);
+          return prevLoading;
+        }
+        return prevLoading + 1;
+      });
+    }, 50);
+    return interval;
+  };
+
+  const stopLoading = (interval: NodeJS.Timeout, success: boolean) => {
+    clearInterval(interval);
+    setLoading(success ? 100 : 0);
+  };
+
+  const criar = async () => {
+    setError("");
+    setSuccess("");
     toggleAside();
-    startTransition(() => {
-      const categoriaValues = {
-        name: form.getValues().name,
-        date: form.getValues().date,
-        subcategoria: subcategoriasMap["new"] || [],
-      };
-      CriarCategoria(categoriaValues).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Categoria criada com sucesso");
-          setNotificationOpen(true);
-          window.location.reload();
-        }
-      });
-    });
+    setLoadingError(false);
+
+    const loadingInterval = startLoading();
+
+    const categoriaValues = {
+      name: form.getValues().name,
+      date: form.getValues().date,
+      subcategoria: subcategoriasMap["new"] || [],
+    };
+
+    try {
+      const data = await CriarCategoria(categoriaValues);
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+        setNotificationOpen(true);
+        setLoadingError(true);
+      } else {
+        setError("");
+        setSuccess(data.success);
+        setNotificationOpen(true);
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao criar a categoria.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
-  const atualizar = (categoryId: string) => {
+  const atualizar = async (categoryId: string) => {
     editingAside(categoryId);
-    startTransition(() => {
-      const categoriaValues = {
-        name: form.getValues().name,
-        date: form.getValues().date,
-        subcategoria: subcategoriasMap[categoryId] || [],
-      };
-      AtualizarCategoria(categoriaValues, categoryId).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Categoria atualizada com sucesso");
-          setNotificationOpen(true);
-          window.location.reload();
-        }
-      });
-    });
+    const categoriaValues = {
+      name: form.getValues().name,
+      date: form.getValues().date,
+      subcategoria: subcategoriasMap[categoryId] || [],
+    };
+    const loadingInterval = startLoading();
+
+    try {
+      const data = await AtualizarCategoria(categoriaValues, categoryId);
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+        setNotificationOpen(true);
+        setLoadingError(true);
+      } else {
+        setError("");
+        setSuccess(data.success);
+        setNotificationOpen(true);
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao atualizar a categoria");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
-  const excluir = (categoryId: string) => {
+  const excluir = async (categoryId: string) => {
     toggleModal(categoryId);
-    startTransition(() => {
-      ExcluirCategoria(categoryId).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Categoria excluída com sucesso");
-          setNotificationOpen(true);
-          window.location.reload();
-        }
-      });
-    });
+    const loadingInterval = startLoading();
+
+    try {
+      const data = await ExcluirCategoria(categoryId);
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+        setNotificationOpen(true);
+        setLoadingError(true);
+      } else {
+        setError("");
+        setSuccess(data.success);
+        setNotificationOpen(true);
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao excluir a fonte de renda.");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
   };
 
   const columns: string[] = ["Data", "Categoria", "Subcategorias", "Ações"];
@@ -308,13 +408,16 @@ export default function CategoryPage() {
     </div>
   );
 
-  const data: { [key: string]: any; id: string }[] = user?.categoria
-    ? user.categoria.map((categoria: any) => {
+  const userDataIsValid = userData && userData.user;
+
+  const data: { [key: string]: any; id: string }[] = userData?.user?.categoria
+    ? userData?.user.categoria.map((categoria: any) => {
         const formattedDate = new Date(categoria.createdAt).toLocaleDateString(
           "pt-BR",
         );
 
         return {
+          id: categoria.id,
           Data: formattedDate,
           Categoria: categoria.name,
           Subcategorias: categoria.Subcategorias?.length,
@@ -325,7 +428,56 @@ export default function CategoryPage() {
           ),
         };
       })
-    : [];
+    : [
+        {
+          id: "1",
+          Data: <Skeleton height="32" width="100" />,
+          Categoria: <Skeleton height="32" width="100" />,
+          Subcategorias: <Skeleton height="32" width="100" />,
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+        {
+          id: "2",
+          Data: <Skeleton height="32" width="100" />,
+          Categoria: <Skeleton height="32" width="100" />,
+          Subcategorias: <Skeleton height="32" width="100" />,
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+        {
+          id: "3",
+          Data: <Skeleton height="32" width="100" />,
+          Categoria: <Skeleton height="32" width="100" />,
+          Subcategorias: <Skeleton height="32" width="100" />,
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+        {
+          id: "4",
+          Data: <Skeleton height="32" width="100" />,
+          Categoria: <Skeleton height="32" width="100" />,
+          Subcategorias: <Skeleton height="32" width="100" />,
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+      ];
 
   const expandedData: { [key: string]: any; id: string }[] = [];
 
@@ -334,11 +486,14 @@ export default function CategoryPage() {
       <Page
         namePage="Categorias"
         columnLayout="1"
-        withActionPrimary={user?.categoria.length > 0}
+        withActionPrimary={
+          userDataIsValid ? userData.user.categoria.length > 0 : undefined
+        }
         buttonContentPrimary="Adicionar"
         onClickActionPrimary={toggleAside}
       >
-        {user?.categoria.length < 1 ? (
+        <AuthProgress loading={loading} error={loadingError} />
+        {(userDataIsValid ? userData.user.categoria.length < 1 : undefined) ? (
           <div
             style={{ display: "flex", alignItems: "center", height: "200%" }}
           >

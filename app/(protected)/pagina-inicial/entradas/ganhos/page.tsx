@@ -370,7 +370,7 @@ const HomePage = () => {
         fetchUserData();
       }
     } catch (error) {
-      setError("Ocorreu um erro ao criar a fonte de renda.");
+      setError("Ocorreu um erro ao deletar o ganho");
       setLoadingError(true);
     } finally {
       stopLoading(loadingInterval, !loadingError);
@@ -385,8 +385,6 @@ const HomePage = () => {
     transactionCategory: string,
     selectdate: Date | null,
   ) => {
-    setError("");
-    setSuccess("");
     editingAside(
       categoryId,
       transactionCategory,
@@ -496,37 +494,55 @@ const HomePage = () => {
       : [
           {
             id: "1",
-            Valor: <Skeleton height="32" width="100"/>,
-            Data: <Skeleton height="32" width="100"/>,
-            Fonte: <Skeleton height="32" width="100"/>,
-            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+            Valor: <Skeleton height="32" width="100" />,
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
           },
           {
             id: "2",
-            Valor: <Skeleton height="32" width="100"/>,
-            Data: <Skeleton height="32" width="100"/>,
-            Fonte: <Skeleton height="32" width="100"/>,
-            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+            Valor: <Skeleton height="32" width="100" />,
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
           },
           {
             id: "3",
-            Valor: <Skeleton height="32" width="100"/>,
-            Data: <Skeleton height="32" width="100"/>,
-            Fonte: <Skeleton height="32" width="100"/>,
-            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+            Valor: <Skeleton height="32" width="100" />,
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
           },
           {
             id: "4",
-            Valor: <Skeleton height="32" width="100"/>,
-            Data: <Skeleton height="32" width="100"/>,
-            Fonte: <Skeleton height="32" width="100"/>,
-            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+            Valor: <Skeleton height="32" width="100" />,
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
           },
         ];
 
   const expandedData: { [key: string]: any; id: string }[] = [];
-
-  const userCurrent = useCurrentUser();
 
   return (
     <>
@@ -535,13 +551,15 @@ const HomePage = () => {
           onClickActionPrimary={toggleAside}
           withActionPrimary={
             userDataIsValid ? userData.user.transactions.length > 0 : undefined
-          }          buttonContentPrimary="Adicionar"
+          }
+          buttonContentPrimary="Adicionar"
           columnLayout="1"
           namePage="Seus ganhos"
         >
           <AuthProgress loading={loading} error={loadingError} />
-
-          {(userDataIsValid ? userData.user.transactions.length < 1 : undefined) ? (
+          {(
+            userDataIsValid ? userData.user.transactions.length < 1 : undefined
+          ) ? (
             <div
               style={{ display: "flex", alignItems: "center", height: "200%" }}
             >

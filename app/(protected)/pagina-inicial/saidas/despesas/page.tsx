@@ -25,9 +25,59 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import IntlCurrencyInput from "react-currency-input-field";
 
 import "./despesas.scss";
+import AuthProgress from "@/components/auth/Progress/progress";
+import Skeleton from "@/components/auth/Skeleton/Skeleton";
+
+interface UserData {
+  user: User;
+  expires: string;
+}
+
+interface User {
+  name: string;
+  email: string;
+  image: string | null;
+  id: string;
+  role: string;
+  expense: Expense[];
+  categoria: Categoria[];
+  formaDePagamento: FormaDePagamento[];
+}
+
+interface Expense {
+  id: string;
+  amount: string;
+  accountId: string;
+  createdAt: string;
+  categoriaId: string;
+  subcategoriaId: string;
+  formaDePagamentoId: string;
+}
+
+interface Categoria {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+  Subcategorias: Subcategoria[];
+}
+
+interface Subcategoria {
+  id: string;
+  name: string;
+  categoriaId: string;
+}
+
+interface FormaDePagamento {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+}
+
+const API = process.env.NEXT_PUBLIC_APP_URL;
 
 const HomePage = () => {
-  const user = useCurrentUser();
   const [isOpenAside, setIsOpenAside] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
@@ -39,6 +89,28 @@ const HomePage = () => {
   const [currentexpense, setCurrentexpense] = useState<any>(null);
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
+
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(0);
+  const [loadingError, setLoadingError] = useState(false);
+
+  async function fetchUserData() {
+    try {
+      const response = await fetch(`${API}/api/auth/session`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setUserData(userData);
+      setLoading(0);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
   const toggleModal = (categoryId: string) => {
     setModalOpen((prev) => ({
@@ -68,6 +140,13 @@ const HomePage = () => {
 
   const toggleAside = () => {
     setIsOpenAside(!isOpenAside);
+    form.reset({
+      data: "",
+      valor: "",
+      formaDePagamento: userData?.user.formaDePagamento[0]?.name,
+      categoria: userData?.user.categoria[0]?.name,
+      subcategoria: userData?.user.categoria[0]?.Subcategorias?.[0]?.name,
+    });
   };
 
   const form = useForm<z.infer<typeof ExpenseSchema>>({
@@ -75,14 +154,14 @@ const HomePage = () => {
     defaultValues: {
       data: "",
       valor: "",
-      formaDePagamento: user?.formaDePagamento[0]?.name,
-      categoria: user?.categoria[0]?.name,
-      subcategoria: user?.categoria[0]?.Subcategorias[0].name,
+      formaDePagamento: userData?.user.formaDePagamento[0]?.name,
+      categoria: userData?.user.categoria[0]?.name,
+      subcategoria: userData?.user.categoria[0]?.Subcategorias?.[0]?.name,
     },
   });
 
   useEffect(() => {
-    const categoriaSelecionada = user?.categoria.find(
+    const categoriaSelecionada = userData?.user?.categoria.find(
       (categoria: any) => categoria.name === form.watch("categoria"),
     );
     if (categoriaSelecionada) {
@@ -94,76 +173,128 @@ const HomePage = () => {
     } else {
       setSubcategorias([]);
     }
-  }, [form.watch("categoria"), user?.categoria]);
-
-  const CriarDespesa = (values: z.infer<typeof ExpenseSchema>) => {
-    setError("");
-    setSuccess("");
-    toggleAside();
-    startTransition(() => {
-      Criar(values).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Despesa criada com sucesso");
-          setNotificationOpen(true);
-          window.location.reload();
-        }
-      });
-    });
-  };
-
-  const AtualizarDespesa = (categoryId: string) => {
-    setError("");
-    setSuccess("");
-    editingAside(categoryId, null);
-    startTransition(() => {
-      Atualizar(form.getValues(), categoryId).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Despesa atualizada com sucesso");
-          setNotificationOpen(true);
-          window.location.reload();
-        }
-      });
-    });
-  };
-
-  const DeletarDespesa = (categoriaId: string) => {
-    setError("");
-    setSuccess("");
-    toggleModal(categoriaId);
-    startTransition(() => {
-      Deletar(categoriaId).then((data) => {
-        if (data.error) {
-          setError(data.error);
-          setSuccess("");
-          setNotificationOpen(true);
-        } else {
-          setError("");
-          setSuccess("Despesa excluída com sucesso");
-          setNotificationOpen(true);
-          window.location.reload();
-        }
-      });
-    });
-  };
+  }, [form.watch("categoria"), userData?.user?.categoria]);
 
   useEffect(() => {
     if (isOpenAside) {
       form.setValue("data", "");
       form.setValue("valor", "");
-      form.setValue("categoria", user?.categoria[0]?.name || "");
+      form.setValue("categoria", userData?.user?.categoria[0]?.name || "");
       setCurrentexpense(null);
     }
-  }, [isOpenAside, form, user?.categoria]);
+  }, [isOpenAside, form, userData?.user?.categoria]);
+
+  const startLoading = () => {
+    setLoading(0);
+    const interval = setInterval(() => {
+      setLoading((prevLoading) => {
+        if (prevLoading >= 80) {
+          clearInterval(interval);
+          return prevLoading;
+        }
+        return prevLoading + 1;
+      });
+    }, 50);
+    return interval;
+  };
+
+  const stopLoading = (interval: NodeJS.Timeout, success: boolean) => {
+    clearInterval(interval);
+    setLoading(success ? 100 : 0);
+  };
+
+  const CriarDespesa = async (values: z.infer<typeof ExpenseSchema>) => {
+    setError("");
+    setSuccess("");
+    setLoadingError(false);
+
+    const loadingInterval = startLoading();
+    toggleAside();
+
+    try {
+      const data = await Criar(values);
+
+      if (data.error) {
+        setNotificationOpen(true);
+        setError(data.error);
+        setSuccess("");
+        setLoadingError(true);
+        setLoading(100);
+      } else {
+        setError("");
+        setLoading(100);
+        setNotificationOpen(true);
+        setSuccess(data.success);
+        fetchUserData();
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao criar a despesa");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
+  };
+
+  const AtualizarDespesa = async (categoryId: string) => {
+    const loadingInterval = startLoading();
+    setError("");
+    setSuccess("");
+    editingAside(categoryId, null);
+
+    try {
+      const data = await Atualizar(form.getValues(), categoryId)
+      if (data.error) {
+        setNotificationOpen(true);
+        setError(data.error);
+        setSuccess("");
+        setLoadingError(true);
+        setLoading(100);
+      } else {
+        setError("");
+        setLoading(100);
+        setNotificationOpen(true);
+        setSuccess(data.success);
+        fetchUserData();
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao atualizar a despesa");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
+  };
+
+  const DeletarDespesa = async (categoriaId: string) => {
+    setError("");
+    setSuccess("");
+    toggleModal(categoriaId);
+    const loadingInterval = startLoading();
+
+    try {
+      const data: any = await Deletar(categoriaId);
+      if (data.error) {
+        setNotificationOpen(true);
+        setError(data.error);
+        setSuccess("");
+        setLoadingError(true);
+        setLoading(100);
+      } else {
+        setError("");
+        setLoading(100);
+        setNotificationOpen(true);
+        setSuccess(data.success);
+        fetchUserData();
+      }
+    } catch (error) {
+      setError("Ocorreu um erro ao deletar o ganho");
+      setLoadingError(true);
+    } finally {
+      stopLoading(loadingInterval, !loadingError);
+      fetchUserData();
+    }
+  };
 
   const renderCategoryActions = (
     categoriaId: string,
@@ -224,7 +355,7 @@ const HomePage = () => {
                 form.setValue("formaDePagamento", value || "")
               }
               options={
-                user?.formaDePagamento.map(
+                userData?.user.formaDePagamento.map(
                   (formaDePagamento: any) => formaDePagamento.name,
                 ) || []
               }
@@ -236,7 +367,9 @@ const HomePage = () => {
                 form.setValue("categoria", value || "")
               }
               options={
-                user?.categoria.map((categoria: any) => categoria.name) || []
+                userData?.user.categoria.map(
+                  (categoria: any) => categoria.name,
+                ) || []
               }
               label="Categoria"
             />
@@ -343,10 +476,10 @@ const HomePage = () => {
   ];
 
   const getSubcategoriaName = (categoriaId: string, subcategoriaId: string) => {
-    const categoria = user?.categoria.find(
+    const categoria = userData?.user?.categoria.find(
       (cat: any) => cat.id === categoriaId,
     );
-    if (categoria) {
+    if (categoria && categoria.Subcategorias) {
       const subcategoria = categoria.Subcategorias.find(
         (subcat: any) => subcat.id === subcategoriaId,
       );
@@ -357,8 +490,10 @@ const HomePage = () => {
     return "Subcategoria Desconhecida";
   };
 
-  const data: { [key: string]: any; id: string }[] = user?.expense
-    ? user.expense.map((expense: any) => {
+  const userDataIsValid = userData && userData.user;
+
+  const data: { [key: string]: any; id: string }[] = userData?.user?.expense
+    ? userData?.user.expense.map((expense: any) => {
         const amountString =
           typeof expense.amount === "string" ? expense.amount.toString() : "";
         const amount = parseFloat(amountString.replace(",", ".")) || 0;
@@ -370,7 +505,7 @@ const HomePage = () => {
           "pt-BR",
         );
         const categoriaId = expense.categoriaId;
-        const category = user.categoria.find(
+        const category = userData?.user.categoria.find(
           (cat: any) => cat.id === categoriaId,
         );
         const categoryName = category
@@ -383,7 +518,7 @@ const HomePage = () => {
         );
 
         const formaDePagamentoId = expense.formaDePagamentoId;
-        const formaDePagamento = user.formaDePagamento.find(
+        const formaDePagamento = userData?.user.formaDePagamento.find(
           (cat: any) => cat.id === formaDePagamentoId,
         );
         const formaDePagamentoName = formaDePagamento
@@ -391,6 +526,7 @@ const HomePage = () => {
           : "Forma de Pagamento Desconhecida";
 
         return {
+          id: expense.id,
           Data: formattedDate,
           Categoria: categoryName,
           Subcategoria: subcategoriaName,
@@ -406,7 +542,64 @@ const HomePage = () => {
           ),
         };
       })
-    : [];
+    : [
+        {
+          id: "1",
+          Data: <Skeleton height="32" width="100" />,
+          Categoria: <Skeleton height="32" width="100" />,
+          Subcategoria: <Skeleton height="32" width="100" />,
+          Valor: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+        {
+          id: "2",
+          Data: <Skeleton height="32" width="100" />,
+          Categoria: <Skeleton height="32" width="100" />,
+          Subcategoria: <Skeleton height="32" width="100" />,
+          Valor: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+        {
+          id: "3",
+          Data: <Skeleton height="32" width="100" />,
+          Categoria: <Skeleton height="32" width="100" />,
+          Subcategoria: <Skeleton height="32" width="100" />,
+          Valor: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+        {
+          id: "4",
+          Data: <Skeleton height="32" width="100" />,
+          Categoria: <Skeleton height="32" width="100" />,
+          Subcategoria: <Skeleton height="32" width="100" />,
+          Valor: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+          Ações: (
+            <div className="actions">
+              <Skeleton height="32" width="65" />
+              <Skeleton height="32" width="32" />
+            </div>
+          ),
+        },
+      ];
 
   const expandedData: { [key: string]: any; id: string }[] = [];
 
@@ -419,12 +612,15 @@ const HomePage = () => {
     <>
       <Page
         onClickActionPrimary={toggleAside}
-        withActionPrimary={user?.expense.length > 0}
+        withActionPrimary={
+          userDataIsValid ? userData.user.expense.length > 0 : undefined
+        }
         buttonContentPrimary="Adicionar"
         columnLayout="1"
         namePage="Suas despesas"
       >
-        {user?.expense.length < 1 ? (
+        <AuthProgress loading={loading} error={loadingError} />
+        {(userDataIsValid ? userData.user.expense.length < 1 : undefined) ? (
           <div
             style={{ display: "flex", alignItems: "center", height: "200%" }}
           >
@@ -500,7 +696,7 @@ const HomePage = () => {
                   form.setValue("formaDePagamento", value || "")
                 }
                 options={
-                  user?.formaDePagamento.map(
+                  userData?.user.formaDePagamento.map(
                     (formaDePagamento: any) => formaDePagamento.name,
                   ) || []
                 }
@@ -512,7 +708,9 @@ const HomePage = () => {
                   form.setValue("categoria", value || "")
                 }
                 options={
-                  user?.categoria.map((categoria: any) => categoria.name) || []
+                  userData?.user.categoria.map(
+                    (categoria: any) => categoria.name,
+                  ) || []
                 }
                 label="Categoria"
               />

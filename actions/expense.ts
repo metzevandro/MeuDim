@@ -112,7 +112,7 @@ export const Atualizar = async (
       },
     });
 
-    return { success: "Despesa adicionado com sucesso" };
+    return { success: "Despesa atualizada com sucesso" };
   } catch (error) {
     console.log("Erro ao criar a despesa:", error);
     return { error: "Erro ao criar a despesa" };
@@ -139,7 +139,7 @@ export const Deletar = async (categoryId: string) => {
       },
     });
 
-    return { success: "Categoria excluída com sucesso" };
+    return { success: "Despesa excluída com sucesso" };
   } catch (error) {
     return { error: "Não foi possível excluir a categoria!" };
   }

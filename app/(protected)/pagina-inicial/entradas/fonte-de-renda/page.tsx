@@ -24,7 +24,6 @@ import {
 import { NewCategorySchema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { startTransition } from "react";
 import { z } from "zod";
 
 import "./fonte-de-renda.scss";
@@ -353,27 +352,47 @@ export default function Categorias() {
       : [
           {
             id: "1",
-            Data: <Skeleton height="32" width="100"/>,
+            Data: <Skeleton height="32" width="100" />,
             Fonte: <Skeleton height="32" width="100" />,
-            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
           },
           {
             id: "2",
             Data: <Skeleton height="32" width="100" />,
             Fonte: <Skeleton height="32" width="100" />,
-            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
           },
           {
             id: "3",
             Data: <Skeleton height="32" width="100" />,
             Fonte: <Skeleton height="32" width="100" />,
-            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
           },
           {
             id: "4",
             Data: <Skeleton height="32" width="100" />,
             Fonte: <Skeleton height="32" width="100" />,
-            Ações: <div className="actions"><Skeleton height="32" width="65"/><Skeleton height="32" width="32"/></div>,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
           },
         ];
 

@@ -4,7 +4,7 @@ import { PieChart, Pie, Sector, Legend } from "recharts";
 
 import "./pizza.scss";
 
-const renderActiveShape = (props: any) => {
+const renderActiveShape = (props: any, loading: boolean) => {
   const RADIAN = Math.PI / 180;
   const {
     cx,
@@ -41,7 +41,7 @@ const renderActiveShape = (props: any) => {
         dy={8}
         textAnchor="middle"
       >
-        {payload.name}
+        {loading ? "Carregando..." : payload.name}
       </text>
       <Sector
         cx={cx}
@@ -95,7 +95,7 @@ const renderActiveShape = (props: any) => {
   );
 };
 
-const Pizza = ({ data }: { data: any }) => {
+const Pizza = ({ data, loading }: { data: any; loading: boolean }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const onPieEnter = useCallback((_: any, index: any) => {
     setActiveIndex(index);
@@ -122,18 +122,44 @@ const Pizza = ({ data }: { data: any }) => {
     };
   }, []);
 
+  const [loadingData, setLoadingData] = useState(
+    Array(4).fill({ name: "", amount: 0, Despesas: 0 }),
+  );
+
+  useEffect(() => {
+    if (loading) {
+      setLoadingData((prevData) =>
+        prevData.map((item) => ({
+          ...item,
+          amount: Math.floor(Math.random() * 100),
+        })),
+      );
+
+      const intervalId = setInterval(() => {
+        setLoadingData((prevData) =>
+          prevData.map((item) => ({
+            ...item,
+            amount: Math.floor(Math.random() * 100),
+          })),
+        );
+      }, 1000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [loading]);
+
   return (
     <div ref={chartContainerRef} className="pizza-container">
       <PieChart width={chartWidth} height={chartHeight}>
         <Pie
           activeIndex={activeIndex}
-          activeShape={renderActiveShape}
-          data={data}
+          activeShape={(props: any) => renderActiveShape(props, loading)}
+          data={loading === false ? data : loadingData}
           cx="50%"
           cy="50%"
           innerRadius={60}
           outerRadius={80}
-          fill="var(--s-color-content-highlight)"
+          fill={`${loading === false ? "var(--s-color-content-highlight)" : "var(--s-color-content-disable)"}`}
           dataKey="amount"
           onMouseEnter={onPieEnter}
         />

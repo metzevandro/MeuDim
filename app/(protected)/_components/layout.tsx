@@ -72,7 +72,7 @@ const LayoutPage = (props: LayoutProps) => {
     return (
       <AppShell>
         <SideBar
-          brand="/next.svg"
+          brand="/meuDim.svg"
           setToggleSidebar={toggleSidebar}
           toggle={isOpenSidebar}
         >
@@ -80,7 +80,7 @@ const LayoutPage = (props: LayoutProps) => {
             onClick={() => navigateTo("/pagina-inicial")}
             active={pathname === "/pagina-inicial"}
             fillIcon
-            icon="home"
+            icon="dashboard"
             title="Página Inicial"
           />
           <SidebarList title="controle financeiro">

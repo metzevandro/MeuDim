@@ -9,60 +9,19 @@ import {
 } from "recharts";
 import "./area.scss";
 import { CustomTooltip } from "@/components/auth/GraphicTooltip/GraphicTooltip";
-
-const data = [
-  {
-    name: "Page A",
-    uv: 4000,
-    pv: 2400,
-    amt: 2400,
-  },
-  {
-    name: "Page B",
-    uv: 3000,
-    pv: 1398,
-    amt: 2210,
-  },
-  {
-    name: "Page C",
-    uv: 2000,
-    pv: 9800,
-    amt: 2290,
-  },
-  {
-    name: "Page D",
-    uv: 2780,
-    pv: 3908,
-    amt: 2000,
-  },
-  {
-    name: "Page E",
-    uv: 1890,
-    pv: 4800,
-    amt: 2181,
-  },
-  {
-    name: "Page F",
-    uv: 2390,
-    pv: 3800,
-    amt: 2500,
-  },
-  {
-    name: "Page G",
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
-  },
-];
-
+import Skeleton from "@/components/auth/Skeleton/Skeleton";
 interface AreaGraphicProps {
   data: any[];
+  loading: boolean;
 }
 
 export default function AreaGraphic(props: AreaGraphicProps) {
   const [chartWidth, setChartWidth] = useState(0);
   const [chartHeight, setChartHeight] = useState(0);
   const chartContainerRef = useRef<HTMLDivElement>(null);
+  const [loadingData, setLoadingData] = useState(
+    Array(30).fill({ name: "", Saldo: 0, Despesas: 0 }),
+  );
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -81,40 +40,76 @@ export default function AreaGraphic(props: AreaGraphicProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (props.loading) {
+      setLoadingData((prevData) =>
+        prevData.map((item) => ({
+          ...item,
+          Saldo: Math.floor(Math.random() * 1000),
+        })),
+      );
+
+      const intervalId = setInterval(() => {
+        setLoadingData((prevData) =>
+          prevData.map((item) => ({
+            ...item,
+            Saldo: Math.floor(Math.random() * 1000),
+          })),
+        );
+      }, 1000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [props.loading]);
+
   return (
-    <div ref={chartContainerRef} className="area-graphic">
-      <AreaChart width={chartWidth} height={chartHeight} data={props.data}>
-        <CartesianGrid
-          horizontalCoordinatesGenerator={(props) =>
-            props.height > 250 ? [12, 77, 149, 221] : [100, 200]
-          }
-          verticalPoints={[0]}
-        />{" "}
-        <XAxis
-          dataKey="name"
-          style={{
-            font: "var(--s-typography-caption-regular)",
-            minWidth: "50px",
-          }}
-        />
-        <YAxis
-          type="number"
-          name="R$"
-          tickFormatter={(value) => `R$ ${value}`}
-          style={{
-            font: "var(--s-typography-caption-regular)",
-            color: "var(--s-color-content-default)",
-            minWidth: "unset",
-          }}
-        />
-        <Tooltip content={<CustomTooltip area />} />
-        <Area
-          type="monotone"
-          dataKey="Saldo"
-          stroke="var(--s-color-fill-success)"
-          fill="var(--s-color-fill-success)"
-        />
-      </AreaChart>
-    </div>
+    <>
+      <div ref={chartContainerRef} className="area-graphic">
+        <AreaChart
+          width={chartWidth}
+          height={chartHeight}
+          data={props.loading ? loadingData : props.data}
+        >
+          <CartesianGrid
+            horizontalCoordinatesGenerator={(props) =>
+              props.height > 250 ? [12, 77, 149, 221] : [100, 200]
+            }
+            verticalPoints={[0]}
+          />
+          <XAxis
+            dataKey="name"
+            style={{
+              font: "var(--s-typography-caption-regular)",
+              minWidth: "50px",
+            }}
+          />
+          <YAxis
+            type="number"
+            name="R$"
+            tickFormatter={(value) => `R$ ${value}`}
+            style={{
+              font: "var(--s-typography-caption-regular)",
+              color: "var(--s-color-content-default)",
+              minWidth: "unset",
+            }}
+          />
+          <Tooltip content={<CustomTooltip area />} />
+          <Area
+            type="monotone"
+            dataKey="Saldo"
+            stroke={
+              props.loading
+                ? "var(--s-color-fill-disable)"
+                : "var(--s-color-fill-success)"
+            }
+            fill={
+              props.loading
+                ? "var(--s-color-fill-disable)"
+                : "var(--s-color-fill-success)"
+            }
+          />
+        </AreaChart>
+      </div>
+    </>
   );
 }

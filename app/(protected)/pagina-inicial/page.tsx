@@ -15,6 +15,7 @@ import Pizza from "@/components/graficos/pizza/pizza";
 import Barras from "@/components/graficos/barras/barras";
 import AreaGraphic from "@/components/graficos/area/area";
 import { useCurrentUser } from "@/hooks/user-current-user";
+import Skeleton from "@/components/auth/Skeleton/Skeleton";
 
 interface Category {
   id: string;
@@ -33,6 +34,13 @@ interface Transaction {
   category: Category;
 }
 
+interface FormaDePagamento {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+}
+
 interface Expense {
   id: string;
   name: string;
@@ -40,7 +48,8 @@ interface Expense {
   createdAt: string;
   userId: string;
   categoriaId: string;
-  categoria: Category;
+  formaDePagamentoId: string;
+  formaDePagamento: FormaDePagamento;
 }
 
 interface User {
@@ -49,6 +58,7 @@ interface User {
   image: string | null;
   id: string;
   role: string;
+  formaDePagamento: FormaDePagamento[];
   categories: Category[];
   transactions: Transaction[];
   expense: Expense[];
@@ -64,6 +74,7 @@ const API = process.env.NEXT_PUBLIC_APP_URL;
 const HomePage = () => {
   const router = useRouter();
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   async function fetchUserData() {
     try {
@@ -75,6 +86,8 @@ const HomePage = () => {
       setUserData(userData);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -194,36 +207,42 @@ const HomePage = () => {
     }),
   );
 
-  const categoriaTotals: { [categoriaId: string]: number } = {};
+  const formasDePagamentoTotals: { [formaDePagamentoId: string]: number } = {};
 
   if (
     Array.isArray(userData?.user?.expense) &&
     userData.user.expense.length > 0
   ) {
     userData.user.expense.forEach((expense) => {
-      const categoriaId = expense.categoriaId;
+      const formaDePagamentoId = expense.formaDePagamentoId;
       const amountString =
         typeof expense.amount === "string" ? expense.amount : "";
       const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
-      if (categoriaTotals[categoriaId]) {
-        categoriaTotals[categoriaId] += amount;
+      if (formasDePagamentoTotals[formaDePagamentoId]) {
+        formasDePagamentoTotals[formaDePagamentoId] += amount;
       } else {
-        categoriaTotals[categoriaId] = amount;
+        formasDePagamentoTotals[formaDePagamentoId] = amount;
       }
     });
   }
 
-  const dataDespesas = Object.keys(categoriaTotals).map(
-    (categoriaId, index) => ({
-      name:
-        userData?.user.categories.find(
-          (category) => category.id === categoriaId,
-        )?.name || "Unknown Category",
-      amount: parseFloat(categoriaTotals[categoriaId].toFixed(2)),
-      fill: colors[index % colors.length],
-    }),
+  const dataFormasDePagamento = Object.keys(formasDePagamentoTotals).map(
+    (formaDePagamentoId, index) => {
+      const formaDePagamento = userData?.user?.formaDePagamento?.find(
+        (formaDePagamento) => formaDePagamento.id === formaDePagamentoId,
+      );
+      return {
+        name: formaDePagamento?.name || "Unknown Category",
+        amount: parseFloat(
+          formasDePagamentoTotals[formaDePagamentoId].toFixed(2),
+        ),
+        fill: colors[index % colors.length],
+      };
+    },
   );
+
+  console.log(dataFormasDePagamento);
 
   const getFormattedDate = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -324,19 +343,24 @@ const HomePage = () => {
     };
   });
 
+  const user = useCurrentUser();
+
   return (
     <>
-      <Page
-        columnLayout="1"
-        namePage={`Confira suas finanças, ${userData?.user?.name}!`}
-      >
+      <Page columnLayout="1" namePage={`Confira suas finanças, ${user?.name}!`}>
         <div className="layout-page">
           <div className="layout-sub-page">
-            <div className="col-4">
+            <div className="col-6">
               <Card>
                 <CardHeader title="Ganhos:" description={``} />
                 <CardContent>
-                  <h1 className="dinheiro"> R$ {sumGanhos()}</h1>
+                  {loading === true ? (
+                    <>
+                      <Skeleton height="16" width="60" />
+                    </>
+                  ) : (
+                    <h1 className="dinheiro">R$ {sumGanhos()}</h1>
+                  )}
                   <p className="porcentagem">20%</p>
                   <div style={{ width: "min-content" }}>
                     <Button
@@ -351,11 +375,17 @@ const HomePage = () => {
                 </CardContent>
               </Card>
             </div>
-            <div className="col-4">
+            <div className="col-6">
               <Card>
                 <CardHeader title="Despesas:" description={``} />
                 <CardContent>
-                  <h1 className="dinheiro"> R$ {sumDespesas()}</h1>
+                  {loading === true ? (
+                    <>
+                      <Skeleton height="16" width="60" />
+                    </>
+                  ) : (
+                    <h1 className="dinheiro">R$ {sumDespesas()}</h1>
+                  )}
                   <p className="porcentagem">20%</p>
                   <div style={{ width: "min-content" }}>
                     <Button
@@ -370,29 +400,12 @@ const HomePage = () => {
                 </CardContent>
               </Card>
             </div>
-            <div className="col-4">
-              <Card>
-                <CardHeader title="Saldo Total:" description={``} />
-                <CardContent>
-                  <h1 className="dinheiro"> R$ {sumSaldo()}</h1>
-                  <p className="porcentagem">20%</p>
-                  <div style={{ width: "min-content" }}>
-                    <Button
-                      label="Ver mais"
-                      variant="primary"
-                      size="md"
-                      onClick={() => navigateTo("/home/saldo")}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
           <div className="col-12">
             <Card>
               <CardHeader title="Ganhos x Despesas" description={``} />
               <CardContent>
-                <Barras data={dataBarras} />
+                <Barras data={dataBarras} loading={loading} />
               </CardContent>
               <CardFooter>
                 <div></div>
@@ -403,7 +416,7 @@ const HomePage = () => {
             <Card>
               <CardHeader title="Saldo Total" description={``} />
               <CardContent>
-                <AreaGraphic data={dataArea} />
+                <AreaGraphic data={dataArea} loading={loading} />
               </CardContent>
               <CardFooter>
                 <div></div>
@@ -415,7 +428,7 @@ const HomePage = () => {
               <Card>
                 <CardHeader title="Fontes de Renda" description={``} />
                 <CardContent>
-                  <Pizza data={dataFonteDeRenda} />
+                  <Pizza data={dataFonteDeRenda} loading={loading} />
                 </CardContent>
                 <CardFooter>
                   <div></div>
@@ -426,7 +439,7 @@ const HomePage = () => {
               <Card>
                 <CardHeader title="Despesas" description={``} />
                 <CardContent>
-                  <Pizza data={dataDespesas} />
+                  <Pizza data={dataFormasDePagamento} loading={loading} />
                 </CardContent>
                 <CardFooter>
                   <div></div>

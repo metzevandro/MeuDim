@@ -165,24 +165,16 @@ const HomePage = () => {
       (categoria: any) => categoria.name === form.watch("categoria"),
     );
     if (categoriaSelecionada) {
-      setSubcategorias(
-        categoriaSelecionada.Subcategorias.map(
-          (subcategoria: any) => subcategoria.name,
-        ),
+      const novasSubcategorias = categoriaSelecionada.Subcategorias.map(
+        (subcategoria: any) => subcategoria.name,
       );
+      setSubcategorias(novasSubcategorias);
+      form.setValue("subcategoria", novasSubcategorias[0] || "");
     } else {
       setSubcategorias([]);
+      form.setValue("subcategoria", "");
     }
   }, [form.watch("categoria"), userData?.user?.categoria]);
-
-  useEffect(() => {
-    if (isOpenAside) {
-      form.setValue("data", "");
-      form.setValue("valor", "");
-      form.setValue("categoria", userData?.user?.categoria[0]?.name || "");
-      setCurrentexpense(null);
-    }
-  }, [isOpenAside, form, userData?.user?.categoria]);
 
   const startLoading = () => {
     setLoading(0);
@@ -628,6 +620,7 @@ const HomePage = () => {
                 alignItems: "center",
                 height: "100%",
                 maxWidth: "500px",
+                overflow: "auto",
               }}
             >
               <EmptyState

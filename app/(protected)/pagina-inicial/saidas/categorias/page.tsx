@@ -501,6 +501,7 @@ export default function CategoryPage() {
                 alignItems: "center",
                 height: "100%",
                 maxWidth: "500px",
+                overflow: "auto",
               }}
             >
               <EmptyState

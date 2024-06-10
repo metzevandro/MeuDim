@@ -93,7 +93,6 @@ export const {
       token.isOAuth = !!existingAccount;
       token.name = existingUser.name;
 
-      token.username = existingUser.username;
       token.role = existingUser.role;
 
       const transactions = await getTransactionsByUserId(existingUser.id);

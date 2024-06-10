@@ -101,9 +101,8 @@ export const LoginForm = () => {
               />
             )}
             <Button
-              disabled={isPending}
               label="Entrar"
-              variant="primary"
+              variant={isPending ? "is-loading" : "primary"}
               size="md"
               type="submit"
             />

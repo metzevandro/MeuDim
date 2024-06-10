@@ -116,7 +116,7 @@ export const RegisterForm = () => {
             )}
             <Button
               size="md"
-              variant="primary"
+              variant={isPending ? "is-loading" : "primary"}
               label="Criar conta"
               type="submit"
             />

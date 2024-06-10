@@ -13,15 +13,13 @@ enum UserRole {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?   @unique
-  username      String?   @unique
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          UserRole  @default(USER)
-  accounts      Account[]
+  id       String    @id @default(cuid())
+  name     String?   @unique
+  email    String?   @unique
+  image    String?
+  password String?
+  role     UserRole  @default(USER)
+  accounts Account[]
 
   expenses    Expense[]
   transaction Transaction[]
@@ -53,9 +51,9 @@ model Account {
 model Transaction {
   id         String       @id @default(cuid())
   amount     String
-  accountId  String
+  accountId  String       @unique
   createdAt  String
-  categoryId String
+  categoryId String       @unique
   category   FonteDeRenda @relation(fields: [categoryId], references: [id])
   user       User         @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
@@ -63,15 +61,15 @@ model Transaction {
 model Expense {
   id                 String            @id @default(cuid())
   amount             String
-  accountId          String
+  accountId          String            @unique
   createdAt          String
-  categoriaId        String?
-  subcategoriaId     String?
+  categoriaId        String?           @unique
+  subcategoriaId     String?           @unique
   user               User              @relation(fields: [accountId], references: [id], onDelete: Cascade)
   Categoria          Categoria?        @relation(fields: [categoriaId], references: [id])
   Subcategoria       Subcategoria?     @relation(fields: [subcategoriaId], references: [id])
   FormaDePagamento   FormaDePagamento? @relation(fields: [formaDePagamentoId], references: [id])
-  formaDePagamentoId String?
+  formaDePagamentoId String?           @unique
 }
 
 model Categoria {
@@ -80,46 +78,46 @@ model Categoria {
   userId    String
   createdAt DateTime
 
-  @@unique([name, userId])
-
   Expense       Expense[]
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   Subcategorias Subcategoria[]
+
+  @@unique([name, userId])
 }
 
 model Subcategoria {
-  id          String    @id @default(cuid())
+  id          String @id @default(cuid())
   name        String
   categoriaId String
 
-  @@unique([name, categoriaId])
+  categoria Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  Expense   Expense[]
 
-  categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
-  Expense     Expense[]
+  @@unique([name, categoriaId])
 }
 
 model FormaDePagamento {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
   userId    String
   createdAt DateTime
 
-  @@unique([name, userId])
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Expense Expense[]
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Expense   Expense[]
+  @@unique([name, userId])
 }
 
 model FonteDeRenda {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
   userId    String
   createdAt DateTime
 
-  @@unique([name, userId])
-
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   Transaction Transaction[]
+
+  @@unique([name, userId])
 }
 
 model VerificationToken {

@@ -23,7 +23,7 @@ export const Criar = async (values: z.infer<typeof ExpenseSchema>) => {
       validatedFields;
 
     const categoryExists = await db.categoria.findFirst({
-      where: { name: categoria },
+      where: { name: categoria, userId: dbUser.id },
     });
 
     if (!categoryExists) {
@@ -31,7 +31,7 @@ export const Criar = async (values: z.infer<typeof ExpenseSchema>) => {
     }
 
     const formaDePagamentoExiste = await db.formaDePagamento.findFirst({
-      where: { name: formaDePagamento },
+      where: { name: formaDePagamento, userId: dbUser.id },
     });
 
     if (!formaDePagamentoExiste) {
@@ -39,8 +39,12 @@ export const Criar = async (values: z.infer<typeof ExpenseSchema>) => {
     }
 
     const subcategoriaExiste = await db.subcategoria.findFirst({
-      where: { name: subcategoria },
+      where: { name: subcategoria, categoriaId: categoryExists.id },
     });
+
+    if (!subcategoriaExiste) {
+      return { error: "A subcategoria especificada não existe" };
+    }
 
     await db.expense.create({
       data: {
@@ -81,7 +85,7 @@ export const Atualizar = async (
       validatedFields;
 
     const categoryExists = await db.categoria.findFirst({
-      where: { name: categoria },
+      where: { name: categoria, userId: dbUser.id },
     });
 
     if (!categoryExists) {
@@ -89,7 +93,7 @@ export const Atualizar = async (
     }
 
     const formaDePagamentoExiste = await db.formaDePagamento.findFirst({
-      where: { name: formaDePagamento },
+      where: { name: formaDePagamento, userId: dbUser.id },
     });
 
     if (!formaDePagamentoExiste) {
@@ -97,8 +101,12 @@ export const Atualizar = async (
     }
 
     const subcategoriaExiste = await db.subcategoria.findFirst({
-      where: { name: subcategoria },
+      where: { name: subcategoria, categoriaId: categoryExists.id },
     });
+
+    if (!subcategoriaExiste) {
+      return { error: "A forma de pagamento especificada não existe" };
+    }
 
     await db.expense.update({
       where: { id: categoryId },

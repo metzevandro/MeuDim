@@ -22,7 +22,7 @@ export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
     const { date, category, amount } = validatedFields;
 
     const categoryExists = await db.fonteDeRenda.findFirst({
-      where: { name: category },
+      where: { name: category, userId: dbUser.id },
     });
 
     if (!categoryExists) {

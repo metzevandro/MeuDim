@@ -15,7 +15,6 @@ import {
   Page,
   Progress,
 } from "design-system-zeroz";
-import { useCurrentUser } from "@/hooks/user-current-user";
 import {
   AtualizarFonteDeRenda,
   CriarFonteDeRenda,
@@ -490,7 +489,7 @@ export default function Categorias() {
                   size="md"
                   variant="primary"
                   label="Adicionar"
-                  onClick={() => form.handleSubmit(onSubmit)}
+                  onClick={() => onSubmit(form.getValues())}
                 />
                 <Button
                   size="md"

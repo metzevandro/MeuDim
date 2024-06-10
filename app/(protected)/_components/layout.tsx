@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppShell,
   Breadcrumb,
@@ -23,7 +23,38 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+interface User {
+  name: string;
+  image: string;
+}
+
+interface UserData {
+  user: User;
+  expires: string;
+}
+
+const API = process.env.NEXT_PUBLIC_APP_URL;
+
 const LayoutPage = (props: LayoutProps) => {
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  async function fetchUserData() {
+    try {
+      const response = await fetch(`${API}/api/auth/session`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setUserData(userData);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
   const pathname = usePathname();
   const router = useRouter();
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
@@ -31,8 +62,6 @@ const LayoutPage = (props: LayoutProps) => {
   const toggleSidebar = () => {
     setIsOpenSidebar(!isOpenSidebar);
   };
-
-  const user = useCurrentUser();
 
   const navigateTo = (route: string) => {
     router.push(route);
@@ -141,7 +170,7 @@ const LayoutPage = (props: LayoutProps) => {
           </SidebarList>
         </SideBar>
         <Header breadcrumb={breadcrumbs()} onClick={toggleSidebar}>
-          <HeaderProfile name={user?.name || ""} avatar_src={user?.image || ""}>
+          <HeaderProfile name={userData?.user?.name || "..."} avatar_src={userData?.user?.image || ""}>
             <DropDownMenu dropDownMenu>
               <DropDownMenuTitle content="Conta" />
               <DropDownMenuItem

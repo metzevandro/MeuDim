@@ -343,11 +343,12 @@ const HomePage = () => {
     };
   });
 
-  const user = useCurrentUser();
-
   return (
     <>
-      <Page columnLayout="1" namePage={`Confira suas finanças, ${user?.name}!`}>
+      <Page
+        columnLayout="1"
+        namePage={`Confira suas finanças, ${userData?.user?.name}!`}
+      >
         <div className="layout-page">
           <div className="layout-sub-page">
             <div className="col-6">

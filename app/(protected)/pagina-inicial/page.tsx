@@ -5,7 +5,9 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
+  InputSelect,
   Page,
+  Skeleton,
 } from "design-system-zeroz";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -14,14 +16,20 @@ import "./pagina-inicial.scss";
 import Pizza from "@/components/graficos/pizza/pizza";
 import Barras from "@/components/graficos/barras/barras";
 import AreaGraphic from "@/components/graficos/area/area";
-import { useCurrentUser } from "@/hooks/user-current-user";
-import Skeleton from "@/components/auth/Skeleton/Skeleton";
+import { FonteDeRenda } from "@prisma/client";
+
+interface Subcategorias {
+  id: string;
+  name: string;
+  categoriaId: string;
+}
 
 interface Category {
   id: string;
   name: string;
   userId: string;
   createdAt: string;
+  Subcategorias: Subcategorias[];
 }
 
 interface Transaction {
@@ -50,6 +58,7 @@ interface Expense {
   categoriaId: string;
   formaDePagamentoId: string;
   formaDePagamento: FormaDePagamento;
+  subcategoriaId: string;
 }
 
 interface User {
@@ -59,9 +68,10 @@ interface User {
   id: string;
   role: string;
   formaDePagamento: FormaDePagamento[];
-  categories: Category[];
+  categoria: Category[];
   transactions: Transaction[];
   expense: Expense[];
+  categories: FonteDeRenda[];
 }
 
 interface UserData {
@@ -75,6 +85,29 @@ const HomePage = () => {
   const router = useRouter();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedMonth, setSelectedMonth] = useState<number>(
+    new Date().getMonth(),
+  );
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear(),
+  );
+
+  const firstDayOfMonth = new Date(selectedYear, selectedMonth, 1);
+  const lastDayOfMonth = new Date(selectedYear, selectedMonth + 1, 0);
+
+  const colors = [
+    "var(--s-color-fill-highlight)",
+    "#873BEC",
+    "#DB2777",
+    "#027AC7",
+    "#138480",
+  ];
+
+  const dates = [];
+  for (let i = firstDayOfMonth.getDate(); i <= lastDayOfMonth.getDate(); i++) {
+    const date = new Date(selectedYear, selectedMonth, i);
+    dates.push(date);
+  }
 
   async function fetchUserData() {
     try {
@@ -85,7 +118,7 @@ const HomePage = () => {
       const userData = await response.json();
       setUserData(userData);
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching user data:", error);
     } finally {
       setLoading(false);
     }
@@ -93,7 +126,7 @@ const HomePage = () => {
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [selectedMonth, selectedYear]);
 
   const navigateTo = (route: string) => {
     router.push(route);
@@ -105,10 +138,17 @@ const HomePage = () => {
     }
 
     const total = userData.user.transactions.reduce((acc, transaction) => {
-      const amountString =
-        typeof transaction.amount === "string" ? transaction.amount : "";
-      const amount = parseFloat(amountString.replace(",", ".")) || 0;
-      return acc + amount;
+      const transactionDate = new Date(transaction.createdAt);
+      if (
+        transactionDate >= firstDayOfMonth &&
+        transactionDate <= lastDayOfMonth
+      ) {
+        const amountString =
+          typeof transaction.amount === "string" ? transaction.amount : "";
+        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+        return acc + amount;
+      }
+      return acc;
     }, 0);
 
     return total.toLocaleString("pt-BR", {
@@ -123,47 +163,17 @@ const HomePage = () => {
     }
 
     const total = userData.user.expense.reduce((acc, expense) => {
-      const amountString =
-        typeof expense.amount === "string" ? expense.amount : "";
-      const amount = parseFloat(amountString.replace(",", ".")) || 0;
-      return acc + amount;
+      const expenseDate = new Date(expense.createdAt);
+      if (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth) {
+        const amountString =
+          typeof expense.amount === "string" ? expense.amount : "";
+        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+        return acc + amount;
+      }
+      return acc;
     }, 0);
 
     return total.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
-
-  const sumSaldo = () => {
-    if (
-      !userData?.user ||
-      !Array.isArray(userData.user.transactions) ||
-      !Array.isArray(userData.user.expense)
-    ) {
-      return "0,00";
-    }
-
-    const totalTransactions = userData.user.transactions.reduce(
-      (acc, transaction) => {
-        const amountString =
-          typeof transaction.amount === "string" ? transaction.amount : "";
-        const amount = parseFloat(amountString.replace(",", ".")) || 0;
-        return acc + amount;
-      },
-      0,
-    );
-
-    const totalExpenses = userData.user.expense.reduce((acc, expense) => {
-      const amountString =
-        typeof expense.amount === "string" ? expense.amount : "";
-      const amount = parseFloat(amountString.replace(",", ".")) || 0;
-      return acc + amount;
-    }, 0);
-
-    const saldo = totalTransactions - totalExpenses;
-
-    return saldo.toLocaleString("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -176,26 +186,24 @@ const HomePage = () => {
     userData.user.transactions.length > 0
   ) {
     userData.user.transactions.forEach((transaction) => {
-      const categoryId = transaction.categoryId;
-      const amountString =
-        typeof transaction.amount === "string" ? transaction.amount : "";
-      const amount = parseFloat(amountString.replace(",", ".")) || 0;
+      const transactionDate = new Date(transaction.createdAt);
+      if (
+        transactionDate >= firstDayOfMonth &&
+        transactionDate <= lastDayOfMonth
+      ) {
+        const categoryId = transaction.categoryId;
+        const amountString =
+          typeof transaction.amount === "string" ? transaction.amount : "";
+        const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
-      if (categoryTotals[categoryId]) {
-        categoryTotals[categoryId] += amount;
-      } else {
-        categoryTotals[categoryId] = amount;
+        if (categoryTotals[categoryId]) {
+          categoryTotals[categoryId] += amount;
+        } else {
+          categoryTotals[categoryId] = amount;
+        }
       }
     });
   }
-
-  const colors = [
-    "var(--s-color-fill-highlight)",
-    "#873BEC",
-    "#DB2777",
-    "#027AC7",
-    "#138480",
-  ];
 
   const dataFonteDeRenda = Object.keys(categoryTotals).map(
     (categoryId, index) => ({
@@ -214,15 +222,18 @@ const HomePage = () => {
     userData.user.expense.length > 0
   ) {
     userData.user.expense.forEach((expense) => {
-      const formaDePagamentoId = expense.formaDePagamentoId;
-      const amountString =
-        typeof expense.amount === "string" ? expense.amount : "";
-      const amount = parseFloat(amountString.replace(",", ".")) || 0;
+      const expenseDate = new Date(expense.createdAt);
+      if (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth) {
+        const formaDePagamentoId = expense.formaDePagamentoId;
+        const amountString =
+          typeof expense.amount === "string" ? expense.amount : "";
+        const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
-      if (formasDePagamentoTotals[formaDePagamentoId]) {
-        formasDePagamentoTotals[formaDePagamentoId] += amount;
-      } else {
-        formasDePagamentoTotals[formaDePagamentoId] = amount;
+        if (formasDePagamentoTotals[formaDePagamentoId]) {
+          formasDePagamentoTotals[formaDePagamentoId] += amount;
+        } else {
+          formasDePagamentoTotals[formaDePagamentoId] = amount;
+        }
       }
     });
   }
@@ -242,7 +253,41 @@ const HomePage = () => {
     },
   );
 
-  console.log(dataFormasDePagamento);
+  const categoriaTotals: { [categoriaId: string]: number } = {};
+
+  if (
+    Array.isArray(userData?.user?.expense) &&
+    userData.user.expense.length > 0
+  ) {
+    userData.user.expense.forEach((expense) => {
+      const expenseDate = new Date(expense.createdAt);
+      if (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth) {
+        const categoriaId = expense.categoriaId;
+        const amountString =
+          typeof expense.amount === "string" ? expense.amount : "";
+        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+
+        if (categoriaTotals[categoriaId]) {
+          categoriaTotals[categoriaId] += amount;
+        } else {
+          categoriaTotals[categoriaId] = amount;
+        }
+      }
+    });
+  }
+
+  const dataCategorias = Object.keys(categoriaTotals).map(
+    (categoriaId, index) => {
+      const categoria = userData?.user?.categoria?.find(
+        (categorias) => categorias.id === categoriaId,
+      );
+      return {
+        name: categoria?.name || "Unknown Category",
+        amount: parseFloat(categoriaTotals[categoriaId].toFixed(2)),
+        fill: colors[index % colors.length],
+      };
+    },
+  );
 
   const getFormattedDate = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -251,24 +296,6 @@ const HomePage = () => {
     };
     return date.toLocaleDateString("pt-BR", options);
   };
-
-  const currentDate = new Date();
-  const firstDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    1,
-  );
-  const lastDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() + 1,
-    0,
-  );
-
-  const dates = [];
-  for (let i = firstDayOfMonth.getDate(); i <= lastDayOfMonth.getDate(); i++) {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
-    dates.push(date);
-  }
 
   const dataArea = dates.map((date) => {
     const formattedDate = getFormattedDate(date);
@@ -299,7 +326,7 @@ const HomePage = () => {
     const saldoTotal = totalGanhos - totalDespesas;
 
     return {
-      name: formattedDate,
+      data: formattedDate,
       Saldo: saldoTotal,
     };
   });
@@ -312,7 +339,8 @@ const HomePage = () => {
         const transactionDate = new Date(transaction.createdAt);
         return (
           transactionDate.getDate() === date.getDate() &&
-          transactionDate.getMonth() === date.getMonth()
+          transactionDate.getMonth() === date.getMonth() &&
+          transactionDate.getFullYear() === date.getFullYear()
         );
       }) || [];
 
@@ -327,7 +355,8 @@ const HomePage = () => {
         const expenseDate = new Date(expense.createdAt);
         return (
           expenseDate.getDate() === date.getDate() &&
-          expenseDate.getMonth() === date.getMonth()
+          expenseDate.getMonth() === date.getMonth() &&
+          expenseDate.getFullYear() === date.getFullYear()
         );
       }) || [];
 
@@ -337,19 +366,97 @@ const HomePage = () => {
     );
 
     return {
-      name: formattedDate,
+      data: formattedDate,
       Despesas: totalDespesas,
       Ganhos: totalGanhos,
     };
   });
 
+  const SubcategoriaTotals: { [SubcategoriaId: string]: number } = {};
+
+  if (
+    Array.isArray(userData?.user?.expense) &&
+    userData.user.expense.length > 0
+  ) {
+    userData.user.expense.forEach((expense) => {
+      const expenseDate = new Date(expense.createdAt);
+      if (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth) {
+        const subcategoriaId = expense.subcategoriaId;
+        const amountString =
+          typeof expense.amount === "string" ? expense.amount : "";
+        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+
+        if (SubcategoriaTotals[subcategoriaId]) {
+          SubcategoriaTotals[subcategoriaId] += amount;
+        } else {
+          SubcategoriaTotals[subcategoriaId] = amount;
+        }
+      }
+    });
+  }
+
+  const dataSubCategorias = Object.keys(SubcategoriaTotals).map(
+    (subcategoriaId, index) => {
+      let subcategoriaName = "Unknown Subcategory";
+      userData?.user?.categoria.forEach((categoria) => {
+        const foundSubcategoria = categoria.Subcategorias.find(
+          (subcategoria) => subcategoria.id === subcategoriaId,
+        );
+        if (foundSubcategoria) {
+          subcategoriaName = foundSubcategoria.name;
+        }
+      });
+      return {
+        name: subcategoriaName,
+        amount: parseFloat(SubcategoriaTotals[subcategoriaId].toFixed(2)),
+        fill: colors[index % colors.length],
+      };
+    },
+  );
+
+  const monthOptions = [
+    { value: "0", label: "Janeiro" },
+    { value: "1", label: "Fevereiro" },
+    { value: "2", label: "Março" },
+    { value: "3", label: "Abril" },
+    { value: "4", label: "Maio" },
+    { value: "5", label: "Junho" },
+    { value: "6", label: "Julho" },
+    { value: "7", label: "Agosto" },
+    { value: "8", label: "Setembro" },
+    { value: "9", label: "Outubro" },
+    { value: "10", label: "Novembro" },
+    { value: "11", label: "Dezembro" },
+  ];
+
   return (
     <>
       <Page
         columnLayout="1"
-        namePage={`Confira suas finanças, ${userData?.user?.name}!`}
+        namePage={`Confira suas finanças, ${loading === true ? '... ' : userData?.user?.name}!`}
       >
         <div className="layout-page">
+          <div className="input-field">
+            <InputSelect
+              label="Mês"
+              options={monthOptions.map((option) => option.label)}
+              value={monthOptions[selectedMonth].label}
+              onChange={(value) =>
+                setSelectedMonth(
+                  monthOptions.findIndex((option) => option.label === value),
+                )
+              }
+            />
+            <InputSelect
+              label="Ano"
+              options={Array.from({ length: 5 }, (_, index) =>
+                (new Date().getFullYear() - index).toString(),
+              )}
+              value={selectedYear.toString()}
+              onChange={(value) => setSelectedYear(parseInt(value))}
+            />
+          </div>
+          <h1 className="titles-page">Resumo</h1>
           <div className="layout-sub-page">
             <div className="col-6">
               <Card>
@@ -357,21 +464,25 @@ const HomePage = () => {
                 <CardContent>
                   {loading === true ? (
                     <>
-                      <Skeleton height="16" width="60" />
+                      <Skeleton height="32" width="100" />
                     </>
                   ) : (
                     <h1 className="dinheiro">R$ {sumGanhos()}</h1>
                   )}
                   <p className="porcentagem">20%</p>
                   <div style={{ width: "min-content" }}>
-                    <Button
-                      label="Ver mais"
-                      variant="primary"
-                      size="md"
-                      onClick={() =>
-                        navigateTo("/pagina-inicial/entradas/ganhos")
-                      }
-                    />
+                    {loading == true ? (
+                      <Skeleton height="40" width="80" />
+                    ) : (
+                      <Button
+                        label="Ver mais"
+                        variant="primary"
+                        size="md"
+                        onClick={() =>
+                          navigateTo("/pagina-inicial/entradas/ganhos")
+                        }
+                      />
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -382,26 +493,31 @@ const HomePage = () => {
                 <CardContent>
                   {loading === true ? (
                     <>
-                      <Skeleton height="16" width="60" />
+                      <Skeleton height="32" width="100" />
                     </>
                   ) : (
                     <h1 className="dinheiro">R$ {sumDespesas()}</h1>
                   )}
                   <p className="porcentagem">20%</p>
                   <div style={{ width: "min-content" }}>
-                    <Button
-                      label="Ver mais"
-                      variant="primary"
-                      size="md"
-                      onClick={() =>
-                        navigateTo("/pagina-inicial/saidas/despesas")
-                      }
-                    />
+                    {loading == true ? (
+                      <Skeleton height="40" width="80" />
+                    ) : (
+                      <Button
+                        label="Ver mais"
+                        variant="primary"
+                        size="md"
+                        onClick={() =>
+                          navigateTo("/pagina-inicial/saidas/despesas")
+                        }
+                      />
+                    )}
                   </div>
                 </CardContent>
               </Card>
             </div>
           </div>
+          <h1 className="titles-page">Visão geral</h1>
           <div className="col-12">
             <Card>
               <CardHeader title="Ganhos x Despesas" description={``} />
@@ -427,9 +543,14 @@ const HomePage = () => {
           <div className="layout-sub-page">
             <div className="col-6">
               <Card>
-                <CardHeader title="Fontes de Renda" description={``} />
+                <CardHeader title="Fontes de renda" description={``} />
                 <CardContent>
-                  <Pizza data={dataFonteDeRenda} loading={loading} />
+                  <Pizza
+                    pizza={1}
+                    name="ganho"
+                    data={dataFonteDeRenda}
+                    loading={loading}
+                  />
                 </CardContent>
                 <CardFooter>
                   <div></div>
@@ -438,9 +559,48 @@ const HomePage = () => {
             </div>
             <div className="col-6">
               <Card>
-                <CardHeader title="Despesas" description={``} />
+                <CardHeader title="Formas de pagamento" description={``} />
                 <CardContent>
-                  <Pizza data={dataFormasDePagamento} loading={loading} />
+                  <Pizza
+                    pizza={1}
+                    name="despesa"
+                    data={dataFormasDePagamento}
+                    loading={loading}
+                  />
+                </CardContent>
+                <CardFooter>
+                  <div></div>
+                </CardFooter>
+              </Card>
+            </div>
+          </div>
+          <div className="layout-sub-page">
+            <div className="col-6">
+              <Card>
+                <CardHeader title="Categorias" description={``} />
+                <CardContent>
+                  <Pizza
+                    pizza={2}
+                    name="Categorias"
+                    data={dataCategorias}
+                    loading={loading}
+                  />
+                </CardContent>
+                <CardFooter>
+                  <div></div>
+                </CardFooter>
+              </Card>
+            </div>
+            <div className="col-6">
+              <Card>
+                <CardHeader title="Subcategorias" description={``} />
+                <CardContent>
+                  <Pizza
+                    pizza={2}
+                    name="subcategoria"
+                    data={dataSubCategorias}
+                    loading={loading}
+                  />
                 </CardContent>
                 <CardFooter>
                   <div></div>

@@ -9,7 +9,6 @@ import {
 } from "recharts";
 import "./area.scss";
 import { CustomTooltip } from "@/components/auth/GraphicTooltip/GraphicTooltip";
-import Skeleton from "@/components/auth/Skeleton/Skeleton";
 interface AreaGraphicProps {
   data: any[];
   loading: boolean;
@@ -77,7 +76,8 @@ export default function AreaGraphic(props: AreaGraphicProps) {
             verticalPoints={[0]}
           />
           <XAxis
-            dataKey="name"
+            dataKey="data"
+            tickFormatter={(value) => `${value}`}
             style={{
               font: "var(--s-typography-caption-regular)",
               minWidth: "50px",

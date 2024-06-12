@@ -13,7 +13,7 @@ import {
   Modal,
   Notification,
   Page,
-  Progress,
+  Skeleton,
 } from "design-system-zeroz";
 import {
   AtualizarFonteDeRenda,
@@ -27,7 +27,6 @@ import { z } from "zod";
 
 import "./fonte-de-renda.scss";
 import AuthProgress from "@/components/auth/Progress/progress";
-import Skeleton from "@/components/auth/Skeleton/Skeleton";
 
 interface UserData {
   user: {
@@ -431,11 +430,12 @@ export default function Categorias() {
           </div>
         ) : (
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              height: "fit-content",
-            }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            height: "fit-content",
+            overflow: 'auto'
+          }}
           >
             <DataTable
               labelSecondButton=""

@@ -51,9 +51,9 @@ model Account {
 model Transaction {
   id         String       @id @default(cuid())
   amount     String
-  accountId  String       @unique
+  accountId  String       
   createdAt  String
-  categoryId String       @unique
+  categoryId String       
   category   FonteDeRenda @relation(fields: [categoryId], references: [id])
   user       User         @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
@@ -61,15 +61,15 @@ model Transaction {
 model Expense {
   id                 String            @id @default(cuid())
   amount             String
-  accountId          String            @unique
+  accountId          String            
   createdAt          String
-  categoriaId        String?           @unique
-  subcategoriaId     String?           @unique
+  categoriaId        String           
+  subcategoriaId     String           
   user               User              @relation(fields: [accountId], references: [id], onDelete: Cascade)
   Categoria          Categoria?        @relation(fields: [categoriaId], references: [id])
   Subcategoria       Subcategoria?     @relation(fields: [subcategoriaId], references: [id])
   FormaDePagamento   FormaDePagamento? @relation(fields: [formaDePagamentoId], references: [id])
-  formaDePagamentoId String?           @unique
+  formaDePagamentoId String          
 }
 
 model Categoria {

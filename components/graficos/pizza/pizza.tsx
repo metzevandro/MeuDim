@@ -1,10 +1,35 @@
 "use client";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { PieChart, Pie, Sector, Legend } from "recharts";
+import { PieChart, Pie, Sector, Legend, Cell } from "recharts";
 
 import "./pizza.scss";
+import { Icon } from "design-system-zeroz";
 
-const renderActiveShape = (props: any, loading: boolean) => {
+const CustomLegend = (props: any) => {
+  const { payload } = props;
+  return (
+    <div className="custom-legend">
+      {payload.map((entry: any, index: any) => (
+        <div
+          key={`item-${index}`}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--s-spacing-xx-small)",
+          }}
+        >
+          <span className="legend-color-box" style={{ color: entry.color }}>
+            {" "}
+            <Icon fill={true} icon="square" size="md" />
+          </span>
+          <span className="legend-text">{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const renderActiveShape = (props: any, loading: boolean, pizza: 1 | 2) => {
   const RADIAN = Math.PI / 180;
   const {
     cx,
@@ -23,9 +48,9 @@ const renderActiveShape = (props: any, loading: boolean) => {
   const cos = Math.cos(-RADIAN * midAngle);
   const sx = cx + (outerRadius + 10) * cos;
   const sy = cy + (outerRadius + 10) * sin;
-  const mx = cx + (outerRadius + 30) * cos;
-  const my = cy + (outerRadius + 30) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
+  const mx = cx + (outerRadius + 20) * cos;
+  const my = cy + (outerRadius + 20) * sin;
+  const ex = mx + (cos >= 0 ? 1 : -1) * (outerRadius === 75 ? 22 : 5);
   const ey = my;
   const textAnchor = cos >= 0 ? "start" : "end";
 
@@ -35,13 +60,33 @@ const renderActiveShape = (props: any, loading: boolean) => {
         style={{
           font: "var(--s-typography-paragraph-regular)",
           fill: "var(--s-color-content-default)",
+          display: "flex",
+          alignItems: "center",
+          flexDirection: "column",
         }}
         x={cx}
         y={cy}
         dy={8}
         textAnchor="middle"
       >
-        {loading ? "Carregando..." : payload.name}
+        {pizza === 1 ? (
+          <tspan>{loading ? "Carregando..." : payload.name}</tspan>
+        ) : (
+          <>
+            <tspan
+              style={{ font: "var(--s-typography-paragraph-regular)" }}
+              x={cx}
+              dy="1.5em"
+            >
+              {loading ? "Carregando..." : payload.name}
+            </tspan>
+            <tspan
+              style={{ font: "var(--s-typography-paragraph-strong)" }}
+              x={cx}
+              dy="-2em"
+            >{`R$ ${value.toFixed(2).toString().replace(".", ",")}`}</tspan>
+          </>
+        )}
       </text>
       <Sector
         cx={cx}
@@ -52,50 +97,67 @@ const renderActiveShape = (props: any, loading: boolean) => {
         endAngle={endAngle}
         fill={fill}
       />
-      <Sector
-        cx={cx}
-        cy={cy}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        innerRadius={outerRadius + 6}
-        outerRadius={outerRadius + 10}
-        fill={fill}
-      />
-      <path
-        d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-        stroke={fill}
-        fill="none"
-        z={99}
-      />
-      <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-      <text
-        style={{
-          font: "var(--s-typography-paragraph-strong)",
-          fill: "var(--s-color-content-default)",
-        }}
-        x={ex + (cos >= 0 ? 1 : -1) * 12}
-        y={ey}
-        textAnchor={textAnchor}
-        fill="#333"
-      >{`R$ ${value.toString().replace(".", ",")}`}</text>
-      <text
-        style={{
-          font: "var(--s-typography-paragraph-regular)",
-          fill: "var(--s-color-content-light)",
-        }}
-        x={ex + (cos >= 0 ? 1 : -1) * 12}
-        y={ey}
-        dy={18}
-        textAnchor={textAnchor}
-        fill="#999"
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
+
+      {pizza === 1 ? (
+        <>
+          <Sector
+            cx={cx}
+            cy={cy}
+            startAngle={startAngle}
+            endAngle={endAngle}
+            innerRadius={outerRadius + 6}
+            outerRadius={outerRadius + 10}
+            fill={fill}
+          />
+          <path
+            d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
+            stroke={fill}
+            fill="none"
+            z={99}
+          />
+          <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+          <text
+            style={{
+              font: "var(--s-typography-paragraph-strong)",
+              fill: "var(--s-color-content-default)",
+            }}
+            x={ex + (cos >= 0 ? 1 : -1) * 12}
+            y={ey}
+            textAnchor={textAnchor}
+            fill="#333"
+          >{`R$ ${value.toFixed(2).toString().replace(".", ",")}`}</text>
+          <text
+            style={{
+              font: "var(--s-typography-paragraph-regular)",
+              fill: "var(--s-color-content-light)",
+            }}
+            x={ex + (cos >= 0 ? 1 : -1) * 12}
+            y={ey}
+            dy={18}
+            textAnchor={textAnchor}
+            fill="#999"
+          >
+            {`${(percent * 100).toFixed(0)}%`}
+          </text>
+        </>
+      ) : (
+        <></>
+      )}
     </g>
   );
 };
 
-const Pizza = ({ data, loading }: { data: any; loading: boolean }) => {
+const Pizza = ({
+  data,
+  loading,
+  name,
+  pizza,
+}: {
+  data: any;
+  loading: boolean;
+  name: string;
+  pizza: 1 | 2;
+}) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const onPieEnter = useCallback((_: any, index: any) => {
     setActiveIndex(index);
@@ -103,6 +165,7 @@ const Pizza = ({ data, loading }: { data: any; loading: boolean }) => {
 
   const [chartWidth, setChartWidth] = useState(0);
   const [chartHeight, setChartHeight] = useState(0);
+  const [radius, setRadius] = useState({ inner: 70, outer: 80 });
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -110,6 +173,12 @@ const Pizza = ({ data, loading }: { data: any; loading: boolean }) => {
       if (chartContainerRef.current) {
         setChartWidth(chartContainerRef.current.offsetWidth);
         setChartHeight(chartContainerRef.current.offsetHeight);
+      }
+
+      if (window.innerWidth <= 490) {
+        setRadius({ inner: 55, outer: 65 });
+      } else {
+        setRadius({ inner: 65, outer: 75 });
       }
     };
 
@@ -150,20 +219,64 @@ const Pizza = ({ data, loading }: { data: any; loading: boolean }) => {
 
   return (
     <div ref={chartContainerRef} className="pizza-container">
-      <PieChart width={chartWidth} height={chartHeight}>
-        <Pie
-          activeIndex={activeIndex}
-          activeShape={(props: any) => renderActiveShape(props, loading)}
-          data={loading === false ? data : loadingData}
-          cx="50%"
-          cy="50%"
-          innerRadius={60}
-          outerRadius={80}
-          fill={`${loading === false ? "var(--s-color-content-highlight)" : "var(--s-color-content-disable)"}`}
-          dataKey="amount"
-          onMouseEnter={onPieEnter}
-        />
-      </PieChart>
+      {loading === false && data.length === 0 ? (
+        <p>
+          Nenhum{name === "despesa" ? "a" : ""} {name} foi criad
+          {name === "despesa" ? "a" : "o"}
+        </p>
+      ) : (
+        <>
+          {pizza === 1 ? (
+            <PieChart width={chartWidth} height={chartHeight}>
+              <Pie
+                activeIndex={activeIndex}
+                activeShape={(props: any) =>
+                  renderActiveShape(props, loading, 1)
+                }
+                data={loading === false ? data : loadingData}
+                cx="50%"
+                cy="50%"
+                innerRadius={radius.inner}
+                outerRadius={radius.outer}
+                fill={`${
+                  loading === false
+                    ? "var(--s-color-content-highlight)"
+                    : "var(--s-color-content-disable)"
+                }`}
+                dataKey="amount"
+                onMouseEnter={onPieEnter}
+              />
+            </PieChart>
+          ) : (
+            <PieChart width={chartWidth} height={chartHeight}>
+              <Pie
+                activeIndex={activeIndex}
+                activeShape={(props: any) =>
+                  renderActiveShape(props, loading, 2)
+                }
+                data={loading === false ? data : loadingData}
+                cx="50%"
+                cy="50%"
+                innerRadius={radius.inner}
+                outerRadius={radius.outer}
+                fill={`${
+                  loading === false
+                    ? "var(--s-color-content-highlight)"
+                    : "var(--s-color-content-disable)"
+                }`}
+                dataKey="amount"
+                onMouseEnter={onPieEnter}
+              />
+              <Legend
+                content={<CustomLegend />}
+                verticalAlign="middle"
+                align="right"
+                layout="vertical"
+              />
+            </PieChart>
+          )}
+        </>
+      )}
     </div>
   );
 };

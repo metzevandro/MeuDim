@@ -21,13 +21,13 @@ import {
   Modal,
   FooterModal,
   ButtonIcon,
+  Skeleton,
 } from "design-system-zeroz";
-import React, { startTransition, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import "./forma-de-pagamento.scss";
-import Skeleton from "@/components/auth/Skeleton/Skeleton";
 import AuthProgress from "@/components/auth/Progress/progress";
 
 interface FormaDePagamento {

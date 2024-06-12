@@ -109,7 +109,6 @@ export const LoginForm = () => {
           </form>
         </CardContent>
       </Card>
-      <Link href="/auth/reset" content="Esqueceu sua senha?"></Link>
     </div>
   );
 };

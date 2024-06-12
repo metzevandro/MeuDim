@@ -12,8 +12,8 @@ export const CustomTooltip = ({
   area: boolean;
 }) => {
   if (active && payload && payload.length) {
-    const ganhos = payload[0]?.value.toLocaleString();
-    const despesas = payload[1]?.value.toLocaleString();
+    const ganhos = parseFloat(payload[0]?.value).toFixed(2).replace(".", ",");
+    const despesas = parseFloat(payload[1]?.value).toFixed(2).replace(".", ",");
 
     return (
       <div className="barras-tooltip">

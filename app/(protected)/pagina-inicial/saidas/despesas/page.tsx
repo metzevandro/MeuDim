@@ -19,6 +19,7 @@ import {
   Modal,
   Notification,
   Page,
+  Skeleton,
 } from "design-system-zeroz";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,7 +27,6 @@ import IntlCurrencyInput from "react-currency-input-field";
 
 import "./despesas.scss";
 import AuthProgress from "@/components/auth/Progress/progress";
-import Skeleton from "@/components/auth/Skeleton/Skeleton";
 
 interface UserData {
   user: User;
@@ -638,6 +638,7 @@ const HomePage = () => {
               display: "flex",
               alignItems: "center",
               height: "fit-content",
+              overflow: 'auto'
             }}
           >
             <DataTable

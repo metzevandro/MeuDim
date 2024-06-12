@@ -15,11 +15,9 @@ import { RegisterSchema } from "@/schemas/index";
 import { useState, useTransition } from "react";
 import { register } from "@/actions/register";
 import React from "react";
-import { useRouter } from "next/navigation";
 import { login } from "@/actions/login";
 
 export const RegisterForm = () => {
-  const router = useRouter();
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");

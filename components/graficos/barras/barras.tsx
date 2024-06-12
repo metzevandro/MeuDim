@@ -70,7 +70,7 @@ export default function Barras(props: BarrasProps) {
           verticalPoints={[0]}
         />
         <XAxis
-          dataKey="name"
+          dataKey="data"
           style={{
             font: "var(--s-typography-caption-regular)",
             color: "var(--s-color-content-default)",

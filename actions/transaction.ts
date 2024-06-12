@@ -40,6 +40,7 @@ export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
 
     return { success: "Ganho adicionado com sucesso" };
   } catch (error) {
+    console.log(error);
     return { error: "Erro ao criar o ganho" };
   }
 };
@@ -95,7 +96,7 @@ export const Atualizar = async (
   const { amount, category, date } = validatedFields.data;
 
   const categoryExists = await db.fonteDeRenda.findFirst({
-    where: { name: category },
+    where: { name: category, userId: dbUser.id },
   });
 
   if (!categoryExists) {

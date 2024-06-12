@@ -22,25 +22,6 @@
       color: var(--s-color-content-default);
     }
 
-    .line {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: var(--s-spacing-small);
-
-      > :nth-child(1) {
-        height: 1px;
-        width: 100%;
-        background-color: var(--s-color-border-default);
-      }
-
-      > :nth-child(3) {
-        height: 1px;
-        width: 100%;
-        background-color: var(--s-color-border-default);
-      }
-    }
-
     .form-sign-up {
       display: flex;
       flex-direction: column;
@@ -56,7 +37,7 @@
 }
 
 @media screen and (max-width: 590px) {
-  .card-login {
+  .card-sign-up {
     .card-root {
       width: 80%;
     }

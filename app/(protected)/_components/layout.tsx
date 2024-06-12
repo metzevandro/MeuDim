@@ -10,33 +10,32 @@ import {
   SidebarItem,
   SidebarList,
   SidebarSubItem,
+  Skeleton,
 } from "design-system-zeroz";
 import DropDownMenu, {
   DropDownMenuItem,
   DropDownMenuTitle,
 } from "design-system-zeroz/src/app/components/DropdownMenu/DropdownMenu";
 import { Sair } from "@/actions/logout";
-import { useCurrentUser } from "@/hooks/user-current-user";
 import { usePathname, useRouter } from "next/navigation";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-interface User {
-  name: string;
-  image: string;
+interface UserData {
+  user: user;
 }
 
-interface UserData {
-  user: User;
-  expires: string;
+interface user {
+  name: string;
 }
 
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
 const LayoutPage = (props: LayoutProps) => {
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   async function fetchUserData() {
     try {
@@ -48,6 +47,8 @@ const LayoutPage = (props: LayoutProps) => {
       setUserData(userData);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -90,13 +91,9 @@ const LayoutPage = (props: LayoutProps) => {
   if (
     pathname === "/auth/login" ||
     pathname === "/auth/criar-conta" ||
-    pathname === "/auth/error" ||
-    pathname === "/auth/new-verification" ||
-    pathname === "/auth/nova-senha" ||
-    pathname === "/auth/reset" ||
-    pathname === "/"
+    pathname === "/auth/error"
   ) {
-    return <>{props.children}</>;
+    return <div>{props.children}</div>;
   } else {
     return (
       <AppShell>
@@ -170,22 +167,28 @@ const LayoutPage = (props: LayoutProps) => {
           </SidebarList>
         </SideBar>
         <Header breadcrumb={breadcrumbs()} onClick={toggleSidebar}>
-          <HeaderProfile name={userData?.user?.name || "..."} avatar_src={userData?.user?.image || ""}>
-            <DropDownMenu dropDownMenu>
-              <DropDownMenuTitle content="Conta" />
-              <DropDownMenuItem
-                content="Conta"
-                typeIcon="account_circle"
-                onClick={() => navigateTo("/conta")}
-              />
-              <DropDownMenuTitle content="Sair" />
-              <DropDownMenuItem
-                content="Sair"
-                typeIcon="logout"
-                onClick={() => Sair()}
-              />
-            </DropDownMenu>
-          </HeaderProfile>
+          {loading === true ? (
+            <Skeleton height="56" width="180" />
+          ) : (
+            <HeaderProfile name={userData?.user?.name || ""}>
+              <DropDownMenu dropDownMenu>
+                <DropDownMenuTitle content="Conta" />
+                <DropDownMenuItem
+                  content="Conta"
+                  typeIcon="account_circle"
+                  onClick={() => navigateTo("/conta")}
+                />
+                <DropDownMenuTitle content="Sair" />
+                <DropDownMenuItem
+                  content="Sair"
+                  typeIcon="logout"
+                  onClick={() => {
+                    Sair();
+                  }}
+                />
+              </DropDownMenu>
+            </HeaderProfile>
+          )}
         </Header>
         {props.children}
       </AppShell>

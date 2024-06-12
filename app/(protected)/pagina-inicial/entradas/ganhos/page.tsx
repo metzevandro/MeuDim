@@ -16,7 +16,7 @@ import {
   EmptyState,
   FooterModal,
   InputSelect,
-  Loading,
+  Skeleton,
   Modal,
   Notification,
   Page,
@@ -26,7 +26,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import "./ganhos.scss";
 import IntlCurrencyInput from "react-currency-input-field";
 import AuthProgress from "@/components/auth/Progress/progress";
-import Skeleton from "@/components/auth/Skeleton/Skeleton";
 
 interface UserData {
   user: {

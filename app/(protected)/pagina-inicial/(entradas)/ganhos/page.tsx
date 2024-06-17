@@ -546,12 +546,12 @@ const HomePage = () => {
   return (
     <>
       <Page
+      
         onClickActionPrimary={toggleAside}
         withActionPrimary={
           userDataIsValid ? userData.user.transactions.length > 0 : undefined
         }
         buttonContentPrimary="Adicionar"
-        columnLayout="1"
         namePage="Seus ganhos"
       >
         <AuthProgress loading={loading} error={loadingError} />

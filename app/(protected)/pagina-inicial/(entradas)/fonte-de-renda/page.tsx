@@ -1,68 +1,74 @@
 "use client";
-import {
-  AtualizarFormaDePagamento,
-  CriarFormaDePagamento,
-  ExcluirFormaDePagamento,
-} from "@/actions/forma-de-pagamento";
-import LayoutPage from "@/app/(protected)/_components/layout";
-import { useCurrentUser } from "@/hooks/user-current-user";
-import { NewCategorySchema } from "@/schemas";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect, useState } from "react";
 import {
   Aside,
-  EmptyState,
-  Page,
+  AsideContent,
   AsideFooter,
   Button,
-  AsideContent,
-  Input,
-  DataTable,
-  Notification,
-  Modal,
-  FooterModal,
   ButtonIcon,
+  DataTable,
+  EmptyState,
+  FooterModal,
+  Input,
+  Modal,
+  Notification,
+  Page,
   Skeleton,
 } from "design-system-zeroz";
-import React, { useEffect, useState } from "react";
+import {
+  AtualizarFonteDeRenda,
+  CriarFonteDeRenda,
+  ExcluirFonteDeRenda,
+} from "@/actions/fonte-de-dinheiro";
+import { NewCategorySchema } from "@/schemas";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import "./forma-de-pagamento.scss";
+import "./fonte-de-renda.scss";
 import AuthProgress from "@/components/auth/Progress/progress";
 
-interface FormaDePagamento {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: string;
-}
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  image: string | null;
-  role: string;
-  formaDePagamento: FormaDePagamento[];
-}
-
 interface UserData {
-  user: User;
+  user: {
+    name: string;
+    email: string;
+    image: string | null;
+    id: string;
+    role: string;
+    categories: {
+      id: string;
+      name: string;
+      userId: string;
+      createdAt: string;
+    }[];
+    transactions: {
+      id: string;
+      name: string;
+      createdAt: string;
+      userId: string;
+      categories: {
+        id: string;
+        name: string;
+        userId: string;
+        createdAt: string;
+      };
+    };
+  };
   expires: string;
 }
 
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
-export default function CategoryPage() {
-  const [isAsideOpen, setIsAsideOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
-  const [editAsideOpen, setEditAsideOpen] = useState<{
-    [key: string]: boolean;
-  }>({});
-
+export default function Categorias() {
+  const [isOpenAside, setIsOpenAside] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
   const [notificationOpen, setNotificationOpen] = useState(false);
 
+  const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
+  const [editFormStates, setEditFormStates] = useState<{ [key: string]: any }>(
+    {},
+  );
   const form = useForm<z.infer<typeof NewCategorySchema>>({
     resolver: zodResolver(NewCategorySchema),
     defaultValues: {
@@ -94,7 +100,8 @@ export default function CategoryPage() {
   }, []);
 
   const toggleAside = () => {
-    setIsAsideOpen(!isAsideOpen);
+    setIsOpenAside(!isOpenAside);
+    form.reset({ name: "", date: new Date() });
   };
 
   const toggleModal = (categoryId: string) => {
@@ -104,11 +111,19 @@ export default function CategoryPage() {
     }));
   };
 
-  const editingAside = (categoryId: string) => {
-    setEditAsideOpen((prev) => ({
+  const editingAside = (categoryId: string, categoryName: string) => {
+    setEditFormStates((prev) => ({
       ...prev,
-      [categoryId]: !prev[categoryId],
+      [categoryId]: {
+        ...prev[categoryId],
+        isOpen: !prev[categoryId]?.isOpen,
+        name: prev[categoryId]?.isOpen ? prev[categoryId]?.name : categoryName,
+      },
     }));
+
+    if (!editFormStates[categoryId]?.isOpen) {
+      form.reset({ name: categoryName, date: new Date() });
+    }
   };
 
   const startLoading = () => {
@@ -130,15 +145,16 @@ export default function CategoryPage() {
     setLoading(success ? 100 : 0);
   };
 
-  const criar = async (values: z.infer<typeof NewCategorySchema>) => {
+  const onSubmit = async (values: z.infer<typeof NewCategorySchema>) => {
     setError("");
     setSuccess("");
     toggleAside();
     setLoadingError(false);
 
     const loadingInterval = startLoading();
+
     try {
-      const data = await CriarFormaDePagamento(values);
+      const data = await CriarFonteDeRenda(values);
       if (data.error) {
         setError(data.error);
         setSuccess("");
@@ -150,7 +166,7 @@ export default function CategoryPage() {
         setNotificationOpen(true);
       }
     } catch (error) {
-      setError("Ocorreu um erro ao criar a categoria.");
+      setError("Ocorreu um erro ao criar a fonte de renda.");
       setLoadingError(true);
     } finally {
       stopLoading(loadingInterval, !loadingError);
@@ -158,19 +174,20 @@ export default function CategoryPage() {
     }
   };
 
-  const atualizar = async (categoryId: string) => {
+  const atualizarCategoria = async (
+    categoryId: string,
+    categoryName: string,
+  ) => {
     setError("");
     setSuccess("");
-    editingAside(categoryId);
-
     setLoadingError(false);
+    editingAside(categoryId, categoryName);
 
     const loadingInterval = startLoading();
+
     try {
-      const data = await AtualizarFormaDePagamento(
-        form.getValues(),
-        categoryId,
-      );
+      const values = form.getValues();
+      const data = await AtualizarFonteDeRenda(values, categoryId);
       if (data.error) {
         setError(data.error);
         setSuccess("");
@@ -182,7 +199,7 @@ export default function CategoryPage() {
         setNotificationOpen(true);
       }
     } catch (error) {
-      setError("Ocorreu um erro ao excluir a forma de pagamento.");
+      setError("Ocorreu um erro ao atualizar a fonte de renda.");
       setLoadingError(true);
     } finally {
       stopLoading(loadingInterval, !loadingError);
@@ -190,15 +207,16 @@ export default function CategoryPage() {
     }
   };
 
-  const excluir = async (categoryId: string) => {
+  const onDeleteCategory = async (categoryId: string) => {
     setError("");
     setSuccess("");
     toggleModal(categoryId);
     setLoadingError(false);
 
     const loadingInterval = startLoading();
+
     try {
-      const data = await ExcluirFormaDePagamento(categoryId);
+      const data = await ExcluirFonteDeRenda(categoryId);
       if (data.error) {
         setError(data.error);
         setSuccess("");
@@ -218,7 +236,7 @@ export default function CategoryPage() {
     }
   };
 
-  const columns: string[] = ["Data", "Forma", "Ações"];
+  const { errors } = form.formState;
 
   const renderCategoryActions = (categoryId: string, categoryName: string) => (
     <div className="actions">
@@ -226,18 +244,20 @@ export default function CategoryPage() {
         size="sm"
         variant="secondary"
         label="Editar"
-        onClick={() => editingAside(categoryId)}
+        onClick={() => editingAside(categoryId, categoryName)}
       />
       <Aside
-        isOpen={editAsideOpen[categoryId] || false}
-        toggleAside={() => editingAside(categoryId)}
+        isOpen={editFormStates[categoryId]?.isOpen || false}
+        toggleAside={() => editingAside(categoryId, categoryName)}
         content={
           <AsideContent>
             <Input
               label="Nome"
-              placeholder="Ex: Cartão de Crédito"
-              value={form.watch("name") || categoryName || ""}
+              placeholder="Ex: Investimentos"
+              value={form.watch("name") || ""}
               onChange={(e) => form.setValue("name", e.target.value)}
+              error={!!errors.name}
+              textError={errors.name?.message}
             />
           </AsideContent>
         }
@@ -254,19 +274,19 @@ export default function CategoryPage() {
                 size="md"
                 variant="primary"
                 label="Atualizar"
-                onClick={() => atualizar(categoryId)}
+                onClick={() => atualizarCategoria(categoryId, categoryName)}
               />
               <Button
                 size="md"
                 variant="secondary"
                 label="Cancelar"
-                onClick={() => editingAside(categoryId)}
+                onClick={() => editingAside(categoryId, categoryName)}
               />
             </div>
           </AsideFooter>
         }
-        title="Editar forma de pagamento"
-        description="Edite a forma de pagamento para os seus ganhos."
+        title="Editar fonte de renda"
+        description="Edite a fonte de renda para os seus ganhos."
       />
       <ButtonIcon
         size="sm"
@@ -290,7 +310,7 @@ export default function CategoryPage() {
                 size="md"
                 variant="warning"
                 label="Excluir"
-                onClick={() => excluir(categoryId)}
+                onClick={() => onDeleteCategory(categoryId)}
               />
               <Button
                 size="md"
@@ -301,121 +321,108 @@ export default function CategoryPage() {
             </div>
           </FooterModal>
         }
-        title="Excluir forma de pagamento"
-        description="Você tem certeza que deseja excluir essa forma de pagamento?"
+        title="Excluir fonte de renda"
+        description="Você tem certeza que deseja excluir essa fonte de renda?"
         isOpen={modalOpen[categoryId] || false}
         dismissible={true}
       />
     </div>
   );
 
+  const columns: string[] = ["Data", "Fonte", "Ações"];
+
   const userDataIsValid = userData && userData.user;
 
-  const data: { [key: string]: any; id: string }[] = userData?.user
-    ?.formaDePagamento
-    ? userData?.user.formaDePagamento.map(
-        (formaDePagamento: any, index: number) => {
+  const data =
+    userDataIsValid && userData.user.categories
+      ? userData.user.categories.map((category, index) => {
           const formattedDate = new Date(
-            formaDePagamento.createdAt,
+            category?.createdAt,
           ).toLocaleDateString("pt-BR");
 
           return {
-            id: formaDePagamento.id,
+            id: category.id,
             Data: formattedDate,
-            Forma: formaDePagamento.name,
-            Ações: renderCategoryActions(
-              formaDePagamento.id,
-              formaDePagamento.name,
-            ),
+            Fonte: category?.name,
+            Ações: renderCategoryActions(category.id, category.name),
           };
-        },
-      )
-    : [
-        {
-          id: "1",
-          Data: <Skeleton height="32" width="100" />,
-          Forma: <Skeleton height="32" width="100" />,
-          Ações: (
-            <div className="actions">
-              <Skeleton height="32" width="65" />
-              <Skeleton height="32" width="32" />
-            </div>
-          ),
-        },
-        {
-          id: "2",
-          Data: <Skeleton height="32" width="100" />,
-          Forma: <Skeleton height="32" width="100" />,
-
-          Ações: (
-            <div className="actions">
-              <Skeleton height="32" width="65" />
-              <Skeleton height="32" width="32" />
-            </div>
-          ),
-        },
-        {
-          id: "3",
-          Data: <Skeleton height="32" width="100" />,
-          Forma: <Skeleton height="32" width="100" />,
-
-          Ações: (
-            <div className="actions">
-              <Skeleton height="32" width="65" />
-              <Skeleton height="32" width="32" />
-            </div>
-          ),
-        },
-        {
-          id: "4",
-          Data: <Skeleton height="32" width="100" />,
-          Forma: <Skeleton height="32" width="100" />,
-
-          Ações: (
-            <div className="actions">
-              <Skeleton height="32" width="65" />
-              <Skeleton height="32" width="32" />
-            </div>
-          ),
-        },
-      ];
+        })
+      : [
+          {
+            id: "1",
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
+          },
+          {
+            id: "2",
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
+          },
+          {
+            id: "3",
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
+          },
+          {
+            id: "4",
+            Data: <Skeleton height="32" width="100" />,
+            Fonte: <Skeleton height="32" width="100" />,
+            Ações: (
+              <div className="actions">
+                <Skeleton height="32" width="65" />
+                <Skeleton height="32" width="32" />
+              </div>
+            ),
+          },
+        ];
 
   const expandedData: { [key: string]: any; id: string }[] = [];
 
   return (
     <>
       <Page
-        namePage="Formas de pagamento"
-        columnLayout="1"
-        withActionPrimary={
-          userDataIsValid
-            ? userData.user.formaDePagamento.length > 0
-            : undefined
-        }
         buttonContentPrimary="Adicionar"
+        namePage="Fonte de renda"
+        withActionPrimary={
+          userDataIsValid ? userData.user.categories.length > 0 : undefined
+        }
         onClickActionPrimary={toggleAside}
       >
         <AuthProgress loading={loading} error={loadingError} />
-
-        {(
-          userDataIsValid
-            ? userData.user.formaDePagamento.length < 1
-            : undefined
-        ) ? (
+        {(userDataIsValid ? userData.user.categories.length < 1 : undefined) ? (
           <div style={{ display: "flex", justifyContent: "center" }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 height: "100%",
-                maxWidth: "700px",
+                maxWidth: "600px",
+                overflow: "auto",
               }}
             >
               <EmptyState
-                title="Adicione as formas de pagamentos das suas despesas!"
-                description="Indique a forma de pagamento utilizada nos seus pagamentos, seja em dinheiro, cartão ou transferência, para manter um registro detalhado e preciso das suas movimentações financeiras."
-                icon="local_atm"
-                buttonContentPrimary="Adicionar forma de pagamento"
+                title="Informe a fonte de renda dos seus ganhos!"
+                description="Registre uma nova fonte de renda para classificar os pagamentos ou valores que receber, garantindo que seu controle financeiro esteja sempre atualizado."
+                icon="savings"
+                buttonContentPrimary="Adicionar fonte de renda"
                 onClickActionPrimary={toggleAside}
               />
             </div>
@@ -454,17 +461,17 @@ export default function CategoryPage() {
           </div>
         )}
         <Aside
-          isOpen={isAsideOpen}
+          isOpen={isOpenAside}
           toggleAside={toggleAside}
-          title="Adicionar forma de pagamento"
-          description="Crie uma forma de pagamento para suas despesas."
+          title="Adicionar fonte de renda"
+          description="Crie uma fonte de renda para os seus ganhos."
           content={
             <AsideContent>
               <Input
+                label="Nome"
+                placeholder="Ex: Investimentos"
                 value={form.watch("name") || ""}
                 onChange={(e) => form.setValue("name", e.target.value)}
-                label="Nome"
-                placeholder="Ex: Cartão de Crédito"
               />
             </AsideContent>
           }
@@ -481,7 +488,7 @@ export default function CategoryPage() {
                   size="md"
                   variant="primary"
                   label="Adicionar"
-                  onClick={() => criar(form.getValues())}
+                  onClick={() => onSubmit(form.getValues())}
                 />
                 <Button
                   size="md"
@@ -493,25 +500,25 @@ export default function CategoryPage() {
             </AsideFooter>
           }
         />
-        {success && (
-          <Notification
-            icon="check_circle"
-            title={success}
-            variant="success"
-            type="float"
-            isOpen={notificationOpen}
-          />
-        )}
-        {error && (
-          <Notification
-            icon="warning"
-            title={error}
-            variant="warning"
-            type="float"
-            isOpen={notificationOpen}
-          />
-        )}
       </Page>
+      {success && (
+        <Notification
+          icon="check_circle"
+          title={success}
+          variant="success"
+          type="float"
+          isOpen={notificationOpen}
+        />
+      )}
+      {error && (
+        <Notification
+          icon="warning"
+          title={error}
+          variant="warning"
+          type="float"
+          isOpen={notificationOpen}
+        />
+      )}
     </>
   );
 }

@@ -1,38 +1,55 @@
-@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
-
 html,
 body,
 :root {
-  height: 100%;
+  width: 100%;
 }
 
 .layout-page {
   display: flex;
   flex-direction: column;
+  gap: var(--s-spacing-medium);
 
-  .layout-sub-page {
+  .layout-sub-page-50 {
     width: 100%;
     justify-content: space-between;
-    flex-direction: row;
+    flex-direction: column;
     display: flex;
+    gap: var(--s-spacing-small);
+
+    .col-12 {
+      display: flex;
+      gap: var(--s-spacing-medium);
+    }
+  }
+
+  .layout-sub-page-100 {
+    width: 100%;
+    justify-content: space-between;
+    flex-direction: column;
+    display: flex;
+    gap: var(--s-spacing-small);
+
+    .col-12 {
+      display: flex;
+    }
   }
 
   .titles-page {
-    font: var(--s-typography-heading-x-small);
     color: var(--s-color-content-default);
-    padding: 0 8px 16px 8px;
   }
 
   .input-field {
     display: flex;
-    padding: 0 8px 16px 8px;
-    gap: 8px;
+    gap: var(--s-spacing-xx-small);
+
+    * {
+      min-width: 120px;
+    }
   }
 }
 
 [class*="col-"] {
   float: left;
-  padding: 0 8px 16px 8px;
 }
 
 .col-1 {
@@ -114,11 +131,13 @@ body,
     display: flex;
     flex-direction: column;
 
-    .layout-sub-page {
-      width: 100%;
+    .layout-sub-page-50 {
       justify-content: space-between;
-      flex-direction: column;
       display: flex;
+
+      .col-12 {
+        flex-direction: column;
+      }
     }
   }
 }

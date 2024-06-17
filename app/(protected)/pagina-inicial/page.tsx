@@ -5,6 +5,7 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
+  Icon,
   InputSelect,
   Page,
   Skeleton,
@@ -16,84 +17,29 @@ import "./pagina-inicial.scss";
 import Pizza from "@/components/graficos/pizza/pizza";
 import Barras from "@/components/graficos/barras/barras";
 import AreaGraphic from "@/components/graficos/area/area";
-import { FonteDeRenda } from "@prisma/client";
-
-interface Subcategorias {
-  id: string;
-  name: string;
-  categoriaId: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: string;
-  Subcategorias: Subcategorias[];
-}
-
-interface Transaction {
-  id: string;
-  name: string;
-  amount: string;
-  createdAt: string;
-  userId: string;
-  categoryId: string;
-  category: Category;
-}
-
-interface FormaDePagamento {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: string;
-}
-
-interface Expense {
-  id: string;
-  name: string;
-  amount: string;
-  createdAt: string;
-  userId: string;
-  categoriaId: string;
-  formaDePagamentoId: string;
-  formaDePagamento: FormaDePagamento;
-  subcategoriaId: string;
-}
-
-interface User {
-  name: string;
-  email: string;
-  image: string | null;
-  id: string;
-  role: string;
-  formaDePagamento: FormaDePagamento[];
-  categoria: Category[];
-  transactions: Transaction[];
-  expense: Expense[];
-  categories: FonteDeRenda[];
-}
-
-interface UserData {
-  user: User;
-  expires: string;
-}
-
-const API = process.env.NEXT_PUBLIC_APP_URL;
+import { Expense, fetchUserData, Transaction, UserData } from "@/actions/fetch";
 
 const HomePage = () => {
   const router = useRouter();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [selectedMonth, setSelectedMonth] = useState<number>(
+  const [selectedMonth, setSelectedMonth] = useState<number | 12>(
     new Date().getMonth(),
   );
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear(),
   );
+  const isYearSelected = selectedMonth === 12;
 
-  const firstDayOfMonth = new Date(selectedYear, selectedMonth, 1);
-  const lastDayOfMonth = new Date(selectedYear, selectedMonth + 1, 0);
+  const firstDayOfMonth =
+    selectedMonth === 12
+      ? new Date(selectedYear, 0, 1)
+      : new Date(selectedYear, selectedMonth, 1);
+
+  const lastDayOfMonth =
+    selectedMonth === 12
+      ? new Date(selectedYear, 11, 31)
+      : new Date(selectedYear, selectedMonth + 1, 0);
 
   const colors = [
     "var(--s-color-fill-highlight)",
@@ -105,27 +51,12 @@ const HomePage = () => {
 
   const dates = [];
   for (let i = firstDayOfMonth.getDate(); i <= lastDayOfMonth.getDate(); i++) {
-    const date = new Date(selectedYear, selectedMonth, i);
+    const date = new Date(selectedYear, isYearSelected ? 0 : selectedMonth, i);
     dates.push(date);
   }
 
-  async function fetchUserData() {
-    try {
-      const response = await fetch(`${API}/api/auth/session`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-      }
-      const userData = await response.json();
-      setUserData(userData);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    fetchUserData();
+    fetchUserData(setUserData, setLoading);
   }, [selectedMonth, selectedYear]);
 
   const navigateTo = (route: string) => {
@@ -140,8 +71,10 @@ const HomePage = () => {
     const total = userData.user.transactions.reduce((acc, transaction) => {
       const transactionDate = new Date(transaction.createdAt);
       if (
-        transactionDate >= firstDayOfMonth &&
-        transactionDate <= lastDayOfMonth
+        (selectedMonth === 12 &&
+          transactionDate.getFullYear() === selectedYear) ||
+        (transactionDate >= firstDayOfMonth &&
+          transactionDate <= lastDayOfMonth)
       ) {
         const amountString =
           typeof transaction.amount === "string" ? transaction.amount : "";
@@ -164,7 +97,10 @@ const HomePage = () => {
 
     const total = userData.user.expense.reduce((acc, expense) => {
       const expenseDate = new Date(expense.createdAt);
-      if (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth) {
+      if (
+        (selectedMonth === 12 && expenseDate.getFullYear() === selectedYear) ||
+        (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth)
+      ) {
         const amountString =
           typeof expense.amount === "string" ? expense.amount : "";
         const amount = parseFloat(amountString.replace(",", ".")) || 0;
@@ -174,6 +110,38 @@ const HomePage = () => {
     }, 0);
 
     return total.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  const sumSaldo = () => {
+    if (!userData?.user || !Array.isArray(userData.user.transactions)) {
+      return "0,00";
+    }
+
+    const totalGanhos = userData.user.transactions.reduce(
+      (acc, transaction) => {
+        const amountString =
+          typeof transaction.amount === "string" ? transaction.amount : "";
+        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+        return acc + amount;
+      },
+      0,
+    );
+
+    if (!userData?.user || !Array.isArray(userData.user.expense)) {
+      return "0,00";
+    }
+
+    const totalDespesa = userData.user.expense.reduce((acc, expense) => {
+      const amountString =
+        typeof expense.amount === "string" ? expense.amount : "";
+      const amount = parseFloat(amountString.replace(",", ".")) || 0;
+      return acc + amount;
+    }, 0);
+
+    return (totalGanhos - totalDespesa).toLocaleString("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -297,80 +265,157 @@ const HomePage = () => {
     return date.toLocaleDateString("pt-BR", options);
   };
 
-  const dataArea = dates.map((date) => {
-    const formattedDate = getFormattedDate(date);
+  const dataArea =
+    selectedMonth === 12
+      ? Array.from({ length: 12 }, (_, month) => {
+          const firstDay = new Date(selectedYear, month, 1);
+          const lastDay = new Date(selectedYear, month + 1, 0);
+          const formattedDate = firstDay.toLocaleString("pt-BR", {
+            month: "short",
+            year: "numeric",
+          });
 
-    const transactionsUntilDate =
-      userData?.user?.transactions?.filter((transaction) => {
-        const transactionDate = new Date(transaction.createdAt);
-        return transactionDate <= date;
-      }) || [];
+          const transactionsUntilDate =
+            userData?.user?.transactions?.filter((transaction) => {
+              const transactionDate = new Date(transaction.createdAt);
+              return transactionDate <= lastDay;
+            }) || [];
 
-    const totalGanhos = transactionsUntilDate.reduce(
-      (acc, transaction) =>
-        acc + parseFloat(transaction.amount.replace(",", ".")),
-      0,
-    );
+          const totalGanhos = transactionsUntilDate.reduce(
+            (acc, transaction) =>
+              acc + parseFloat(transaction.amount.replace(",", ".")),
+            0,
+          );
 
-    const expensesUntilDate =
-      userData?.user?.expense?.filter((expense) => {
-        const expenseDate = new Date(expense.createdAt);
-        return expenseDate <= date;
-      }) || [];
+          const expensesUntilDate =
+            userData?.user?.expense?.filter((expense) => {
+              const expenseDate = new Date(expense.createdAt);
+              return expenseDate <= lastDay;
+            }) || [];
 
-    const totalDespesas = expensesUntilDate.reduce(
-      (acc, expense) => acc + parseFloat(expense.amount.replace(",", ".")),
-      0,
-    );
+          const totalDespesas = expensesUntilDate.reduce(
+            (acc, expense) =>
+              acc + parseFloat(expense.amount.replace(",", ".")),
+            0,
+          );
 
-    const saldoTotal = totalGanhos - totalDespesas;
+          return {
+            data: formattedDate,
+            saldoTotal: totalGanhos - totalDespesas,
+          };
+        })
+      : dates.map((date) => {
+          const formattedDate = getFormattedDate(date);
 
-    return {
-      data: formattedDate,
-      Saldo: saldoTotal,
-    };
-  });
+          const transactionsUntilDate =
+            userData?.user?.transactions?.filter((transaction) => {
+              const transactionDate = new Date(transaction.createdAt);
+              return transactionDate <= date;
+            }) || [];
 
-  const dataBarras = dates.map((date) => {
-    const formattedDate = getFormattedDate(date);
+          const totalGanhos = transactionsUntilDate.reduce(
+            (acc, transaction) =>
+              acc + parseFloat(transaction.amount.replace(",", ".")),
+            0,
+          );
 
-    const transactionsForDate =
-      userData?.user?.transactions?.filter((transaction) => {
-        const transactionDate = new Date(transaction.createdAt);
-        return (
-          transactionDate.getDate() === date.getDate() &&
-          transactionDate.getMonth() === date.getMonth() &&
-          transactionDate.getFullYear() === date.getFullYear()
-        );
-      }) || [];
+          const expensesUntilDate =
+            userData?.user?.expense?.filter((expense) => {
+              const expenseDate = new Date(expense.createdAt);
+              return expenseDate <= date;
+            }) || [];
 
-    const totalGanhos = transactionsForDate.reduce(
-      (acc, transaction) =>
-        acc + parseFloat(transaction.amount.replace(",", ".")),
-      0,
-    );
+          const totalDespesas = expensesUntilDate.reduce(
+            (acc, expense) =>
+              acc + parseFloat(expense.amount.replace(",", ".")),
+            0,
+          );
 
-    const expensesForDate =
-      userData?.user?.expense?.filter((expense) => {
-        const expenseDate = new Date(expense.createdAt);
-        return (
-          expenseDate.getDate() === date.getDate() &&
-          expenseDate.getMonth() === date.getMonth() &&
-          expenseDate.getFullYear() === date.getFullYear()
-        );
-      }) || [];
+          return {
+            data: formattedDate,
+            saldoTotal: totalGanhos - totalDespesas,
+          };
+        });
 
-    const totalDespesas = expensesForDate.reduce(
-      (acc, expense) => acc + parseFloat(expense.amount.replace(",", ".")),
-      0,
-    );
+  const dataBarras =
+    selectedMonth === 12
+      ? Array.from({ length: 12 }, (_, month) => {
+          const firstDay = new Date(selectedYear, month, 1);
+          const lastDay = new Date(selectedYear, month + 1, 0);
+          const formattedDate = firstDay.toLocaleString("pt-BR", {
+            month: "short",
+            year: "numeric",
+          });
 
-    return {
-      data: formattedDate,
-      Despesas: totalDespesas,
-      Ganhos: totalGanhos,
-    };
-  });
+          const totalGanhos =
+            userData?.user?.transactions?.reduce((acc, transaction) => {
+              const transactionDate = new Date(transaction.createdAt);
+              if (transactionDate >= firstDay && transactionDate <= lastDay) {
+                const amount =
+                  parseFloat(transaction.amount.replace(",", ".")) || 0;
+                return acc + amount;
+              }
+              return acc;
+            }, 0) || 0;
+
+          const totalDespesas =
+            userData?.user?.expense?.reduce((acc, expense) => {
+              const expenseDate = new Date(expense.createdAt);
+              if (expenseDate >= firstDay && expenseDate <= lastDay) {
+                const amount =
+                  parseFloat(expense.amount.replace(",", ".")) || 0;
+                return acc + amount;
+              }
+              return acc;
+            }, 0) || 0;
+
+          return {
+            data: formattedDate,
+            Despesas: totalDespesas,
+            Ganhos: totalGanhos,
+          };
+        })
+      : dates.map((date) => {
+          const formattedDate = getFormattedDate(date);
+
+          const transactionsForDate =
+            userData?.user?.transactions?.filter((transaction) => {
+              const transactionDate = new Date(transaction.createdAt);
+              return (
+                transactionDate.getDate() === date.getDate() &&
+                transactionDate.getMonth() === date.getMonth() &&
+                transactionDate.getFullYear() === date.getFullYear()
+              );
+            }) || [];
+
+          const totalGanhos = transactionsForDate.reduce(
+            (acc, transaction) =>
+              acc + parseFloat(transaction.amount.replace(",", ".")),
+            0,
+          );
+
+          const expensesForDate =
+            userData?.user?.expense?.filter((expense) => {
+              const expenseDate = new Date(expense.createdAt);
+              return (
+                expenseDate.getDate() === date.getDate() &&
+                expenseDate.getMonth() === date.getMonth() &&
+                expenseDate.getFullYear() === date.getFullYear()
+              );
+            }) || [];
+
+          const totalDespesas = expensesForDate.reduce(
+            (acc, expense) =>
+              acc + parseFloat(expense.amount.replace(",", ".")),
+            0,
+          );
+
+          return {
+            data: formattedDate,
+            Despesas: totalDespesas,
+            Ganhos: totalGanhos,
+          };
+        });
 
   const SubcategoriaTotals: { [SubcategoriaId: string]: number } = {};
 
@@ -427,26 +472,160 @@ const HomePage = () => {
     { value: "9", label: "Outubro" },
     { value: "10", label: "Novembro" },
     { value: "11", label: "Dezembro" },
+    { value: "12", label: "Todos" },
   ];
 
+  const calculatePercentageChange = (
+    currentValue: number,
+    previousValue: number,
+  ): { percentageChange: number; amount: number } => {
+    let percentageChange;
+    let difference = currentValue - previousValue;
+
+    if (previousValue === 0) {
+      percentageChange = currentValue > 0 ? 100 : 0;
+    } else {
+      percentageChange = (difference / previousValue) * 100;
+    }
+
+    return {
+      percentageChange,
+      amount: difference,
+    };
+  };
+
+  const calculateTotalForMonth = (
+    transactions: Transaction[],
+    year: number,
+    month: number,
+  ) => {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    return transactions.reduce((acc, transaction) => {
+      const transactionDate = new Date(transaction.createdAt);
+      if (transactionDate >= firstDay && transactionDate <= lastDay) {
+        const amountString =
+          typeof transaction.amount === "string" ? transaction.amount : "";
+        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+        return acc + amount;
+      }
+      return acc;
+    }, 0);
+  };
+
+  const calculateTotalExpensesForMonth = (
+    expenses: Expense[],
+    year: number,
+    month: number,
+  ) => {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    return expenses.reduce((acc, expense) => {
+      const expenseDate = new Date(expense.createdAt);
+      if (expenseDate >= firstDay && expenseDate <= lastDay) {
+        const amountString =
+          typeof expense.amount === "string" ? expense.amount : "";
+        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+        return acc + amount;
+      }
+      return acc;
+    }, 0);
+  };
+
+  const currentMonthGanhos = calculateTotalForMonth(
+    userData?.user?.transactions || [],
+    selectedYear,
+    selectedMonth,
+  );
+
+  const previousMonthGanhos = calculateTotalForMonth(
+    userData?.user?.transactions || [],
+    selectedYear,
+    selectedMonth - 1,
+  );
+
+  const currentMonthDespesas = calculateTotalExpensesForMonth(
+    userData?.user?.expense || [],
+    selectedYear,
+    selectedMonth,
+  );
+
+  const previousMonthDespesas = calculateTotalExpensesForMonth(
+    userData?.user?.expense || [],
+    selectedYear,
+    selectedMonth - 1,
+  );
+
+  const ganhoChangeResult = calculatePercentageChange(
+    currentMonthGanhos,
+    previousMonthGanhos,
+  );
+  const despesasChangeResult = calculatePercentageChange(
+    currentMonthDespesas,
+    previousMonthDespesas,
+  );
+
+  const ganhoPercentageChange = ganhoChangeResult.percentageChange;
+  const ganhoAmount = ganhoChangeResult.amount;
+
+  const despesasPercentageChange = despesasChangeResult.percentageChange;
+  const despesasAmount = despesasChangeResult.amount;
+
+  const [showSaldo, setShowSaldo] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedShowSaldo = localStorage.getItem("showSaldo");
+      const initialShowSaldo = storedShowSaldo
+        ? JSON.parse(storedShowSaldo)
+        : true;
+      setShowSaldo(initialShowSaldo);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("showSaldo", JSON.stringify(showSaldo));
+    }
+  }, [showSaldo]);
+
   return (
-    <>
       <Page
-        columnLayout="1"
-        namePage={`Confira suas finanças, ${loading === true ? '... ' : userData?.user?.name}!`}
+        skeletonButtonPrimary={loading}
+        skeletonButtonSecondary={loading}
+        namePage={`Confira suas finanças, ${loading === true ? "... " : userData?.user.name}!`}
+        buttonContentSecondary={
+          showSaldo ? "Ocultar números" : "Exibir números"
+        }
+        withActionSecondary
+        onClickActionSecondary={() => setShowSaldo(!showSaldo)}
+        iconButtonSecondary={showSaldo ? "visibility" : "visibility_off"}
       >
         <div className="layout-page">
+          <div className="saldo-total">
+            <p>
+              Saldo total:
+              <strong> R$ {showSaldo ? sumSaldo() : "•••••••"}</strong>
+            </p>
+          </div>
           <div className="input-field">
             <InputSelect
               label="Mês"
               options={monthOptions.map((option) => option.label)}
-              value={monthOptions[selectedMonth].label}
+              value={
+                monthOptions.find(
+                  (option) => option.value === selectedMonth.toString(),
+                )?.label || "Ano"
+              }
               onChange={(value) =>
                 setSelectedMonth(
                   monthOptions.findIndex((option) => option.label === value),
                 )
               }
             />
+
             <InputSelect
               label="Ano"
               options={Array.from({ length: 5 }, (_, index) =>
@@ -456,78 +635,170 @@ const HomePage = () => {
               onChange={(value) => setSelectedYear(parseInt(value))}
             />
           </div>
-          <h1 className="titles-page">Resumo</h1>
-          <div className="layout-sub-page">
-            <div className="col-6">
-              <Card>
-                <CardHeader title="Ganhos:" description={``} />
-                <CardContent>
-                  {loading === true ? (
-                    <>
-                      <Skeleton height="32" width="100" />
-                    </>
-                  ) : (
-                    <h1 className="dinheiro">R$ {sumGanhos()}</h1>
-                  )}
-                  <p className="porcentagem">20%</p>
-                  <div style={{ width: "min-content" }}>
-                    {loading == true ? (
-                      <Skeleton height="40" width="80" />
-                    ) : (
+          <div className="layout-sub-page-50">
+            <h5 className="titles-page">Resumo</h5>
+            <div className="col-12">
+              <div className="col-6">
+                <Card>
+                  <CardHeader title="Ganhos" description={``} />
+                  <CardContent>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "var(--s-spacing-nano)",
+                      }}
+                    >
+                      {loading === true ? (
+                        <>
+                          <Skeleton height="32" width="100" />
+                        </>
+                      ) : (
+                        <h1 className="dinheiro">
+                          R$ {showSaldo ? sumGanhos() : "•••••••"}
+                        </h1>
+                      )}
+                      <p
+                        className={`porcentagem-ganhos ${parseFloat(ganhoPercentageChange.toFixed(2)) < 0 ? "negativo" : "positivo"}`}
+                      >
+                        {" "}
+                        {parseFloat(ganhoPercentageChange.toFixed(2)) < 0
+                          ? "-"
+                          : "+"}
+                        R${" "}
+                        {ganhoAmount
+                          .toFixed(2)
+                          .toString()
+                          .replace(".", ",")
+                          .replace("-", "")}{" "}
+                        (
+                        {ganhoPercentageChange
+                          .toFixed(2)
+                          .toString()
+                          .replace(".", ",")}
+                        %) comparado ao periodo anterior
+                        {parseFloat(ganhoPercentageChange.toFixed(2)) < 0 ? (
+                          <Icon icon="trending_down" size="sm" />
+                        ) : (
+                          <Icon icon="trending_up" size="sm" />
+                        )}
+                      </p>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <div
+                      style={{
+                        width: "min-content",
+                        display: "flex",
+                        gap: "var(--s-spacing-xx-small)",
+                      }}
+                    >
                       <Button
-                        label="Ver mais"
+                        skeleton={loading}
+                        label="Adicionar ganho"
                         variant="primary"
                         size="md"
-                        onClick={() =>
-                          navigateTo("/pagina-inicial/entradas/ganhos")
-                        }
+                        onClick={() => navigateTo("/pagina-inicial/ganhos")}
                       />
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="col-6">
-              <Card>
-                <CardHeader title="Despesas:" description={``} />
-                <CardContent>
-                  {loading === true ? (
-                    <>
-                      <Skeleton height="32" width="100" />
-                    </>
-                  ) : (
-                    <h1 className="dinheiro">R$ {sumDespesas()}</h1>
-                  )}
-                  <p className="porcentagem">20%</p>
-                  <div style={{ width: "min-content" }}>
-                    {loading == true ? (
-                      <Skeleton height="40" width="80" />
-                    ) : (
                       <Button
-                        label="Ver mais"
+                        skeleton={loading}
+                        label="Consultar ganhos"
+                        variant="secondary"
+                        size="md"
+                        onClick={() => navigateTo("/pagina-inicial/ganhos")}
+                      />
+                    </div>
+                  </CardFooter>
+                </Card>
+              </div>
+              <div className="col-6">
+                <Card>
+                  <CardHeader title="Despesas" description={``} />
+                  <CardContent>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "var(--s-spacing-nano)",
+                      }}
+                    >
+                      {loading === true ? (
+                        <>
+                          <Skeleton height="32" width="100" />
+                        </>
+                      ) : (
+                        <h1 className="dinheiro">
+                          R$ {showSaldo ? sumDespesas() : "•••••••"}
+                        </h1>
+                      )}
+                      <div
+                        className={`porcentagem-despesas ${parseFloat(despesasPercentageChange.toFixed(2)) > 0 ? "negativo" : "positivo"}`}
+                      >
+                        {parseFloat(despesasPercentageChange.toFixed(2)) > 0
+                          ? "-"
+                          : "+"}
+                        R${" "}
+                        {despesasAmount
+                          .toFixed(2)
+                          .toString()
+                          .replace(".", ",")
+                          .replace("-", "")}{" "}
+                        (
+                        {despesasPercentageChange
+                          .toFixed(2)
+                          .toString()
+                          .replace(".", ",")}
+                        %) comparado ao periodo anterior
+                        {parseFloat(despesasPercentageChange.toFixed(2)) > 0 ? (
+                          <Icon icon="trending_down" size="sm" />
+                        ) : (
+                          <Icon icon="trending_up" size="sm" />
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <div
+                      style={{
+                        width: "min-content",
+                        display: "flex",
+                        gap: "var(--s-spacing-xx-small)",
+                      }}
+                    >
+                      <Button
+                        skeleton={loading}
+                        label="Adicionar despesa"
                         variant="primary"
                         size="md"
-                        onClick={() =>
-                          navigateTo("/pagina-inicial/saidas/despesas")
-                        }
+                        onClick={() => navigateTo("/pagina-inicial/despesas")}
                       />
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                      <Button
+                        skeleton={loading}
+                        label="Consultar despesas"
+                        variant="secondary"
+                        size="md"
+                        onClick={() => navigateTo("/pagina-inicial/despesas")}
+                      />
+                    </div>
+                  </CardFooter>
+                </Card>
+              </div>
             </div>
           </div>
-          <h1 className="titles-page">Visão geral</h1>
-          <div className="col-12">
-            <Card>
-              <CardHeader title="Ganhos x Despesas" description={``} />
-              <CardContent>
-                <Barras data={dataBarras} loading={loading} />
-              </CardContent>
-              <CardFooter>
-                <div></div>
-              </CardFooter>
-            </Card>
+          <div className="layout-sub-page-100">
+            {" "}
+            <h5 className="titles-page">Visão geral</h5>
+            <div className="col-12">
+              <Card>
+                <CardHeader title="Ganhos x Despesas" description={``} />
+                <CardContent>
+                  <Barras data={dataBarras} loading={loading} />
+                </CardContent>
+                <CardFooter>
+                  <div></div>
+                </CardFooter>
+              </Card>
+            </div>
           </div>
           <div className="col-12">
             <Card>
@@ -540,77 +811,80 @@ const HomePage = () => {
               </CardFooter>
             </Card>
           </div>
-          <div className="layout-sub-page">
-            <div className="col-6">
-              <Card>
-                <CardHeader title="Fontes de renda" description={``} />
-                <CardContent>
-                  <Pizza
-                    pizza={1}
-                    name="ganho"
-                    data={dataFonteDeRenda}
-                    loading={loading}
-                  />
-                </CardContent>
-                <CardFooter>
-                  <div></div>
-                </CardFooter>
-              </Card>
-            </div>
-            <div className="col-6">
-              <Card>
-                <CardHeader title="Formas de pagamento" description={``} />
-                <CardContent>
-                  <Pizza
-                    pizza={1}
-                    name="despesa"
-                    data={dataFormasDePagamento}
-                    loading={loading}
-                  />
-                </CardContent>
-                <CardFooter>
-                  <div></div>
-                </CardFooter>
-              </Card>
+          <div className="layout-sub-page-50">
+            <div className="col-12">
+              <div className="col-6">
+                <Card>
+                  <CardHeader title="Fontes de renda" description={``} />
+                  <CardContent>
+                    <Pizza
+                      pizza={1}
+                      name="ganho"
+                      data={dataFonteDeRenda}
+                      loading={loading}
+                    />
+                  </CardContent>
+                  <CardFooter>
+                    <div></div>
+                  </CardFooter>
+                </Card>
+              </div>
+              <div className="col-6">
+                <Card>
+                  <CardHeader title="Formas de pagamento" description={``} />
+                  <CardContent>
+                    <Pizza
+                      pizza={1}
+                      name="despesa"
+                      data={dataFormasDePagamento}
+                      loading={loading}
+                    />
+                  </CardContent>
+                  <CardFooter>
+                    <div></div>
+                  </CardFooter>
+                </Card>
+              </div>
             </div>
           </div>
-          <div className="layout-sub-page">
-            <div className="col-6">
-              <Card>
-                <CardHeader title="Categorias" description={``} />
-                <CardContent>
-                  <Pizza
-                    pizza={2}
-                    name="Categorias"
-                    data={dataCategorias}
-                    loading={loading}
-                  />
-                </CardContent>
-                <CardFooter>
-                  <div></div>
-                </CardFooter>
-              </Card>
-            </div>
-            <div className="col-6">
-              <Card>
-                <CardHeader title="Subcategorias" description={``} />
-                <CardContent>
-                  <Pizza
-                    pizza={2}
-                    name="subcategoria"
-                    data={dataSubCategorias}
-                    loading={loading}
-                  />
-                </CardContent>
-                <CardFooter>
-                  <div></div>
-                </CardFooter>
-              </Card>
+          <div className="layout-sub-page-50">
+            <div className="col-12">
+              <div className="col-6">
+                <Card>
+                  <CardHeader title="Categorias" description={``} />
+                  <CardContent>
+                    <Pizza
+                      pizza={2}
+                      name="despesa"
+                      data={dataCategorias}
+                      loading={loading}
+                    />
+                  </CardContent>
+                  <CardFooter>
+                    <div></div>
+                  </CardFooter>
+                </Card>
+              </div>
+              <div className="col-6">
+                <Card>
+                  <CardHeader title="Subcategorias" description={``} />
+                  <CardContent>
+                    <Pizza
+                      pizza={2}
+                      name="despesa"
+                      data={dataSubCategorias}
+                      loading={loading}
+                    />
+                  </CardContent>
+                  <CardFooter>
+                    <div></div>
+                  </CardFooter>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
       </Page>
-    </>
   );
 };
 

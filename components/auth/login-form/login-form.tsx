@@ -17,7 +17,7 @@ import {
 import "./login-form.scss";
 import { LoginSchema } from "@/schemas";
 import { login } from "@/actions/login";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();
@@ -50,14 +50,20 @@ export const LoginForm = () => {
 
   const { errors } = form.formState;
 
+  const router = useRouter();
+
+  const navigateTo = (route: string) => {
+    router.push(route);
+  };
+
   return (
     <div className="card-login">
       <Card>
         <h1>Login</h1>
         <CardContent>
-          <p>
+          <p onClick={() => navigateTo("/auth/criar-conta")}>
             Não tem uma conta?
-            <Link content="Crie a sua conta." href="/auth/criar-conta"></Link>
+            <Link content="Crie a sua conta."></Link>
           </p>
           <form className="form-login" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="input-field">

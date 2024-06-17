@@ -16,6 +16,7 @@ import { useState, useTransition } from "react";
 import { register } from "@/actions/register";
 import React from "react";
 import { login } from "@/actions/login";
+import { useRouter } from "next/navigation";
 
 export const RegisterForm = () => {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -52,14 +53,19 @@ export const RegisterForm = () => {
 
   const { errors } = form.formState;
 
+  const router = useRouter();
+
+  const navigateTo = (route: string) => {
+    router.push(route);
+  };
+
   return (
     <div className="card-sign-up">
       <Card>
         <h1>Criar Conta</h1>
         <CardContent>
-          <p>
-            Já tem uma conta?{" "}
-            <Link content="Faça seu login." href="/auth/login" />
+          <p onClick={() => navigateTo("/auth/login")}>
+            Já tem uma conta? <Link content="Faça seu login." />
           </p>
           <form className="form-sign-up" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="input-field">

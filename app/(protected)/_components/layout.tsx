@@ -10,7 +10,6 @@ import {
   SidebarItem,
   SidebarList,
   SidebarSubItem,
-  Skeleton,
 } from "design-system-zeroz";
 import DropDownMenu, {
   DropDownMenuItem,
@@ -18,43 +17,23 @@ import DropDownMenu, {
 } from "design-system-zeroz/src/app/components/DropdownMenu/DropdownMenu";
 import { Sair } from "@/actions/logout";
 import { usePathname, useRouter } from "next/navigation";
+import { fetchUserData, UserData } from "@/actions/fetch";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-interface UserData {
-  user: user;
-}
-
-interface user {
-  name: string;
-}
-
-const API = process.env.NEXT_PUBLIC_APP_URL;
-
 const LayoutPage = (props: LayoutProps) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-
-  async function fetchUserData() {
-    try {
-      const response = await fetch(`${API}/api/auth/session`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-      }
-      const userData = await response.json();
-      setUserData(userData);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const initialTheme =
+    typeof window !== "undefined" && localStorage.getItem("theme");
+  const [theme, setTheme] = useState<string>(initialTheme || "");
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    fetchUserData(setUserData, setLoading);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   const pathname = usePathname();
   const router = useRouter();
@@ -68,30 +47,62 @@ const LayoutPage = (props: LayoutProps) => {
     router.push(route);
   };
 
-  const breadcrumbs = () => {
-    const routes: { [key: string]: string } = {
-      "/home": "Home",
-      "/home/ganhos": "Home",
-      "/conta": "Conta",
-    };
+  const toggleTheme = async () => {
+    const newTheme = theme === "light" ? "dark" : "light";
 
-    const currentRoute = routes[pathname] || pathname.substr(1);
-
-    if (pathname === "/home/horarios") {
-      return (
-        <BreadcrumbRoot href="/home" pageName={currentRoute}>
-          <Breadcrumb href={pathname} pageName="ganhos" />
-        </BreadcrumbRoot>
-      );
-    } else {
-      return <BreadcrumbRoot href={pathname} pageName={currentRoute} />;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("theme", newTheme);
     }
+    setTheme(newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  };
+
+  const generateBreadcrumbs = () => {
+    const paths = pathname.split("/").filter((path) => path);
+    let accumulatedPath = "/";
+
+    const breadcrumbs = paths.map((path, index) => {
+      accumulatedPath += `${path}/`;
+      if (path === "pagina-inicial") {
+        return (
+          <BreadcrumbRoot
+            key={index}
+            pageName={path === "pagina-inicial" ? "Página inicial" : ""}
+            href={accumulatedPath.slice(0, -1)}
+          />
+        );
+      }
+
+      if (path === "conta") {
+        return (
+          <BreadcrumbRoot
+            key={index}
+            pageName={path === "conta" ? "Conta" : ""}
+            href={accumulatedPath.slice(0, -1)}
+          />
+        );
+      }
+
+      const pageName =
+        path.charAt(0).toUpperCase() + path.slice(1).toLowerCase();
+
+      return (
+        <Breadcrumb
+          key={index}
+          pageName={pageName.replace("-", " ").replace("-", " ")}
+          href={accumulatedPath.slice(0, -1)}
+        />
+      );
+    });
+
+    return breadcrumbs;
   };
 
   if (
     pathname === "/auth/login" ||
     pathname === "/auth/criar-conta" ||
-    pathname === "/auth/error"
+    pathname === "/auth/error" ||
+    pathname === "/"
   ) {
     return <div>{props.children}</div>;
   } else {
@@ -118,15 +129,13 @@ const LayoutPage = (props: LayoutProps) => {
             >
               <SidebarSubItem
                 title="Ganhos"
-                active={pathname === "/pagina-inicial/entradas/ganhos"}
-                onClick={() => navigateTo("/pagina-inicial/entradas/ganhos")}
+                active={pathname === "/pagina-inicial/ganhos"}
+                onClick={() => navigateTo("/pagina-inicial/ganhos")}
               />
               <SidebarSubItem
                 title="Fonte de renda"
-                active={pathname === "/pagina-inicial/entradas/fonte-de-renda"}
-                onClick={() =>
-                  navigateTo("/pagina-inicial/entradas/fonte-de-renda")
-                }
+                active={pathname === "/pagina-inicial/fonte-de-renda"}
+                onClick={() => navigateTo("/pagina-inicial/fonte-de-renda")}
               />
             </SidebarItem>
             <SidebarItem
@@ -137,21 +146,19 @@ const LayoutPage = (props: LayoutProps) => {
             >
               <SidebarSubItem
                 title="Despesas"
-                active={pathname === "/pagina-inicial/saidas/despesas"}
-                onClick={() => navigateTo("/pagina-inicial/saidas/despesas")}
+                active={pathname === "/pagina-inicial/despesas"}
+                onClick={() => navigateTo("/pagina-inicial/despesas")}
               />
               <SidebarSubItem
                 title="Categorias"
-                active={pathname === "/pagina-inicial/saidas/categorias"}
-                onClick={() => navigateTo("/pagina-inicial/saidas/categorias")}
+                active={pathname === "/pagina-inicial/categorias"}
+                onClick={() => navigateTo("/pagina-inicial/categorias")}
               />
               <SidebarSubItem
                 title="Formas de pagamento"
-                active={
-                  pathname === "/pagina-inicial/saidas/formas-de-pagamento"
-                }
+                active={pathname === "/pagina-inicial/formas-de-pagamento"}
                 onClick={() =>
-                  navigateTo("/pagina-inicial/saidas/formas-de-pagamento")
+                  navigateTo("/pagina-inicial/formas-de-pagamento")
                 }
               />
             </SidebarItem>
@@ -166,29 +173,39 @@ const LayoutPage = (props: LayoutProps) => {
             />
           </SidebarList>
         </SideBar>
-        <Header breadcrumb={breadcrumbs()} onClick={toggleSidebar}>
-          {loading === true ? (
-            <Skeleton height="56" width="180" />
-          ) : (
-            <HeaderProfile name={userData?.user?.name || ""}>
-              <DropDownMenu dropDownMenu>
-                <DropDownMenuTitle content="Conta" />
-                <DropDownMenuItem
-                  content="Conta"
-                  typeIcon="account_circle"
-                  onClick={() => navigateTo("/conta")}
-                />
-                <DropDownMenuTitle content="Sair" />
-                <DropDownMenuItem
-                  content="Sair"
-                  typeIcon="logout"
-                  onClick={() => {
-                    Sair();
-                  }}
-                />
-              </DropDownMenu>
-            </HeaderProfile>
-          )}
+        <Header
+          skeleton={loading}
+          breadcrumb={
+            <div style={{ display: "flex", gap: "var(--s-spacing-xx-small)" }}>
+              {generateBreadcrumbs()}
+            </div>
+          }
+          onClick={toggleSidebar}
+        >
+          <HeaderProfile skeleton={loading} name={userData?.user?.name || ""}>
+            <DropDownMenu dropDownMenu>
+              <DropDownMenuTitle content="Conta" />
+              <DropDownMenuItem
+                content="Conta"
+                typeIcon="account_circle"
+                onClick={() => navigateTo("/conta")}
+              />
+              <DropDownMenuTitle content="Tema" />
+              <DropDownMenuItem
+                content={theme === "light" ? "Dark" : "Light"}
+                typeIcon={theme === "light" ? "dark_mode" : "light_mode"}
+                onClick={toggleTheme}
+              />
+              <DropDownMenuTitle content="Sair" />
+              <DropDownMenuItem
+                content="Sair"
+                typeIcon="logout"
+                onClick={() => {
+                  Sair();
+                }}
+              />
+            </DropDownMenu>
+          </HeaderProfile>
         </Header>
         {props.children}
       </AppShell>

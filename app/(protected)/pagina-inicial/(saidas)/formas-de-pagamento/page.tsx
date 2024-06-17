@@ -1,7 +1,12 @@
 "use client";
+import {
+  AtualizarFormaDePagamento,
+  CriarFormaDePagamento,
+  ExcluirFormaDePagamento,
+} from "@/actions/forma-de-pagamento";
 import LayoutPage from "@/app/(protected)/_components/layout";
 import { useCurrentUser } from "@/hooks/user-current-user";
-import { NovaCategoriaSchema } from "@/schemas";
+import { NewCategorySchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Aside,
@@ -16,43 +21,28 @@ import {
   Modal,
   FooterModal,
   ButtonIcon,
-  Tag,
   Skeleton,
 } from "design-system-zeroz";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import "./categorias.scss";
-import {
-  AtualizarCategoria,
-  CriarCategoria,
-  ExcluirCategoria,
-} from "@/actions/categoria";
+import "./forma-de-pagamento.scss";
 import AuthProgress from "@/components/auth/Progress/progress";
-interface Subcategoria {
+
+interface FormaDePagamento {
   id: string;
   name: string;
   userId: string;
   createdAt: string;
 }
-
-interface Categoria {
-  id: string;
-  name: string;
-  createdAt: string;
-  userId: string;
-  subcategoria: Subcategoria[];
-}
-
 interface User {
   id: string;
   name: string;
   email: string;
   image: string | null;
   role: string;
-  subcategoria: Subcategoria[];
-  categoria: Categoria[];
+  formaDePagamento: FormaDePagamento[];
 }
 
 interface UserData {
@@ -63,23 +53,21 @@ interface UserData {
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
 export default function CategoryPage() {
-  const user = useCurrentUser();
-
   const [isAsideOpen, setIsAsideOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
   const [editAsideOpen, setEditAsideOpen] = useState<{
     [key: string]: boolean;
   }>({});
+
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
   const [notificationOpen, setNotificationOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof NovaCategoriaSchema>>({
-    resolver: zodResolver(NovaCategoriaSchema),
+  const form = useForm<z.infer<typeof NewCategorySchema>>({
+    resolver: zodResolver(NewCategorySchema),
     defaultValues: {
       name: "",
       date: new Date(),
-      subcategoria: "",
     },
   });
 
@@ -105,24 +93,6 @@ export default function CategoryPage() {
     fetchUserData();
   }, []);
 
-  const [subcategoriasMap, setSubcategoriasMap] = useState<{
-    [categoryId: string]: string[];
-  }>({});
-
-  useEffect(() => {
-    if (userData?.user?.categoria) {
-      const initialSubcategoriasMap = userData?.user.categoria.reduce(
-        (acc: { [categoryId: string]: string[] }, categoria: any) => {
-          acc[categoria.id] =
-            categoria.Subcategorias?.map((sub: any) => sub.name) || [];
-          return acc;
-        },
-        {},
-      );
-      setSubcategoriasMap(initialSubcategoriasMap);
-    }
-  }, [userData?.user]);
-
   const toggleAside = () => {
     setIsAsideOpen(!isAsideOpen);
   };
@@ -134,31 +104,10 @@ export default function CategoryPage() {
     }));
   };
 
-  const editingAside = (categoryId: string, categoryName?: string) => {
-    if (categoryName) {
-      form.setValue("name", categoryName);
-    }
+  const editingAside = (categoryId: string) => {
     setEditAsideOpen((prev) => ({
       ...prev,
       [categoryId]: !prev[categoryId],
-    }));
-  };
-
-  const adicionarSubcategoria = (categoryId: string) => {
-    const subcategoria = form.watch("subcategoria");
-    if (subcategoria && !subcategoriasMap[categoryId]?.includes(subcategoria)) {
-      setSubcategoriasMap((prev) => ({
-        ...prev,
-        [categoryId]: [...(prev[categoryId] || []), subcategoria],
-      }));
-      form.setValue("subcategoria", "");
-    }
-  };
-
-  const removerSubcategoria = (categoryId: string, subcategoria: string) => {
-    setSubcategoriasMap((prev) => ({
-      ...prev,
-      [categoryId]: prev[categoryId]?.filter((item) => item !== subcategoria),
     }));
   };
 
@@ -181,22 +130,15 @@ export default function CategoryPage() {
     setLoading(success ? 100 : 0);
   };
 
-  const criar = async () => {
+  const criar = async (values: z.infer<typeof NewCategorySchema>) => {
     setError("");
     setSuccess("");
     toggleAside();
     setLoadingError(false);
 
     const loadingInterval = startLoading();
-
-    const categoriaValues = {
-      name: form.getValues().name,
-      date: form.getValues().date,
-      subcategoria: subcategoriasMap["new"] || [],
-    };
-
     try {
-      const data = await CriarCategoria(categoriaValues);
+      const data = await CriarFormaDePagamento(values);
       if (data.error) {
         setError(data.error);
         setSuccess("");
@@ -217,16 +159,18 @@ export default function CategoryPage() {
   };
 
   const atualizar = async (categoryId: string) => {
+    setError("");
+    setSuccess("");
     editingAside(categoryId);
-    const categoriaValues = {
-      name: form.getValues().name,
-      date: form.getValues().date,
-      subcategoria: subcategoriasMap[categoryId] || [],
-    };
-    const loadingInterval = startLoading();
 
+    setLoadingError(false);
+
+    const loadingInterval = startLoading();
     try {
-      const data = await AtualizarCategoria(categoriaValues, categoryId);
+      const data = await AtualizarFormaDePagamento(
+        form.getValues(),
+        categoryId,
+      );
       if (data.error) {
         setError(data.error);
         setSuccess("");
@@ -238,7 +182,7 @@ export default function CategoryPage() {
         setNotificationOpen(true);
       }
     } catch (error) {
-      setError("Ocorreu um erro ao atualizar a categoria");
+      setError("Ocorreu um erro ao excluir a forma de pagamento.");
       setLoadingError(true);
     } finally {
       stopLoading(loadingInterval, !loadingError);
@@ -247,11 +191,14 @@ export default function CategoryPage() {
   };
 
   const excluir = async (categoryId: string) => {
+    setError("");
+    setSuccess("");
     toggleModal(categoryId);
-    const loadingInterval = startLoading();
+    setLoadingError(false);
 
+    const loadingInterval = startLoading();
     try {
-      const data = await ExcluirCategoria(categoryId);
+      const data = await ExcluirFormaDePagamento(categoryId);
       if (data.error) {
         setError(data.error);
         setSuccess("");
@@ -271,19 +218,15 @@ export default function CategoryPage() {
     }
   };
 
-  const columns: string[] = ["Data", "Categoria", "Subcategorias", "Ações"];
+  const columns: string[] = ["Data", "Forma", "Ações"];
 
-  const renderCategoryActions = (
-    categoryId: string,
-    categoryName: string,
-    existingSubcategorias: string[],
-  ) => (
+  const renderCategoryActions = (categoryId: string, categoryName: string) => (
     <div className="actions">
       <Button
         size="sm"
         variant="secondary"
         label="Editar"
-        onClick={() => editingAside(categoryId, categoryName)}
+        onClick={() => editingAside(categoryId)}
       />
       <Aside
         isOpen={editAsideOpen[categoryId] || false}
@@ -292,52 +235,10 @@ export default function CategoryPage() {
           <AsideContent>
             <Input
               label="Nome"
-              placeholder="Ex: Investimentos"
-              value={form.watch("name") || ""}
+              placeholder="Ex: Cartão de Crédito"
+              value={form.watch("name") || categoryName || ""}
               onChange={(e) => form.setValue("name", e.target.value)}
             />
-            <div
-              style={{
-                display: "flex",
-                gap: "8px",
-                alignItems: "end",
-                flex: "1",
-              }}
-            >
-              <Input
-                label="Subcategoria"
-                placeholder="Ex: Ifood"
-                value={form.watch("subcategoria") || ""}
-                onChange={(e) => form.setValue("subcategoria", e.target.value)}
-              />
-              <Button
-                style={{ width: "fit-content" }}
-                label="Adicionar"
-                size="md"
-                variant="primary"
-                onClick={() => adicionarSubcategoria(categoryId)}
-              />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: "var(--s-spacing-xx-small)",
-                flexWrap: "wrap",
-              }}
-            >
-              {(subcategoriasMap[categoryId] || existingSubcategorias).map(
-                (subcategoria, index) => (
-                  <Tag
-                    key={subcategoria}
-                    content={subcategoria}
-                    onClose={() =>
-                      removerSubcategoria(categoryId, subcategoria)
-                    }
-                    variant="secondary"
-                  />
-                ),
-              )}
-            </div>
           </AsideContent>
         }
         footer={
@@ -364,8 +265,8 @@ export default function CategoryPage() {
             </div>
           </AsideFooter>
         }
-        title="Editar categoria"
-        description="Edite a categoria para os seus ganhos."
+        title="Editar forma de pagamento"
+        description="Edite a forma de pagamento para os seus ganhos."
       />
       <ButtonIcon
         size="sm"
@@ -400,8 +301,8 @@ export default function CategoryPage() {
             </div>
           </FooterModal>
         }
-        title="Excluir categoria"
-        description="Você tem certeza que deseja excluir essa categoria?"
+        title="Excluir forma de pagamento"
+        description="Você tem certeza que deseja excluir essa forma de pagamento?"
         isOpen={modalOpen[categoryId] || false}
         dismissible={true}
       />
@@ -410,30 +311,30 @@ export default function CategoryPage() {
 
   const userDataIsValid = userData && userData.user;
 
-  const data: { [key: string]: any; id: string }[] = userData?.user?.categoria
-    ? userData?.user.categoria.map((categoria: any) => {
-        const formattedDate = new Date(categoria.createdAt).toLocaleDateString(
-          "pt-BR",
-        );
+  const data: { [key: string]: any; id: string }[] = userData?.user
+    ?.formaDePagamento
+    ? userData?.user.formaDePagamento.map(
+        (formaDePagamento: any, index: number) => {
+          const formattedDate = new Date(
+            formaDePagamento.createdAt,
+          ).toLocaleDateString("pt-BR");
 
-        return {
-          id: categoria.id,
-          Data: formattedDate,
-          Categoria: categoria.name,
-          Subcategorias: categoria.Subcategorias?.length,
-          Ações: renderCategoryActions(
-            categoria.id,
-            categoria.name,
-            categoria.Subcategorias?.map((sub: any) => sub.name) || [],
-          ),
-        };
-      })
+          return {
+            id: formaDePagamento.id,
+            Data: formattedDate,
+            Forma: formaDePagamento.name,
+            Ações: renderCategoryActions(
+              formaDePagamento.id,
+              formaDePagamento.name,
+            ),
+          };
+        },
+      )
     : [
         {
           id: "1",
           Data: <Skeleton height="32" width="100" />,
-          Categoria: <Skeleton height="32" width="100" />,
-          Subcategorias: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
           Ações: (
             <div className="actions">
               <Skeleton height="32" width="65" />
@@ -444,8 +345,8 @@ export default function CategoryPage() {
         {
           id: "2",
           Data: <Skeleton height="32" width="100" />,
-          Categoria: <Skeleton height="32" width="100" />,
-          Subcategorias: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+
           Ações: (
             <div className="actions">
               <Skeleton height="32" width="65" />
@@ -456,8 +357,8 @@ export default function CategoryPage() {
         {
           id: "3",
           Data: <Skeleton height="32" width="100" />,
-          Categoria: <Skeleton height="32" width="100" />,
-          Subcategorias: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+
           Ações: (
             <div className="actions">
               <Skeleton height="32" width="65" />
@@ -468,8 +369,8 @@ export default function CategoryPage() {
         {
           id: "4",
           Data: <Skeleton height="32" width="100" />,
-          Categoria: <Skeleton height="32" width="100" />,
-          Subcategorias: <Skeleton height="32" width="100" />,
+          Forma: <Skeleton height="32" width="100" />,
+
           Ações: (
             <div className="actions">
               <Skeleton height="32" width="65" />
@@ -484,43 +385,48 @@ export default function CategoryPage() {
   return (
     <>
       <Page
-        namePage="Categorias"
-        columnLayout="1"
+        namePage="Formas de pagamento"
         withActionPrimary={
-          userDataIsValid ? userData.user.categoria.length > 0 : undefined
+          userDataIsValid
+            ? userData.user.formaDePagamento.length > 0
+            : undefined
         }
         buttonContentPrimary="Adicionar"
         onClickActionPrimary={toggleAside}
       >
         <AuthProgress loading={loading} error={loadingError} />
-        {(userDataIsValid ? userData.user.categoria.length < 1 : undefined) ? (
+
+        {(
+          userDataIsValid
+            ? userData.user.formaDePagamento.length < 1
+            : undefined
+        ) ? (
           <div style={{ display: "flex", justifyContent: "center" }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 height: "100%",
-                maxWidth: "500px",
-                overflow: "auto",
+                maxWidth: "700px",
               }}
             >
               <EmptyState
-                title="Crie categorias para organizar as suas despesas!"
-                description="Classifique cada despesa, em uma categoria apropriada para facilitar a organização e análise do seu controle financeiro."
-                icon="car_tag"
-                buttonContentPrimary="Adicionar categoria"
+                title="Adicione as formas de pagamentos das suas despesas!"
+                description="Indique a forma de pagamento utilizada nos seus pagamentos, seja em dinheiro, cartão ou transferência, para manter um registro detalhado e preciso das suas movimentações financeiras."
+                icon="local_atm"
+                buttonContentPrimary="Adicionar forma de pagamento"
                 onClickActionPrimary={toggleAside}
               />
             </div>
           </div>
         ) : (
           <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            height: "fit-content",
-            overflow: 'auto'
-          }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              height: "fit-content",
+              overflow: "auto",
+            }}
           >
             <DataTable
               labelSecondButton=""
@@ -549,54 +455,16 @@ export default function CategoryPage() {
         <Aside
           isOpen={isAsideOpen}
           toggleAside={toggleAside}
+          title="Adicionar forma de pagamento"
+          description="Crie uma forma de pagamento para suas despesas."
           content={
             <AsideContent>
               <Input
-                label="Nome"
-                placeholder="Ex: Investimentos"
-                value={form.watch("name")}
+                value={form.watch("name") || ""}
                 onChange={(e) => form.setValue("name", e.target.value)}
+                label="Nome"
+                placeholder="Ex: Cartão de Crédito"
               />
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  alignItems: "end",
-                  flex: "1",
-                }}
-              >
-                <Input
-                  label="Subcategoria"
-                  placeholder="Ex: Ifood"
-                  value={form.watch("subcategoria") || ""}
-                  onChange={(e) =>
-                    form.setValue("subcategoria", e.target.value)
-                  }
-                />
-                <Button
-                  style={{ width: "fit-content" }}
-                  label="Adicionar"
-                  size="md"
-                  variant="primary"
-                  onClick={() => adicionarSubcategoria("new")}
-                />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "var(--s-spacing-xx-small)",
-                  flexWrap: "wrap",
-                }}
-              >
-                {(subcategoriasMap["new"] || []).map((subcategoria, index) => (
-                  <Tag
-                    key={subcategoria}
-                    content={subcategoria}
-                    onClose={() => removerSubcategoria("new", subcategoria)}
-                    variant="secondary"
-                  />
-                ))}
-              </div>
             </AsideContent>
           }
           footer={
@@ -612,7 +480,7 @@ export default function CategoryPage() {
                   size="md"
                   variant="primary"
                   label="Adicionar"
-                  onClick={form.handleSubmit(criar)}
+                  onClick={() => criar(form.getValues())}
                 />
                 <Button
                   size="md"
@@ -623,8 +491,6 @@ export default function CategoryPage() {
               </div>
             </AsideFooter>
           }
-          title="Adicionar categoria"
-          description="Adicione uma categoria para os seus ganhos."
         />
         {success && (
           <Notification

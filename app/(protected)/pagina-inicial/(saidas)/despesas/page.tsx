@@ -1,9 +1,8 @@
 "use client";
-import React, { startTransition, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Atualizar, Criar, Deletar } from "@/actions/expense";
 import { ExpenseSchema } from "@/schemas/index";
 import { z } from "zod";
-import { useCurrentUser } from "@/hooks/user-current-user";
 import {
   Aside,
   AsideContent,
@@ -608,7 +607,6 @@ const HomePage = () => {
           userDataIsValid ? userData.user.expense.length > 0 : undefined
         }
         buttonContentPrimary="Adicionar"
-        columnLayout="1"
         namePage="Suas despesas"
       >
         <AuthProgress loading={loading} error={loadingError} />
@@ -638,7 +636,7 @@ const HomePage = () => {
               display: "flex",
               alignItems: "center",
               height: "fit-content",
-              overflow: 'auto'
+              overflow: "auto",
             }}
           >
             <DataTable

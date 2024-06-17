@@ -1,9 +1,8 @@
 "use client";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { PieChart, Pie, Sector, Legend, Cell } from "recharts";
-
+import { PieChart, Pie, Sector, Legend } from "recharts";
 import "./pizza.scss";
-import { Icon } from "design-system-zeroz";
+import { EmptyState, Icon } from "design-system-zeroz";
 
 const CustomLegend = (props: any) => {
   const { payload } = props;
@@ -19,10 +18,17 @@ const CustomLegend = (props: any) => {
           }}
         >
           <span className="legend-color-box" style={{ color: entry.color }}>
-            {" "}
             <Icon fill={true} icon="square" size="md" />
           </span>
-          <span className="legend-text">{entry.value}</span>
+          <span
+            className="legend-text"
+            style={{
+              color: "var(--s-color-content-default)",
+              font: "var(--s-typography-paragraph-strong)",
+            }}
+          >
+            {entry.value}
+          </span>
         </div>
       ))}
     </div>
@@ -50,7 +56,7 @@ const renderActiveShape = (props: any, loading: boolean, pizza: 1 | 2) => {
   const sy = cy + (outerRadius + 10) * sin;
   const mx = cx + (outerRadius + 20) * cos;
   const my = cy + (outerRadius + 20) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * (outerRadius === 75 ? 22 : 5);
+  const ex = mx + (cos >= 0 ? 1 : -1) * (outerRadius === 90 ? 22 : 0);
   const ey = my;
   const textAnchor = cos >= 0 ? "start" : "end";
 
@@ -69,24 +75,20 @@ const renderActiveShape = (props: any, loading: boolean, pizza: 1 | 2) => {
         dy={8}
         textAnchor="middle"
       >
-        {pizza === 1 ? (
-          <tspan>{loading ? "Carregando..." : payload.name}</tspan>
-        ) : (
-          <>
-            <tspan
-              style={{ font: "var(--s-typography-paragraph-regular)" }}
-              x={cx}
-              dy="1.5em"
-            >
-              {loading ? "Carregando..." : payload.name}
-            </tspan>
-            <tspan
-              style={{ font: "var(--s-typography-paragraph-strong)" }}
-              x={cx}
-              dy="-2em"
-            >{`R$ ${value.toFixed(2).toString().replace(".", ",")}`}</tspan>
-          </>
-        )}
+        <>
+          <tspan
+            style={{ font: "var(--s-typography-paragraph-regular)" }}
+            x={cx}
+            dy="1.5em"
+          >
+            {loading ? "Carregando..." : payload.name}
+          </tspan>
+          <tspan
+            style={{ font: "var(--s-typography-paragraph-strong)" }}
+            x={cx}
+            dy="-2em"
+          >{`R$ ${value.toFixed(2).toString().replace(".", ",")}`}</tspan>
+        </>
       </text>
       <Sector
         cx={cx}
@@ -96,53 +98,8 @@ const renderActiveShape = (props: any, loading: boolean, pizza: 1 | 2) => {
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
+        stroke={fill}
       />
-
-      {pizza === 1 ? (
-        <>
-          <Sector
-            cx={cx}
-            cy={cy}
-            startAngle={startAngle}
-            endAngle={endAngle}
-            innerRadius={outerRadius + 6}
-            outerRadius={outerRadius + 10}
-            fill={fill}
-          />
-          <path
-            d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-            stroke={fill}
-            fill="none"
-            z={99}
-          />
-          <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-          <text
-            style={{
-              font: "var(--s-typography-paragraph-strong)",
-              fill: "var(--s-color-content-default)",
-            }}
-            x={ex + (cos >= 0 ? 1 : -1) * 12}
-            y={ey}
-            textAnchor={textAnchor}
-            fill="#333"
-          >{`R$ ${value.toFixed(2).toString().replace(".", ",")}`}</text>
-          <text
-            style={{
-              font: "var(--s-typography-paragraph-regular)",
-              fill: "var(--s-color-content-light)",
-            }}
-            x={ex + (cos >= 0 ? 1 : -1) * 12}
-            y={ey}
-            dy={18}
-            textAnchor={textAnchor}
-            fill="#999"
-          >
-            {`${(percent * 100).toFixed(0)}%`}
-          </text>
-        </>
-      ) : (
-        <></>
-      )}
     </g>
   );
 };
@@ -175,19 +132,23 @@ const Pizza = ({
         setChartHeight(chartContainerRef.current.offsetHeight);
       }
 
-      if (window.innerWidth <= 490) {
-        setRadius({ inner: 55, outer: 65 });
+      if (typeof window !== "undefined" && window.innerWidth <= 490) {
+        setRadius({ inner: 60, outer: 70 });
       } else {
-        setRadius({ inner: 65, outer: 75 });
+        setRadius({ inner: 70, outer: 90 });
       }
     };
 
     updateDimensions();
 
-    window.addEventListener("resize", updateDimensions);
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", updateDimensions);
+    }
 
     return () => {
-      window.removeEventListener("resize", updateDimensions);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", updateDimensions);
+      }
     };
   }, []);
 
@@ -220,61 +181,39 @@ const Pizza = ({
   return (
     <div ref={chartContainerRef} className="pizza-container">
       {loading === false && data.length === 0 ? (
-        <p>
-          Nenhum{name === "despesa" ? "a" : ""} {name} foi criad
-          {name === "despesa" ? "a" : "o"}
-        </p>
+        <EmptyState
+          icon="database"
+          title="Sem dados no período selecionado"
+          description={`Altere o período selecionado ou registre novas ${name === "despesa" ? "despesas" : "entradas"}.`}
+        />
       ) : (
         <>
-          {pizza === 1 ? (
-            <PieChart width={chartWidth} height={chartHeight}>
-              <Pie
-                activeIndex={activeIndex}
-                activeShape={(props: any) =>
-                  renderActiveShape(props, loading, 1)
-                }
-                data={loading === false ? data : loadingData}
-                cx="50%"
-                cy="50%"
-                innerRadius={radius.inner}
-                outerRadius={radius.outer}
-                fill={`${
-                  loading === false
-                    ? "var(--s-color-content-highlight)"
-                    : "var(--s-color-content-disable)"
-                }`}
-                dataKey="amount"
-                onMouseEnter={onPieEnter}
-              />
-            </PieChart>
-          ) : (
-            <PieChart width={chartWidth} height={chartHeight}>
-              <Pie
-                activeIndex={activeIndex}
-                activeShape={(props: any) =>
-                  renderActiveShape(props, loading, 2)
-                }
-                data={loading === false ? data : loadingData}
-                cx="50%"
-                cy="50%"
-                innerRadius={radius.inner}
-                outerRadius={radius.outer}
-                fill={`${
-                  loading === false
-                    ? "var(--s-color-content-highlight)"
-                    : "var(--s-color-content-disable)"
-                }`}
-                dataKey="amount"
-                onMouseEnter={onPieEnter}
-              />
+          <PieChart width={chartWidth} height={chartHeight}>
+            <Pie
+              activeIndex={activeIndex}
+              activeShape={(props: any) => renderActiveShape(props, loading, 2)}
+              data={loading === false ? data : loadingData}
+              cx="50%"
+              cy="50%"
+              innerRadius={radius.inner}
+              outerRadius={radius.outer}
+              fill={`${
+                loading === false
+                  ? "var(--s-color-content-highlight)"
+                  : "var(--s-color-content-disable)"
+              }`}
+              dataKey="amount"
+              onMouseEnter={onPieEnter}
+            />
+            {typeof window !== "undefined" && (
               <Legend
                 content={<CustomLegend />}
-                verticalAlign="middle"
-                align="right"
+                verticalAlign={window.innerWidth <= 490 ? "bottom" : "middle"}
+                align={window.innerWidth <= 490 ? "center" : "right"}
                 layout="vertical"
               />
-            </PieChart>
-          )}
+            )}
+          </PieChart>
         </>
       )}
     </div>

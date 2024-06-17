@@ -3,9 +3,39 @@
   color: var(--s-color-content-default);
 }
 
-.porcentagem {
-  color: var(--s-color-content-success);
+.saldo-total {
+  display: flex;
   font: var(--s-typography-paragraph-regular);
+  color: var(--s-color-content-default);
+}
+
+.porcentagem-ganhos {
+  display: flex;
+  align-items: center;
+  gap: var(--s-spacing-xx-small);
+  font: var(--s-typography-paragraph-regular);
+
+  &.positivo {
+    color: var(--s-color-content-success);
+  }
+
+  &.negativo {
+    color: var(--s-color-content-warning);
+  }
+}
+
+.porcentagem-despesas {
+  font: var(--s-typography-paragraph-regular);
+  display: flex;
+  align-items: center;
+  gap: var(--s-spacing-xx-small);
+  &.positivo {
+    color: var(--s-color-content-success);
+  }
+
+  &.negativo {
+    color: var(--s-color-content-warning);
+  }
 }
 
 .title-home-page {

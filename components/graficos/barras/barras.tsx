@@ -71,20 +71,25 @@ export default function Barras(props: BarrasProps) {
         />
         <XAxis
           dataKey="data"
+          tick={{
+            fill: "var(--s-color-content-default)",
+          }}
           style={{
             font: "var(--s-typography-caption-regular)",
-            color: "var(--s-color-content-default)",
+            minWidth: "50px",
           }}
         />
         <YAxis
           type="number"
           name="R$"
-          tickFormatter={(value) => `R$ ${value}`}
           style={{
             font: "var(--s-typography-caption-regular)",
-            color: "var(--s-color-content-default)",
             minWidth: "unset",
           }}
+          tick={{
+            fill: "var(--s-color-content-default)",
+          }}
+          tickFormatter={(value) => `R$ ${value}`}
         />
         <Tooltip content={<CustomTooltip area={false} />} />
         <Bar

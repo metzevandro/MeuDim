@@ -26,9 +26,18 @@ export const {
   },
   callbacks: {
     async signIn({ user, account }) {
+      if (account?.provider !== "credentials") return true;
+
+      if (!user.id) return false;
+
+      const existingUser = await getUserById(user.id);
+
+      if (!existingUser) {
+        return false;
+      }
+
       return true;
     },
-
     async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.exp;
@@ -93,23 +102,6 @@ export const {
       token.name = existingUser.name;
 
       token.role = existingUser.role;
-
-      const transactions = await getTransactionsByUserId(existingUser.id);
-      token.transactions = transactions;
-
-      const expense = await getExpenseByUserId(existingUser.id);
-      token.expense = expense;
-
-      const categories = await getCategoriesByUserId(existingUser.id);
-      token.categories = categories;
-
-      const categoria = await getCategoriaByUserId(existingUser.id);
-      token.categoria = categoria;
-
-      const formaDePagamento = await getFormaDePagamentoByUserId(
-        existingUser.id,
-      );
-      token.formaDePagamento = formaDePagamento;
 
       return token;
     },

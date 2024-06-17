@@ -94,7 +94,6 @@ const SettingsPage = () => {
       <Page
         buttonContentPrimary="Button"
         buttonContentSecondary="Button"
-        columnLayout="2 - Symmetric"
         namePage="Conta"
       >
         <SavebarTrigger

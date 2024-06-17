@@ -153,7 +153,6 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const userId = newUser.id;
   const currentDate = new Date();
 
-  // Criar categorias e subcategorias padrão para o novo usuário
   for (const categoria of categorias) {
     const newCategoria = await db.categoria.create({
       data: {

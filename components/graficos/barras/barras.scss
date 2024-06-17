@@ -11,3 +11,15 @@
     visibility: hidden;
   }
 }
+
+.recharts-cartesian-grid-horizontal * {
+  stroke: var(--s-color-border-default);
+}
+
+.recharts-cartesian-axis-line {
+  stroke: var(--s-color-content-default);
+}
+
+.recharts-cartesian-axis-tick-line {
+  stroke: var(--s-color-content-default);
+}

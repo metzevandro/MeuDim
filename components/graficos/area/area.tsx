@@ -78,6 +78,9 @@ export default function AreaGraphic(props: AreaGraphicProps) {
           <XAxis
             dataKey="data"
             tickFormatter={(value) => `${value}`}
+            tick={{
+              fill: "var(--s-color-content-default)",
+            }}
             style={{
               font: "var(--s-typography-caption-regular)",
               minWidth: "50px",
@@ -89,14 +92,16 @@ export default function AreaGraphic(props: AreaGraphicProps) {
             tickFormatter={(value) => `R$ ${value}`}
             style={{
               font: "var(--s-typography-caption-regular)",
-              color: "var(--s-color-content-default)",
               minWidth: "unset",
+            }}
+            tick={{
+              fill: "var(--s-color-content-default)",
             }}
           />
           <Tooltip content={<CustomTooltip area />} />
           <Area
             type="monotone"
-            dataKey="Saldo"
+            dataKey="saldoTotal"
             stroke={
               props.loading
                 ? "var(--s-color-fill-disable)"

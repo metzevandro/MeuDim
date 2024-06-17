@@ -2,5 +2,10 @@
 import { signOut } from "@/auth";
 
 export const Sair = async () => {
-  await signOut();
+  const redirectTo = "/auth/login";
+
+  await signOut({
+    redirectTo: redirectTo,
+    redirect: true,
+  });
 };

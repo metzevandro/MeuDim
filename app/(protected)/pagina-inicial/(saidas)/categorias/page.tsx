@@ -492,7 +492,13 @@ export default function CategoryPage() {
       >
         <AuthProgress loading={loading} error={loadingError} />
         {(userDataIsValid ? userData.user.categoria.length < 1 : undefined) ? (
-          <div style={{ display: "flex", justifyContent: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              height: "100%",
+            }}
+          >
             <div
               style={{
                 display: "flex",

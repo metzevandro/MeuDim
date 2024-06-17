@@ -546,7 +546,6 @@ const HomePage = () => {
   return (
     <>
       <Page
-      
         onClickActionPrimary={toggleAside}
         withActionPrimary={
           userDataIsValid ? userData.user.transactions.length > 0 : undefined
@@ -558,7 +557,13 @@ const HomePage = () => {
         {(
           userDataIsValid ? userData.user.transactions.length < 1 : undefined
         ) ? (
-          <div style={{ display: "flex", justifyContent: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              height: "100%",
+            }}
+          >
             <div
               style={{
                 display: "flex",

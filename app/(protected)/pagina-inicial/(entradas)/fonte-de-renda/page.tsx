@@ -408,7 +408,13 @@ export default function Categorias() {
       >
         <AuthProgress loading={loading} error={loadingError} />
         {(userDataIsValid ? userData.user.categories.length < 1 : undefined) ? (
-          <div style={{ display: "flex", justifyContent: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              height: "100%",
+            }}
+          >
             <div
               style={{
                 display: "flex",

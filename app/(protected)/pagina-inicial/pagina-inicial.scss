@@ -1,5 +1,5 @@
 .dinheiro {
-  font: var(--s-typography-heading-x-large);
+  font: var(--s-typography-heading-large);
   color: var(--s-color-content-default);
 }
 
@@ -10,10 +10,16 @@
 }
 
 .porcentagem-ganhos {
-  display: flex;
+  display: inline-block;
   align-items: center;
-  gap: var(--s-spacing-xx-small);
-  font: var(--s-typography-paragraph-regular);
+
+  strong {
+    padding-left: var(--s-spacing-nano);
+    line-height: var(--s-line-height-24);
+    vertical-align: top;
+    display: inline;
+    align-items: center;
+  }
 
   &.positivo {
     color: var(--s-color-content-success);
@@ -21,24 +27,54 @@
 
   &.negativo {
     color: var(--s-color-content-warning);
+  }
+
+  &.neutral {
+    color: var(--s-color-content-light);
   }
 }
 
 .porcentagem-despesas {
-  font: var(--s-typography-paragraph-regular);
-  display: flex;
+  display: inline-block;
   align-items: center;
-  gap: var(--s-spacing-xx-small);
+
+  strong {
+    padding-left: var(--s-spacing-nano);
+    line-height: var(--s-line-height-24);
+    vertical-align: top;
+    display: inline;
+    align-items: center;
+  }
+
   &.positivo {
     color: var(--s-color-content-success);
   }
 
   &.negativo {
     color: var(--s-color-content-warning);
+  }
+
+  &.neutral {
+    color: var(--s-color-content-light);
   }
 }
 
 .title-home-page {
   font: var(--s-typography-heading-small);
   color: var(--s-color-content-default);
+}
+
+.card-footer {
+  div {
+    width: fit-content;
+  }
+}
+
+@media screen and (max-width: 490px) {
+  .card-footer {
+    div {
+      flex-direction: column;
+      width: 100%;
+    }
+  }
 }

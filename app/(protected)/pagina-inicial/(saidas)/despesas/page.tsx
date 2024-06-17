@@ -611,7 +611,13 @@ const HomePage = () => {
       >
         <AuthProgress loading={loading} error={loadingError} />
         {(userDataIsValid ? userData.user.expense.length < 1 : undefined) ? (
-          <div style={{ display: "flex", justifyContent: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              height: "100%",
+            }}
+          >
             <div
               style={{
                 display: "flex",

@@ -114,7 +114,7 @@ const LayoutPage = (props: LayoutProps) => {
           toggle={isOpenSidebar}
         >
           <SidebarItem
-            onClick={() => navigateTo("/pagina-inicial")}
+            onClick={() => {navigateTo("/pagina-inicial"), toggleSidebar()}}
             active={pathname === "/pagina-inicial"}
             fillIcon
             icon="dashboard"
@@ -130,12 +130,12 @@ const LayoutPage = (props: LayoutProps) => {
               <SidebarSubItem
                 title="Ganhos"
                 active={pathname === "/pagina-inicial/ganhos"}
-                onClick={() => navigateTo("/pagina-inicial/ganhos")}
+                onClick={() => {navigateTo("/pagina-inicial/ganhos"), toggleSidebar()}}
               />
               <SidebarSubItem
                 title="Fonte de renda"
                 active={pathname === "/pagina-inicial/fonte-de-renda"}
-                onClick={() => navigateTo("/pagina-inicial/fonte-de-renda")}
+                onClick={() => {navigateTo("/pagina-inicial/fonte-de-renda"), toggleSidebar()}}
               />
             </SidebarItem>
             <SidebarItem
@@ -147,18 +147,18 @@ const LayoutPage = (props: LayoutProps) => {
               <SidebarSubItem
                 title="Despesas"
                 active={pathname === "/pagina-inicial/despesas"}
-                onClick={() => navigateTo("/pagina-inicial/despesas")}
+                onClick={() => {navigateTo("/pagina-inicial/despesas"), toggleSidebar()}}
               />
               <SidebarSubItem
                 title="Categorias"
                 active={pathname === "/pagina-inicial/categorias"}
-                onClick={() => navigateTo("/pagina-inicial/categorias")}
+                onClick={() => {navigateTo("/pagina-inicial/categorias"), toggleSidebar()}}
               />
               <SidebarSubItem
                 title="Formas de pagamento"
                 active={pathname === "/pagina-inicial/formas-de-pagamento"}
                 onClick={() =>
-                  navigateTo("/pagina-inicial/formas-de-pagamento")
+                  {navigateTo("/pagina-inicial/formas-de-pagamento"), toggleSidebar()}
                 }
               />
             </SidebarItem>
@@ -169,7 +169,7 @@ const LayoutPage = (props: LayoutProps) => {
               fillIcon={true}
               icon="account_circle"
               title="Conta"
-              onClick={() => navigateTo("/conta")}
+              onClick={() => {navigateTo("/conta"), toggleSidebar()}}
             />
           </SidebarList>
         </SideBar>

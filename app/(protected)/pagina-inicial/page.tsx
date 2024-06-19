@@ -738,10 +738,10 @@ const HomePage = () => {
                       className={`porcentagem-despesas ${parseFloat(despesasPercentageChange.toFixed(2)) == 0 ? "neutral" : parseFloat(despesasPercentageChange.toFixed(2)) < 0 ? "positivo" : "negativo"}`}
                     >
                       {parseFloat(despesasPercentageChange.toFixed(2)) == 0 ? (
-                        <small>Você ainda não registrou nenhuma entrada</small>
+                        <small>Você ainda não registrou nenhuma despesa</small>
                       ) : (
                         <small>
-                          {parseFloat(despesasPercentageChange.toFixed(2)) < 0
+                          {parseFloat(despesasPercentageChange.toFixed(2)) > 0
                             ? "-"
                             : "+"}
                           R${" "}

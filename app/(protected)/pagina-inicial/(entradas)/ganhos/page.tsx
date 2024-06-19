@@ -587,7 +587,6 @@ const HomePage = () => {
               display: "flex",
               alignItems: "center",
               height: "fit-content",
-              overflow: "auto",
             }}
           >
             <DataTable

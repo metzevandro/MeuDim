@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import React, { useEffect, useState } from "react";
 import {
   AppShell,
@@ -8,7 +8,7 @@ import {
   HeaderProfile,
   SideBar,
   SidebarItem,
-  SidebarList,
+  SidebarTitle,
   SidebarSubItem,
 } from "design-system-zeroz";
 import DropDownMenu, {
@@ -45,6 +45,9 @@ const LayoutPage = (props: LayoutProps) => {
 
   const navigateTo = (route: string) => {
     router.push(route);
+    if (isMobile()) {
+      toggleSidebar(); // Close sidebar on mobile after navigation
+    }
   };
 
   const toggleTheme = async () => {
@@ -98,119 +101,135 @@ const LayoutPage = (props: LayoutProps) => {
     return breadcrumbs;
   };
 
-  if (
-    pathname === "/auth/login" ||
-    pathname === "/auth/criar-conta" ||
-    pathname === "/auth/error" ||
-    pathname === "/"
-  ) {
-    return <div>{props.children}</div>;
-  } else {
-    return (
-      <AppShell>
-        <SideBar
-          brand="/meuDim.svg"
-          setToggleSidebar={toggleSidebar}
-          toggle={isOpenSidebar}
-        >
+  const isMobile = () => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth < 768; // Adjust this value as per your design's mobile breakpoint
+    }
+    return false;
+  };
+
+  return (
+    <AppShell>
+      <SideBar
+        brand="/meuDim.svg"
+        setToggleSidebar={toggleSidebar}
+        toggle={isOpenSidebar}
+      >        <SidebarTitle title="" />
+
+        <SidebarItem
+          onClick={() => navigateTo("/pagina-inicial")}
+          isActive={pathname === "/pagina-inicial"}
+          fillIcon
+          icon="dashboard"
+          title="Página Inicial"
+        />
+        <SidebarTitle title="controle financeiro" />
           <SidebarItem
-            onClick={() => {navigateTo("/pagina-inicial"), toggleSidebar()}}
-            active={pathname === "/pagina-inicial"}
-            fillIcon
-            icon="dashboard"
-            title="Página Inicial"
-          />
-          <SidebarList title="controle financeiro">
-            <SidebarItem
-              active={false}
-              fillIcon={false}
-              icon="trending_up"
-              title="Entradas"
-            >
-              <SidebarSubItem
-                title="Ganhos"
-                active={pathname === "/pagina-inicial/ganhos"}
-                onClick={() => {navigateTo("/pagina-inicial/ganhos"), toggleSidebar()}}
-              />
-              <SidebarSubItem
-                title="Fonte de renda"
-                active={pathname === "/pagina-inicial/fonte-de-renda"}
-                onClick={() => {navigateTo("/pagina-inicial/fonte-de-renda"), toggleSidebar()}}
-              />
-            </SidebarItem>
-            <SidebarItem
-              active={false}
-              fillIcon={false}
-              icon="trending_down"
-              title="Saídas"
-            >
-              <SidebarSubItem
-                title="Despesas"
-                active={pathname === "/pagina-inicial/despesas"}
-                onClick={() => {navigateTo("/pagina-inicial/despesas"), toggleSidebar()}}
-              />
-              <SidebarSubItem
-                title="Categorias"
-                active={pathname === "/pagina-inicial/categorias"}
-                onClick={() => {navigateTo("/pagina-inicial/categorias"), toggleSidebar()}}
-              />
-              <SidebarSubItem
-                title="Formas de pagamento"
-                active={pathname === "/pagina-inicial/formas-de-pagamento"}
-                onClick={() =>
-                  {navigateTo("/pagina-inicial/formas-de-pagamento"), toggleSidebar()}
-                }
-              />
-            </SidebarItem>
-          </SidebarList>
-          <SidebarList title="Configurações">
-            <SidebarItem
-              active={pathname === "/conta"}
-              fillIcon={true}
-              icon="account_circle"
-              title="Conta"
-              onClick={() => {navigateTo("/conta"), toggleSidebar()}}
+            isActive={false}
+            fillIcon={false}
+            icon="trending_up"
+            title="Entradas"
+          >
+            <SidebarSubItem
+              title="Ganhos"
+              active={pathname === "/pagina-inicial/ganhos"}
+              onClick={() => {
+                navigateTo("/pagina-inicial/ganhos");
+                if (isMobile()) toggleSidebar();
+              }}
             />
-          </SidebarList>
-        </SideBar>
-        <Header
+            <SidebarSubItem
+              title="Fonte de renda"
+              active={pathname === "/pagina-inicial/fonte-de-renda"}
+              onClick={() => {
+                navigateTo("/pagina-inicial/fonte-de-renda");
+                if (isMobile()) toggleSidebar();
+              }}
+            />
+          </SidebarItem>
+          <SidebarItem
+            isActive={false}
+            fillIcon={false}
+            icon="trending_down"
+            title="Saídas"
+          >
+            <SidebarSubItem
+              title="Despesas"
+              active={pathname === "/pagina-inicial/despesas"}
+              onClick={() => {
+                navigateTo("/pagina-inicial/despesas");
+                if (isMobile()) toggleSidebar();
+              }}
+            />
+            <SidebarSubItem
+              title="Categorias"
+              active={pathname === "/pagina-inicial/categorias"}
+              onClick={() => {
+                navigateTo("/pagina-inicial/categorias");
+                if (isMobile()) toggleSidebar();
+              }}
+            />
+            <SidebarSubItem
+              title="Formas de pagamento"
+              active={pathname === "/pagina-inicial/formas-de-pagamento"}
+              onClick={() => {
+                navigateTo("/pagina-inicial/formas-de-pagamento");
+                if (isMobile()) toggleSidebar();
+              }}
+            />
+          </SidebarItem>
+        <SidebarTitle title="Configurações" />
+          <SidebarItem
+            isActive={pathname === "/conta"}
+            fillIcon={true}
+            icon="account_circle"
+            title="Conta"
+            onClick={() => {
+              navigateTo("/conta");
+              if (isMobile()) toggleSidebar();
+            }}
+          />
+      </SideBar>
+      <Header
+        skeleton={loading}
+        breadcrumb={
+          <div style={{ display: "flex", gap: "var(--s-spacing-xx-small)" }}>
+            {generateBreadcrumbs()}
+          </div>
+        }
+        onClick={toggleSidebar}
+      >
+        <HeaderProfile
           skeleton={loading}
-          breadcrumb={
-            <div style={{ display: "flex", gap: "var(--s-spacing-xx-small)" }}>
-              {generateBreadcrumbs()}
-            </div>
-          }
-          onClick={toggleSidebar}
+          name={userData?.user?.name || ""}
         >
-          <HeaderProfile skeleton={loading} name={userData?.user?.name || ""}>
-            <DropDownMenu dropDownMenu>
-              <DropDownMenuTitle content="Conta" />
-              <DropDownMenuItem
-                content="Conta"
-                typeIcon="account_circle"
-                onClick={() => navigateTo("/conta")}
-              />
-              <DropDownMenuTitle content="Tema" />
-              <DropDownMenuItem
-                content={theme === "light" ? "Dark" : "Light"}
-                typeIcon={theme === "light" ? "dark_mode" : "light_mode"}
-                onClick={toggleTheme}
-              />
-              <DropDownMenuTitle content="Sair" />
-              <DropDownMenuItem
-                content="Sair"
-                typeIcon="logout"
-                onClick={() => {
-                  Sair();
-                }}
-              />
-            </DropDownMenu>
-          </HeaderProfile>
-        </Header>
-        {props.children}
-      </AppShell>
-    );
-  }
+          <DropDownMenu dropDownMenu>
+            <DropDownMenuTitle content="Conta" />
+            <DropDownMenuItem
+              content="Conta"
+              typeIcon="account_circle"
+              onClick={() => navigateTo("/conta")}
+            />
+            <DropDownMenuTitle content="Tema" />
+            <DropDownMenuItem
+              content={theme === "light" ? "Dark" : "Light"}
+              typeIcon={theme === "light" ? "dark_mode" : "light_mode"}
+              onClick={toggleTheme}
+            />
+            <DropDownMenuTitle content="Sair" />
+            <DropDownMenuItem
+              content="Sair"
+              typeIcon="logout"
+              onClick={() => {
+                Sair();
+              }}
+            />
+          </DropDownMenu>
+        </HeaderProfile>
+      </Header>
+      {props.children}
+    </AppShell>
+  );
 };
 
 export default LayoutPage;

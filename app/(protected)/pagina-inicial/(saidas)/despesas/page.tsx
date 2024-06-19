@@ -624,7 +624,6 @@ const HomePage = () => {
                 alignItems: "center",
                 height: "100%",
                 maxWidth: "500px",
-                overflow: "auto",
               }}
             >
               <EmptyState
@@ -642,7 +641,6 @@ const HomePage = () => {
               display: "flex",
               alignItems: "center",
               height: "fit-content",
-              overflow: "auto",
             }}
           >
             <DataTable

@@ -505,7 +505,6 @@ export default function CategoryPage() {
                 alignItems: "center",
                 height: "100%",
                 maxWidth: "500px",
-                overflow: "auto",
               }}
             >
               <EmptyState
@@ -523,7 +522,6 @@ export default function CategoryPage() {
               display: "flex",
               alignItems: "center",
               height: "fit-content",
-              overflow: "auto",
             }}
           >
             <DataTable

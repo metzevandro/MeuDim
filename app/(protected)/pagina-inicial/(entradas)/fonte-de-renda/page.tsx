@@ -421,7 +421,6 @@ export default function Categorias() {
                 alignItems: "center",
                 height: "100%",
                 maxWidth: "600px",
-                overflow: "auto",
               }}
             >
               <EmptyState
@@ -439,7 +438,6 @@ export default function Categorias() {
               display: "flex",
               alignItems: "center",
               height: "fit-content",
-              overflow: "auto",
             }}
           >
             <DataTable

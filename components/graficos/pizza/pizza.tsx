@@ -35,7 +35,7 @@ const CustomLegend = (props: any) => {
   );
 };
 
-const renderActiveShape = (props: any, loading: boolean, pizza: 1 | 2) => {
+const renderActiveShape = (props: any, loading: boolean) => {
   const RADIAN = Math.PI / 180;
   const {
     cx,
@@ -47,7 +47,6 @@ const renderActiveShape = (props: any, loading: boolean, pizza: 1 | 2) => {
     endAngle,
     fill,
     payload,
-    percent,
     value,
   } = props;
   const sin = Math.sin(-RADIAN * midAngle);
@@ -108,12 +107,10 @@ const Pizza = ({
   data,
   loading,
   name,
-  pizza,
 }: {
   data: any;
   loading: boolean;
   name: string;
-  pizza: 1 | 2;
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const onPieEnter = useCallback((_: any, index: any) => {
@@ -191,7 +188,7 @@ const Pizza = ({
           <PieChart width={chartWidth} height={chartHeight}>
             <Pie
               activeIndex={activeIndex}
-              activeShape={(props: any) => renderActiveShape(props, loading, 2)}
+              activeShape={(props: any) => renderActiveShape(props, loading)}
               data={loading === false ? data : loadingData}
               cx="50%"
               cy="50%"

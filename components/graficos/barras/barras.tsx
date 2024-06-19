@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import "./barras.scss";
 import { CustomTooltip } from "@/components/auth/GraphicTooltip/GraphicTooltip";
+import { EmptyState } from "design-system-zeroz";
 
 interface BarrasProps {
   data: any[];
@@ -56,8 +57,17 @@ export default function Barras(props: BarrasProps) {
     }
   }, [props.loading]);
 
+  const filteredData = props.data.filter(item => item.Ganhos !== 0 || item.Despesas !== 0);
+
   return (
     <div ref={chartContainerRef} className="chart-container">
+       {!props.loading && filteredData.length === 0 ? (
+        <EmptyState
+          icon="database"
+          title="Sem dados no período selecionado"
+          description={`Altere o período selecionado ou registre novas entradas ou despesas.`}
+        />
+      ) : (
       <BarChart
         width={chartWidth}
         height={chartHeight}
@@ -106,7 +116,7 @@ export default function Barras(props: BarrasProps) {
           stackId="a"
           fill={"var(--s-color-fill-warning)"}
         />
-      </BarChart>
+      </BarChart>)}
     </div>
   );
 }

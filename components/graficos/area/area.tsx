@@ -9,6 +9,8 @@ import {
 } from "recharts";
 import "./area.scss";
 import { CustomTooltip } from "@/components/auth/GraphicTooltip/GraphicTooltip";
+import { EmptyState } from "design-system-zeroz";
+
 interface AreaGraphicProps {
   data: any[];
   loading: boolean;
@@ -19,7 +21,7 @@ export default function AreaGraphic(props: AreaGraphicProps) {
   const [chartHeight, setChartHeight] = useState(0);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [loadingData, setLoadingData] = useState(
-    Array(30).fill({ name: "", Saldo: 0, Despesas: 0 }),
+    Array(30).fill({ name: "", saldoTotal: 0,})
   );
 
   useEffect(() => {
@@ -44,16 +46,16 @@ export default function AreaGraphic(props: AreaGraphicProps) {
       setLoadingData((prevData) =>
         prevData.map((item) => ({
           ...item,
-          Saldo: Math.floor(Math.random() * 1000),
-        })),
+          saldoTotal: Math.floor(Math.random() * 1000),
+        }))
       );
 
       const intervalId = setInterval(() => {
         setLoadingData((prevData) =>
           prevData.map((item) => ({
             ...item,
-            Saldo: Math.floor(Math.random() * 1000),
-          })),
+            saldoTotal: Math.floor(Math.random() * 1000),
+          }))
         );
       }, 1000);
 
@@ -61,13 +63,21 @@ export default function AreaGraphic(props: AreaGraphicProps) {
     }
   }, [props.loading]);
 
+  const filteredData = props.data.filter(item => item.saldoTotal !== 0);
+
   return (
-    <>
-      <div ref={chartContainerRef} className="area-graphic">
+    <div ref={chartContainerRef} className="area-graphic">
+      {!props.loading && filteredData.length === 0 ? (
+        <EmptyState
+          icon="database"
+          title="Sem dados no período selecionado"
+          description={`Altere o período selecionado ou registre novas entradas ou despesas.`}
+        />
+      ) : (
         <AreaChart
           width={chartWidth}
           height={chartHeight}
-          data={props.loading ? loadingData : props.data}
+          data={!props.loading ? props.data : loadingData}
         >
           <CartesianGrid
             horizontalCoordinatesGenerator={(props) =>
@@ -114,7 +124,7 @@ export default function AreaGraphic(props: AreaGraphicProps) {
             }
           />
         </AreaChart>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from "react";
 import {
   AppShell,
@@ -114,8 +114,8 @@ const LayoutPage = (props: LayoutProps) => {
         brand="/meuDim.svg"
         setToggleSidebar={toggleSidebar}
         toggle={isOpenSidebar}
-      >        <SidebarTitle title="" />
-
+      >
+        <SidebarTitle title="" />
         <SidebarItem
           onClick={() => navigateTo("/pagina-inicial")}
           isActive={pathname === "/pagina-inicial"}
@@ -124,71 +124,71 @@ const LayoutPage = (props: LayoutProps) => {
           title="Página Inicial"
         />
         <SidebarTitle title="controle financeiro" />
-          <SidebarItem
-            isActive={false}
-            fillIcon={false}
-            icon="trending_up"
-            title="Entradas"
-          >
-            <SidebarSubItem
-              title="Ganhos"
-              active={pathname === "/pagina-inicial/ganhos"}
-              onClick={() => {
-                navigateTo("/pagina-inicial/ganhos");
-                if (isMobile()) toggleSidebar();
-              }}
-            />
-            <SidebarSubItem
-              title="Fonte de renda"
-              active={pathname === "/pagina-inicial/fonte-de-renda"}
-              onClick={() => {
-                navigateTo("/pagina-inicial/fonte-de-renda");
-                if (isMobile()) toggleSidebar();
-              }}
-            />
-          </SidebarItem>
-          <SidebarItem
-            isActive={false}
-            fillIcon={false}
-            icon="trending_down"
-            title="Saídas"
-          >
-            <SidebarSubItem
-              title="Despesas"
-              active={pathname === "/pagina-inicial/despesas"}
-              onClick={() => {
-                navigateTo("/pagina-inicial/despesas");
-                if (isMobile()) toggleSidebar();
-              }}
-            />
-            <SidebarSubItem
-              title="Categorias"
-              active={pathname === "/pagina-inicial/categorias"}
-              onClick={() => {
-                navigateTo("/pagina-inicial/categorias");
-                if (isMobile()) toggleSidebar();
-              }}
-            />
-            <SidebarSubItem
-              title="Formas de pagamento"
-              active={pathname === "/pagina-inicial/formas-de-pagamento"}
-              onClick={() => {
-                navigateTo("/pagina-inicial/formas-de-pagamento");
-                if (isMobile()) toggleSidebar();
-              }}
-            />
-          </SidebarItem>
-        <SidebarTitle title="Configurações" />
-          <SidebarItem
-            isActive={pathname === "/conta"}
-            fillIcon={true}
-            icon="account_circle"
-            title="Conta"
+        <SidebarItem
+          isActive={false}
+          fillIcon={false}
+          icon="trending_up"
+          title="Entradas"
+        >
+          <SidebarSubItem
+            title="Ganhos"
+            active={pathname === "/pagina-inicial/ganhos"}
             onClick={() => {
-              navigateTo("/conta");
+              navigateTo("/pagina-inicial/ganhos");
               if (isMobile()) toggleSidebar();
             }}
           />
+          <SidebarSubItem
+            title="Fonte de renda"
+            active={pathname === "/pagina-inicial/fonte-de-renda"}
+            onClick={() => {
+              navigateTo("/pagina-inicial/fonte-de-renda");
+              if (isMobile()) toggleSidebar();
+            }}
+          />
+        </SidebarItem>
+        <SidebarItem
+          isActive={false}
+          fillIcon={false}
+          icon="trending_down"
+          title="Saídas"
+        >
+          <SidebarSubItem
+            title="Despesas"
+            active={pathname === "/pagina-inicial/despesas"}
+            onClick={() => {
+              navigateTo("/pagina-inicial/despesas");
+              if (isMobile()) toggleSidebar();
+            }}
+          />
+          <SidebarSubItem
+            title="Categorias"
+            active={pathname === "/pagina-inicial/categorias"}
+            onClick={() => {
+              navigateTo("/pagina-inicial/categorias");
+              if (isMobile()) toggleSidebar();
+            }}
+          />
+          <SidebarSubItem
+            title="Formas de pagamento"
+            active={pathname === "/pagina-inicial/formas-de-pagamento"}
+            onClick={() => {
+              navigateTo("/pagina-inicial/formas-de-pagamento");
+              if (isMobile()) toggleSidebar();
+            }}
+          />
+        </SidebarItem>
+        <SidebarTitle title="Configurações" />
+        <SidebarItem
+          isActive={pathname === "/conta"}
+          fillIcon={true}
+          icon="account_circle"
+          title="Conta"
+          onClick={() => {
+            navigateTo("/conta");
+            if (isMobile()) toggleSidebar();
+          }}
+        />
       </SideBar>
       <Header
         skeleton={loading}
@@ -199,10 +199,7 @@ const LayoutPage = (props: LayoutProps) => {
         }
         onClick={toggleSidebar}
       >
-        <HeaderProfile
-          skeleton={loading}
-          name={userData?.user?.name || ""}
-        >
+        <HeaderProfile skeleton={loading} name={userData?.user?.name || ""}>
           <DropDownMenu dropDownMenu>
             <DropDownMenuTitle content="Conta" />
             <DropDownMenuItem

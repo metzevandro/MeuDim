@@ -826,7 +826,6 @@ const HomePage = () => {
                 <CardHeader title="Fontes de renda" description={``} />
                 <CardContent>
                   <Pizza
-                    pizza={1}
                     name="ganho"
                     data={dataFonteDeRenda}
                     loading={loading}
@@ -842,7 +841,6 @@ const HomePage = () => {
                 <CardHeader title="Formas de pagamento" description={``} />
                 <CardContent>
                   <Pizza
-                    pizza={1}
                     name="despesa"
                     data={dataFormasDePagamento}
                     loading={loading}
@@ -862,7 +860,6 @@ const HomePage = () => {
                 <CardHeader title="Categorias" description={``} />
                 <CardContent>
                   <Pizza
-                    pizza={2}
                     name="despesa"
                     data={dataCategorias}
                     loading={loading}
@@ -878,7 +875,6 @@ const HomePage = () => {
                 <CardHeader title="Subcategorias" description={``} />
                 <CardContent>
                   <Pizza
-                    pizza={2}
                     name="despesa"
                     data={dataSubCategorias}
                     loading={loading}

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.scss";
-import "design-system-zeroz/src/app/styles.scss";
+import "design-system-zeroz/dist/index.esm.css";
+import "design-system-zeroz/src/scss/tokens/tokens.scss";
 import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
 import React from "react";

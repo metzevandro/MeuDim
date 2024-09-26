@@ -3,18 +3,17 @@ import React, { useEffect, useState } from "react";
 import {
   AppShell,
   Breadcrumb,
-  BreadcrumbRoot,
   Header,
   HeaderProfile,
   SideBar,
   SidebarItem,
   SidebarTitle,
   SidebarSubItem,
+  Dropdown,
+  DropdownItem,
+  DropdownTitle,
 } from "design-system-zeroz";
-import DropDownMenu, {
-  DropDownMenuItem,
-  DropDownMenuTitle,
-} from "design-system-zeroz/src/app/components/DropdownMenu/DropdownMenu";
+
 import { Sair } from "@/actions/logout";
 import { usePathname, useRouter } from "next/navigation";
 import { fetchUserData, UserData } from "@/actions/fetch";
@@ -46,71 +45,44 @@ const LayoutPage = (props: LayoutProps) => {
   const navigateTo = (route: string) => {
     router.push(route);
     if (isMobile()) {
-      toggleSidebar(); // Close sidebar on mobile after navigation
+      toggleSidebar(); 
     }
   };
 
-  const toggleTheme = async () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem("theme", newTheme);
-    }
-    setTheme(newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
-  };
-
-  const generateBreadcrumbs = () => {
-    const paths = pathname.split("/").filter((path) => path);
-    let accumulatedPath = "/";
-
-    const breadcrumbs = paths.map((path, index) => {
-      accumulatedPath += `${path}/`;
-      if (path === "pagina-inicial") {
-        return (
-          <BreadcrumbRoot
-            key={index}
-            pageName={path === "pagina-inicial" ? "Página inicial" : ""}
-            href={accumulatedPath.slice(0, -1)}
-          />
-        );
-      }
-
-      if (path === "conta") {
-        return (
-          <BreadcrumbRoot
-            key={index}
-            pageName={path === "conta" ? "Conta" : ""}
-            href={accumulatedPath.slice(0, -1)}
-          />
-        );
-      }
-
-      const pageName =
-        path.charAt(0).toUpperCase() + path.slice(1).toLowerCase();
-
-      return (
-        <Breadcrumb
-          key={index}
-          pageName={pageName.replace("-", " ").replace("-", " ")}
-          href={accumulatedPath.slice(0, -1)}
-        />
-      );
-    });
-
-    return breadcrumbs;
-  };
+  const toggleTheme = async () => {};
 
   const isMobile = () => {
     if (typeof window !== "undefined") {
-      return window.innerWidth < 768; // Adjust this value as per your design's mobile breakpoint
+      return window.innerWidth < 768; 
     }
     return false;
   };
 
+  const getBreadcrumbItems = () => {
+    const pathnames = pathname.split("/").filter((x) => x);
+
+    const items = pathnames.map((path, index) => {
+      let pageName = path.charAt(0).toUpperCase() + path.slice(1);
+
+      return {
+        href: `/${pathnames.slice(0, index + 1).join("/")}`,
+        pageName: pageName.replace(/-/g, " "),
+      };
+    });
+
+    return items;
+  };
+
+  const isAuthRoute = pathname === "/auth/login" || pathname === "/auth/criar-conta" || pathname === "/auth/error" || pathname === '/'
+
+  if (isAuthRoute) {
+    return <>{props.children}</>;
+  }
+
   return (
     <AppShell>
       <SideBar
+        brandSize="sm"
         brand="/meuDim.svg"
         setToggleSidebar={toggleSidebar}
         toggle={isOpenSidebar}
@@ -192,36 +164,32 @@ const LayoutPage = (props: LayoutProps) => {
       </SideBar>
       <Header
         skeleton={loading}
-        breadcrumb={
-          <div style={{ display: "flex", gap: "var(--s-spacing-xx-small)" }}>
-            {generateBreadcrumbs()}
-          </div>
-        }
+        breadcrumb={<Breadcrumb items={getBreadcrumbItems()} />}
         onClick={toggleSidebar}
       >
         <HeaderProfile skeleton={loading} name={userData?.user?.name || ""}>
-          <DropDownMenu dropDownMenu>
-            <DropDownMenuTitle content="Conta" />
-            <DropDownMenuItem
+          <Dropdown dropdown>
+            <DropdownTitle content="Conta" />
+            <DropdownItem
               content="Conta"
               typeIcon="account_circle"
               onClick={() => navigateTo("/conta")}
             />
-            <DropDownMenuTitle content="Tema" />
-            <DropDownMenuItem
+            <DropdownTitle content="Tema" />
+            <DropdownItem
               content={theme === "light" ? "Dark" : "Light"}
               typeIcon={theme === "light" ? "dark_mode" : "light_mode"}
               onClick={toggleTheme}
             />
-            <DropDownMenuTitle content="Sair" />
-            <DropDownMenuItem
+            <DropdownTitle content="Sair" />
+            <DropdownItem
               content="Sair"
               typeIcon="logout"
               onClick={() => {
                 Sair();
               }}
             />
-          </DropDownMenu>
+          </Dropdown>
         </HeaderProfile>
       </Header>
       {props.children}

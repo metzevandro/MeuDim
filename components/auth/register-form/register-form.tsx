@@ -1,4 +1,3 @@
-"use client";
 import {
   Button,
   Card,
@@ -15,10 +14,10 @@ import { RegisterSchema } from "@/schemas/index";
 import { useState, useTransition } from "react";
 import { register } from "@/actions/register";
 import React from "react";
-import { login } from "@/actions/login";
 import { useRouter } from "next/navigation";
 
 export const RegisterForm = () => {
+  const router = useRouter();
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -42,10 +41,7 @@ export const RegisterForm = () => {
         setError(data.error), setSuccess(data.success);
         console.log(error);
         if (data.success) {
-          login(values).then((data) => {
-            setError(data?.error);
-            setSuccess(data?.success);
-          });
+          router.push("/auth/login");
         }
       });
     });
@@ -53,19 +49,14 @@ export const RegisterForm = () => {
 
   const { errors } = form.formState;
 
-  const router = useRouter();
-
-  const navigateTo = (route: string) => {
-    router.push(route);
-  };
-
   return (
     <div className="card-sign-up">
       <Card>
         <h1>Criar Conta</h1>
         <CardContent>
-          <p onClick={() => navigateTo("/auth/login")}>
-            Já tem uma conta? <Link content="Faça seu login." />
+          <p>
+            Já tem uma conta?{" "}
+            <Link content="Faça seu login." href="/auth/login" />
           </p>
           <form className="form-sign-up" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="input-field">
@@ -120,7 +111,7 @@ export const RegisterForm = () => {
             )}
             <Button
               size="md"
-              variant={isPending ? "is-loading" : "primary"}
+              variant="primary"
               label="Criar conta"
               type="submit"
             />

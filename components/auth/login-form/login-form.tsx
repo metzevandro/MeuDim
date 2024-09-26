@@ -12,6 +12,7 @@ import {
   Card,
   CardContent,
   Notification,
+  CardHeader,
 } from "design-system-zeroz";
 
 import "./login-form.scss";
@@ -58,9 +59,7 @@ export const LoginForm = () => {
 
   return (
     <div className="card-login">
-      <Card>
-        <h1>Login</h1>
-        <CardContent>
+      <Card header={<h1>Login</h1>} content={<CardContent>
           <p onClick={() => navigateTo("/auth/criar-conta")}>
             Não tem uma conta?
             <Link content="Crie a sua conta."></Link>
@@ -113,7 +112,8 @@ export const LoginForm = () => {
               type="submit"
             />
           </form>
-        </CardContent>
+        </CardContent>}>
+        
       </Card>
     </div>
   );

@@ -368,7 +368,7 @@ export default function CategoryPage() {
       />
       <ButtonIcon
         size="sm"
-        type="default"
+        buttonType="default"
         typeIcon="delete"
         variant="warning"
         onClick={() => toggleModal(categoryId)}

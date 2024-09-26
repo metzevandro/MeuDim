@@ -51,9 +51,8 @@ export const RegisterForm = () => {
 
   return (
     <div className="card-sign-up">
-      <Card>
-        <h1>Criar Conta</h1>
-        <CardContent>
+      <Card header={        <h1>Criar Conta</h1>
+} content={<CardContent>
           <p>
             Já tem uma conta?{" "}
             <Link content="Faça seu login." href="/auth/login" />
@@ -116,7 +115,8 @@ export const RegisterForm = () => {
               type="submit"
             />
           </form>
-        </CardContent>
+        </CardContent>}>
+        
       </Card>
     </div>
   );

@@ -637,159 +637,173 @@ const HomePage = () => {
           <h5 className="titles-page">Resumo</h5>
           <div className="col-12">
             <div className="col-6">
-              <Card>
-                <CardHeader title="Ganhos" description={``} />
-                <CardContent>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--s-spacing-nano)",
-                    }}
-                  >
-                    {loading === true ? (
-                      <>
-                        <Skeleton height="32" width="100" />
-                      </>
-                    ) : (
-                      <h1 className="dinheiro">
-                        R$ {showSaldo ? sumGanhos() : "•••••••"}
-                      </h1>
-                    )}
+              <Card
+                footer={
+                  <CardFooter>
                     <div
-                      className={`porcentagem-ganhos ${parseFloat(ganhoPercentageChange.toFixed(2)) == 0 ? "neutral" : parseFloat(ganhoPercentageChange.toFixed(2)) > 0 ? "positivo" : "negativo"}`}
+                      style={{
+                        display: "flex",
+                        gap: "var(--s-spacing-xx-small)",
+                      }}
                     >
-                      {parseFloat(ganhoPercentageChange.toFixed(2)) == 0 ? (
-                        <small>Você ainda não registrou nenhuma entrada</small>
-                      ) : (
-                        <small>
-                          {parseFloat(ganhoPercentageChange.toFixed(2)) < 0
-                            ? "-"
-                            : "+"}
-                          R${" "}
-                          {ganhoAmount
-                            .toFixed(2)
-                            .toString()
-                            .replace(".", ",")
-                            .replace("-", "")}{" "}
-                          (
-                          {ganhoPercentageChange
-                            .toFixed(2)
-                            .toString()
-                            .replace(".", ",")}
-                          %) comparado ao periodo anterior
-                          <strong className="material-symbols-outlined sm">
-                            {parseFloat(ganhoPercentageChange.toFixed(2)) < 0
-                              ? "trending_down"
-                              : "trending_up"}
-                          </strong>
-                        </small>
-                      )}
+                      <Button
+                        skeleton={loading}
+                        label="Adicionar ganho"
+                        variant="primary"
+                        size="md"
+                        onClick={() => navigateTo("/pagina-inicial/ganhos")}
+                      />
+                      <Button
+                        skeleton={loading}
+                        label="Consultar ganhos"
+                        variant="secondary"
+                        size="md"
+                        onClick={() => navigateTo("/pagina-inicial/ganhos")}
+                      />
                     </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "var(--s-spacing-xx-small)",
-                    }}
-                  >
-                    <Button
-                      skeleton={loading}
-                      label="Adicionar ganho"
-                      variant="primary"
-                      size="md"
-                      onClick={() => navigateTo("/pagina-inicial/ganhos")}
-                    />
-                    <Button
-                      skeleton={loading}
-                      label="Consultar ganhos"
-                      variant="secondary"
-                      size="md"
-                      onClick={() => navigateTo("/pagina-inicial/ganhos")}
-                    />
-                  </div>
-                </CardFooter>
-              </Card>
+                  </CardFooter>
+                }
+                header={<CardHeader title="Ganhos" description={``} />}
+                content={
+                  <CardContent>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "var(--s-spacing-nano)",
+                      }}
+                    >
+                      {loading === true ? (
+                        <>
+                          <Skeleton height="32" width="100" />
+                        </>
+                      ) : (
+                        <h1 className="dinheiro">
+                          R$ {showSaldo ? sumGanhos() : "•••••••"}
+                        </h1>
+                      )}
+                      <div
+                        className={`porcentagem-ganhos ${parseFloat(ganhoPercentageChange.toFixed(2)) == 0 ? "neutral" : parseFloat(ganhoPercentageChange.toFixed(2)) > 0 ? "positivo" : "negativo"}`}
+                      >
+                        {parseFloat(ganhoPercentageChange.toFixed(2)) == 0 ? (
+                          <small>
+                            Você ainda não registrou nenhuma entrada
+                          </small>
+                        ) : (
+                          <small>
+                            {parseFloat(ganhoPercentageChange.toFixed(2)) < 0
+                              ? "-"
+                              : "+"}
+                            R${" "}
+                            {ganhoAmount
+                              .toFixed(2)
+                              .toString()
+                              .replace(".", ",")
+                              .replace("-", "")}{" "}
+                            (
+                            {ganhoPercentageChange
+                              .toFixed(2)
+                              .toString()
+                              .replace(".", ",")}
+                            %) comparado ao periodo anterior
+                            <strong className="material-symbols-outlined sm">
+                              {parseFloat(ganhoPercentageChange.toFixed(2)) < 0
+                                ? "trending_down"
+                                : "trending_up"}
+                            </strong>
+                          </small>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                }
+              ></Card>
             </div>
             <div className="col-6">
-              <Card>
-                <CardHeader title="Despesas" description={``} />
-                <CardContent>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--s-spacing-nano)",
-                    }}
-                  >
-                    {loading === true ? (
-                      <>
-                        <Skeleton height="32" width="100" />
-                      </>
-                    ) : (
-                      <h1 className="dinheiro">
-                        R$ {showSaldo ? sumDespesas() : "•••••••"}
-                      </h1>
-                    )}
-
+              <Card
+                header={<CardHeader title="Despesas" description={``} />}
+                content={
+                  <CardContent>
                     <div
-                      className={`porcentagem-despesas ${parseFloat(despesasPercentageChange.toFixed(2)) == 0 ? "neutral" : parseFloat(despesasPercentageChange.toFixed(2)) < 0 ? "positivo" : "negativo"}`}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "var(--s-spacing-nano)",
+                      }}
                     >
-                      {parseFloat(despesasPercentageChange.toFixed(2)) == 0 ? (
-                        <small>Você ainda não registrou nenhuma despesa</small>
+                      {loading === true ? (
+                        <>
+                          <Skeleton height="32" width="100" />
+                        </>
                       ) : (
-                        <small>
-                          {parseFloat(despesasPercentageChange.toFixed(2)) > 0
-                            ? "-"
-                            : "+"}
-                          R${" "}
-                          {despesasAmount
-                            .toFixed(2)
-                            .toString()
-                            .replace(".", ",")
-                            .replace("-", "")}{" "}
-                          (
-                          {despesasPercentageChange
-                            .toFixed(2)
-                            .toString()
-                            .replace(".", ",")}
-                          %) comparado ao periodo anterior
-                          <strong className="material-symbols-outlined sm">
-                            {parseFloat(despesasPercentageChange.toFixed(2)) > 0
-                              ? "trending_down"
-                              : "trending_up"}
-                          </strong>
-                        </small>
+                        <h1 className="dinheiro">
+                          R$ {showSaldo ? sumDespesas() : "•••••••"}
+                        </h1>
                       )}
+
+                      <div
+                        className={`porcentagem-despesas ${parseFloat(despesasPercentageChange.toFixed(2)) == 0 ? "neutral" : parseFloat(despesasPercentageChange.toFixed(2)) < 0 ? "positivo" : "negativo"}`}
+                      >
+                        {parseFloat(despesasPercentageChange.toFixed(2)) ==
+                        0 ? (
+                          <small>
+                            Você ainda não registrou nenhuma despesa
+                          </small>
+                        ) : (
+                          <small>
+                            {parseFloat(despesasPercentageChange.toFixed(2)) > 0
+                              ? "-"
+                              : "+"}
+                            R${" "}
+                            {despesasAmount
+                              .toFixed(2)
+                              .toString()
+                              .replace(".", ",")
+                              .replace("-", "")}{" "}
+                            (
+                            {despesasPercentageChange
+                              .toFixed(2)
+                              .toString()
+                              .replace(".", ",")}
+                            %) comparado ao periodo anterior
+                            <strong className="material-symbols-outlined sm">
+                              {parseFloat(despesasPercentageChange.toFixed(2)) >
+                              0
+                                ? "trending_down"
+                                : "trending_up"}
+                            </strong>
+                          </small>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "var(--s-spacing-xx-small)",
-                    }}
-                  >
-                    <Button
-                      skeleton={loading}
-                      label="Adicionar despesa"
-                      variant="primary"
-                      size="md"
-                      onClick={() => navigateTo("/pagina-inicial/despesas")}
-                    />
-                    <Button
-                      skeleton={loading}
-                      label="Consultar despesas"
-                      variant="secondary"
-                      size="md"
-                      onClick={() => navigateTo("/pagina-inicial/despesas")}
-                    />
-                  </div>
-                </CardFooter>
-              </Card>
+                  </CardContent>
+                }
+                footer={
+                  <CardFooter>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "var(--s-spacing-xx-small)",
+                      }}
+                    >
+                      <Button
+                        skeleton={loading}
+                        label="Adicionar despesa"
+                        variant="primary"
+                        size="md"
+                        onClick={() => navigateTo("/pagina-inicial/despesas")}
+                      />
+                      <Button
+                        skeleton={loading}
+                        label="Consultar despesas"
+                        variant="secondary"
+                        size="md"
+                        onClick={() => navigateTo("/pagina-inicial/despesas")}
+                      />
+                    </div>
+                  </CardFooter>
+                }
+              ></Card>
             </div>
           </div>
         </div>
@@ -797,93 +811,119 @@ const HomePage = () => {
           {" "}
           <h5 className="titles-page">Visão geral</h5>
           <div className="col-12">
-            <Card>
-              <CardHeader title="Ganhos x Despesas" description={``} />
-              <CardContent>
-                <Barras data={dataBarras} loading={loading} />
-              </CardContent>
-              <CardFooter>
-                <div></div>
-              </CardFooter>
-            </Card>
+            <Card
+              header={<CardHeader title="Ganhos x Despesas" description={``} />}
+              content={
+                <CardContent>
+                  <Barras data={dataBarras} loading={loading} />
+                </CardContent>
+              }
+              footer={
+                <CardFooter>
+                  <div></div>
+                </CardFooter>
+              }
+            ></Card>
           </div>
         </div>
         <div className="col-12">
-          <Card>
-            <CardHeader title="Saldo Total" description={``} />
-            <CardContent>
-              <AreaGraphic data={dataArea} loading={loading} />
-            </CardContent>
-            <CardFooter>
-              <div></div>
-            </CardFooter>
-          </Card>
+          <Card
+            header={<CardHeader title="Saldo Total" description={``} />}
+            content={
+              <CardContent>
+                <AreaGraphic data={dataArea} loading={loading} />
+              </CardContent>
+            }
+            footer={
+              <CardFooter>
+                <div></div>
+              </CardFooter>
+            }
+          ></Card>
         </div>
         <div className="layout-sub-page-50">
           <div className="col-12">
             <div className="col-6">
-              <Card>
-                <CardHeader title="Fontes de renda" description={``} />
-                <CardContent>
-                  <Pizza
-                    name="ganho"
-                    data={dataFonteDeRenda}
-                    loading={loading}
-                  />
-                </CardContent>
-                <CardFooter>
-                  <div></div>
-                </CardFooter>
-              </Card>
+              <Card
+                header={<CardHeader title="Fontes de renda" description={``} />}
+                content={
+                  <CardContent>
+                    <Pizza
+                      name="ganho"
+                      data={dataFonteDeRenda}
+                      loading={loading}
+                    />
+                  </CardContent>
+                }
+                footer={
+                  <CardFooter>
+                    <div></div>
+                  </CardFooter>
+                }
+              ></Card>
             </div>
             <div className="col-6">
-              <Card>
-                <CardHeader title="Formas de pagamento" description={``} />
-                <CardContent>
-                  <Pizza
-                    name="despesa"
-                    data={dataFormasDePagamento}
-                    loading={loading}
-                  />
-                </CardContent>
-                <CardFooter>
-                  <div></div>
-                </CardFooter>
-              </Card>
+              <Card
+                header={
+                  <CardHeader title="Formas de pagamento" description={``} />
+                }
+                content={
+                  <CardContent>
+                    <Pizza
+                      name="despesa"
+                      data={dataFormasDePagamento}
+                      loading={loading}
+                    />
+                  </CardContent>
+                }
+                footer={
+                  <CardFooter>
+                    <div></div>
+                  </CardFooter>
+                }
+              ></Card>
             </div>
           </div>
         </div>
         <div className="layout-sub-page-50">
           <div className="col-12">
             <div className="col-6">
-              <Card>
-                <CardHeader title="Categorias" description={``} />
-                <CardContent>
-                  <Pizza
-                    name="despesa"
-                    data={dataCategorias}
-                    loading={loading}
-                  />
-                </CardContent>
-                <CardFooter>
-                  <div></div>
-                </CardFooter>
-              </Card>
+              <Card
+                header={<CardHeader title="Categorias" description={``} />}
+                content={
+                  <CardContent>
+                    <Pizza
+                      name="despesa"
+                      data={dataCategorias}
+                      loading={loading}
+                    />
+                  </CardContent>
+                }
+                footer={
+                  <CardFooter>
+                    <div></div>
+                  </CardFooter>
+                }
+              ></Card>
             </div>
             <div className="col-6">
-              <Card>
-                <CardHeader title="Subcategorias" description={``} />
-                <CardContent>
-                  <Pizza
-                    name="despesa"
-                    data={dataSubCategorias}
-                    loading={loading}
-                  />
-                </CardContent>
-                <CardFooter>
-                  <div></div>
-                </CardFooter>
-              </Card>
+              <Card
+                header={<CardHeader title="Subcategorias" description={``} />}
+                content={
+                  <CardContent>
+                    <Pizza
+                      name="despesa"
+                      data={dataSubCategorias}
+                      loading={loading}
+                    />
+                  </CardContent>
+                }
+                footer={
+                  <CardFooter>
+                    <div></div>
+                  </CardFooter>
+                }
+              ></Card>
             </div>
           </div>
         </div>

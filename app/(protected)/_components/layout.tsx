@@ -45,7 +45,7 @@ const LayoutPage = (props: LayoutProps) => {
   const navigateTo = (route: string) => {
     router.push(route);
     if (isMobile()) {
-      toggleSidebar(); 
+      toggleSidebar();
     }
   };
 
@@ -53,7 +53,7 @@ const LayoutPage = (props: LayoutProps) => {
 
   const isMobile = () => {
     if (typeof window !== "undefined") {
-      return window.innerWidth < 768; 
+      return window.innerWidth < 768;
     }
     return false;
   };
@@ -73,7 +73,11 @@ const LayoutPage = (props: LayoutProps) => {
     return items;
   };
 
-  const isAuthRoute = pathname === "/auth/login" || pathname === "/auth/criar-conta" || pathname === "/auth/error" || pathname === '/'
+  const isAuthRoute =
+    pathname === "/auth/login" ||
+    pathname === "/auth/criar-conta" ||
+    pathname === "/auth/error" ||
+    pathname === "/";
 
   if (isAuthRoute) {
     return <>{props.children}</>;

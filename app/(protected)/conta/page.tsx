@@ -97,6 +97,9 @@ const SettingsPage = () => {
         namePage="Conta"
       >
         <SavebarTrigger
+          label="Salvar"
+          labelCancel="Cancelar"
+          labelSave="Salvar"
           handleSubmit={handleSubmit(onSubmit)}
           formChanged={hasFormChanged}
           handleCancel={handleCancel}

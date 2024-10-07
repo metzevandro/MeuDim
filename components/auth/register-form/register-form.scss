@@ -1,46 +1,108 @@
-.card-sign-up {
+.sign-up-page {
   display: flex;
   flex-direction: column;
   width: 100vw;
   height: 100vh;
-  align-items: center;
-  justify-content: center;
-  gap: var(--s-spacing-x-small);
-  background-color: var(--s-color-background-default);
+  flex-direction: row;
+  overflow: hidden;
 
-  .card-root {
-    width: 420px;
+  .sign-up-card {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 
-    h1 {
-      font: var(--s-typography-heading-medium);
-      color: var(--s-color-content-default);
-      padding: var(--s-spacing-medium) 0 var(--s-spacing-small)
-        var(--s-spacing-medium);
-    }
-
-    p {
-      font: var(--s-typography-paragraph-regular);
-      color: var(--s-color-content-default);
-    }
-
-    .form-sign-up {
+    .sign-up-form {
+      max-width: 474px;
       display: flex;
       flex-direction: column;
-      gap: var(--s-spacing-small);
+      align-items: center;
+      gap: var(--s-spacing-x-small);
+      width: 65%;
+      gap: var(--s-spacing-large);
 
-      .input-field {
+      video {
+        width: min-content;
+      }
+
+      header {
         display: flex;
         flex-direction: column;
-        gap: var(--s-spacing-small);
+        align-items: center;
+        gap: var(--s-spacing-xx-small);
+        text-align: center;
+
+        h1 {
+          color: var(--s-color-content-default);
+        }
+
+        p {
+          color: var(--s-color-content-light);
+        }
       }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-spacing-large);
+        width: 100%;
+
+        .input-field {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          gap: var(--s-spacing-medium);
+        }
+
+        footer {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: var(--s-spacing-xx-small);
+          width: 100%;
+
+          p {
+            color: var(--s-color-content-light);
+          }
+        }
+      }
+    }
+  }
+
+  .sign-up-image {
+    position: relative;
+    width: 50%;
+
+    .sign-up-video {
+      background: #2160eb;
+      mix-blend-mode: color;
+      position: absolute;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
 }
 
-@media screen and (max-width: 590px) {
-  .card-sign-up {
-    .card-root {
-      width: 80%;
+@media screen and (max-width: 768px) {
+  .sign-up-page {
+    .sign-up-card {
+      width: 100%;
+
+      .sign-up-form {
+        width: 87%;
+      }
+    }
+
+    .sign-up-image {
+      display: none;
     }
   }
 }

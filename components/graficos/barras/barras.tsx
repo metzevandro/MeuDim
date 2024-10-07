@@ -57,66 +57,69 @@ export default function Barras(props: BarrasProps) {
     }
   }, [props.loading]);
 
-  const filteredData = props.data.filter(item => item.Ganhos !== 0 || item.Despesas !== 0);
+  const filteredData = props.data.filter(
+    (item) => item.Ganhos !== 0 || item.Despesas !== 0,
+  );
 
   return (
     <div ref={chartContainerRef} className="chart-container">
-       {!props.loading && filteredData.length === 0 ? (
+      {!props.loading && filteredData.length === 0 ? (
         <EmptyState
           icon="database"
           title="Sem dados no período selecionado"
           description={`Altere o período selecionado ou registre novas entradas ou despesas.`}
         />
       ) : (
-      <BarChart
-        width={chartWidth}
-        height={chartHeight}
-        data={props.loading ? loadingData : props.data}
-      >
-        <CartesianGrid
-          horizontalCoordinatesGenerator={(props) =>
-            props.height > 250 ? [12, 77, 149, 221] : [100, 200]
-          }
-          verticalPoints={[0]}
-        />
-        <XAxis
-          dataKey="data"
-          tick={{
-            fill: "var(--s-color-content-default)",
-          }}
-          style={{
-            font: "var(--s-typography-caption-regular)",
-            minWidth: "50px",
-          }}
-        />
-        <YAxis
-          type="number"
-          name="R$"
-          style={{
-            font: "var(--s-typography-caption-regular)",
-            minWidth: "unset",
-          }}
-          tick={{
-            fill: "var(--s-color-content-default)",
-          }}
-          tickFormatter={(value) => `R$ ${value}`}
-        />
-        <Tooltip content={<CustomTooltip area={false} />} />
-        <Bar
-          dataKey="Ganhos"
-          stackId="a"
-          fill={
-            props.loading
-              ? "var(--s-color-fill-disable)"
-              : "var(--s-color-fill-success)"
-          }
-        />
-        <Bar
-          dataKey="Despesas"
-          stackId="a"
-          fill={"var(--s-color-fill-warning)"}
-        />
-      </BarChart>)}
+        <BarChart
+          width={chartWidth}
+          height={chartHeight}
+          data={props.loading ? loadingData : props.data}
+        >
+          <CartesianGrid
+            horizontalCoordinatesGenerator={(props) =>
+              props.height > 250 ? [12, 77, 149, 221] : [100, 200]
+            }
+            verticalPoints={[0]}
+          />
+          <XAxis
+            dataKey="data"
+            tick={{
+              fill: "var(--s-color-content-default)",
+            }}
+            style={{
+              font: "var(--s-typography-caption-regular)",
+              minWidth: "50px",
+            }}
+          />
+          <YAxis
+            type="number"
+            name="R$"
+            style={{
+              font: "var(--s-typography-caption-regular)",
+              minWidth: "unset",
+            }}
+            tick={{
+              fill: "var(--s-color-content-default)",
+            }}
+            tickFormatter={(value) => `R$ ${value}`}
+          />
+          <Tooltip content={<CustomTooltip area={false} />} />
+          <Bar
+            dataKey="Ganhos"
+            stackId="a"
+            fill={
+              props.loading
+                ? "var(--s-color-fill-disable)"
+                : "var(--s-color-fill-success)"
+            }
+          />
+          <Bar
+            dataKey="Despesas"
+            stackId="a"
+            fill={"var(--s-color-fill-warning)"}
+          />
+        </BarChart>
+      )}
     </div>
   );
 }

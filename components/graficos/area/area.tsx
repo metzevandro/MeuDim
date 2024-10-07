@@ -21,7 +21,7 @@ export default function AreaGraphic(props: AreaGraphicProps) {
   const [chartHeight, setChartHeight] = useState(0);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [loadingData, setLoadingData] = useState(
-    Array(30).fill({ name: "", saldoTotal: 0,})
+    Array(30).fill({ name: "", saldoTotal: 0 }),
   );
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function AreaGraphic(props: AreaGraphicProps) {
         prevData.map((item) => ({
           ...item,
           saldoTotal: Math.floor(Math.random() * 1000),
-        }))
+        })),
       );
 
       const intervalId = setInterval(() => {
@@ -55,7 +55,7 @@ export default function AreaGraphic(props: AreaGraphicProps) {
           prevData.map((item) => ({
             ...item,
             saldoTotal: Math.floor(Math.random() * 1000),
-          }))
+          })),
         );
       }, 1000);
 
@@ -63,7 +63,7 @@ export default function AreaGraphic(props: AreaGraphicProps) {
     }
   }, [props.loading]);
 
-  const filteredData = props.data.filter(item => item.saldoTotal !== 0);
+  const filteredData = props.data.filter((item) => item.saldoTotal !== 0);
 
   return (
     <div ref={chartContainerRef} className="area-graphic">

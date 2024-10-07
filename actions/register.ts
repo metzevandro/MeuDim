@@ -172,7 +172,6 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     }
   }
 
-  // Criar formas de pagamento padrão para o novo usuário
   for (const forma of formaDePagamento) {
     await db.formaDePagamento.create({
       data: {
@@ -183,7 +182,6 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     });
   }
 
-  // Criar fontes de renda padrão para o novo usuário
   for (const fonte of fonteDeRenda) {
     await db.fonteDeRenda.create({
       data: {

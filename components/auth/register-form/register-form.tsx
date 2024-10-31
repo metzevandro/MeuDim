@@ -127,7 +127,10 @@ export const RegisterForm = () => {
                   textError={errors.password?.message || ""}
                 />
                 <div style={{ width: "fit-content" }}>
-                  <InputCheckbox label="Concordo com os Termos e Privacidade." required/>
+                  <InputCheckbox
+                    label="Concordo com os Termos e Privacidade."
+                    required
+                  />
                 </div>
               </div>
 

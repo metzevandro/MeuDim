@@ -2,8 +2,6 @@
 import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
-import { NovaCategoriaSchema } from "@/schemas";
-import { z } from "zod";
 
 export const CriarCategoria = async (values: {
   name: string;

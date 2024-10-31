@@ -134,14 +134,6 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     return { error: "Este e-mail já está cadastrado!" };
   }
 
-  const existingName = await db.user.findUnique({
-    where: { name },
-  });
-
-  if (existingName) {
-    return { error: "Este nome já está cadastrado!" };
-  }
-
   const newUser = await db.user.create({
     data: {
       name,

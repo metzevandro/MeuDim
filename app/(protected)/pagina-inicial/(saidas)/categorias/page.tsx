@@ -21,6 +21,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import InputEmoji from "react-input-emoji";
 
 import "./categorias.scss";
 import {
@@ -29,6 +30,7 @@ import {
   ExcluirCategoria,
 } from "@/actions/categoria";
 import AuthProgress from "@/components/auth/Progress/progress";
+import EmojiPicker from "emoji-picker-react";
 interface Subcategoria {
   id: string;
   name: string;
@@ -555,10 +557,12 @@ export default function CategoryPage() {
             <AsideContent>
               <Input
                 label="Nome"
-                placeholder="Ex: Investimentos"
+                placeholder="Ex: Comida"
                 value={form.watch("name")}
                 onChange={(e) => form.setValue("name", e.target.value)}
               />
+              <EmojiPicker />
+
               <div
                 style={{
                   display: "flex",

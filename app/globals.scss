@@ -3,8 +3,7 @@
 html,
 body,
 :root {
-  width: 100%;
-  background-color: var(--s-color-background-default);
+  background: var(--s-color-background-default);
 }
 
 .layout-page {
@@ -12,37 +11,20 @@ body,
   flex-direction: column;
   gap: var(--s-spacing-medium);
 
-  .layout-sub-page-50 {
+  .layout-resumo {
     width: 100%;
-    justify-content: space-between;
-    flex-direction: column;
     display: flex;
-    gap: var(--s-spacing-small);
+    flex-direction: row;
+    gap: var(--s-spacing-medium);
 
-    .col-12 {
-      display: flex;
-      gap: var(--s-spacing-medium);
+    .card-root {
+      width: 100%;
     }
-  }
-
-  .layout-sub-page-100 {
-    width: 100%;
-    justify-content: space-between;
-    flex-direction: column;
-    display: flex;
-    gap: var(--s-spacing-small);
-
-    .col-12 {
-      display: flex;
-    }
-  }
-
-  .titles-page {
-    color: var(--s-color-content-default);
   }
 
   .input-field {
     display: flex;
+    width: fit-content;
     gap: var(--s-spacing-xx-small);
 
     * {
@@ -51,96 +33,10 @@ body,
   }
 }
 
-[class*="col-"] {
-  float: left;
-}
-
-.col-1 {
-  width: 8.33%;
-}
-.col-2 {
-  width: 16.66%;
-}
-.col-3 {
-  width: 25%;
-}
-.col-4 {
-  width: 33.33%;
-}
-.col-5 {
-  width: 41.66%;
-}
-.col-6 {
-  width: 50%;
-}
-.col-7 {
-  width: 58.33%;
-}
-.col-8 {
-  width: 66.66%;
-}
-.col-9 {
-  width: 75%;
-}
-.col-10 {
-  width: 83.33%;
-}
-.col-11 {
-  width: 91.66%;
-}
-.col-12 {
-  width: 100%;
-}
-
-@media screen and (max-width: 768px) {
-  .col-1 {
-    width: 100%;
-  }
-  .col-2 {
-    width: 100%;
-  }
-  .col-3 {
-    width: 100%;
-  }
-  .col-4 {
-    width: 100%;
-  }
-  .col-5 {
-    width: 100%;
-  }
-  .col-6 {
-    width: 100%;
-  }
-  .col-7 {
-    width: 100%;
-  }
-  .col-8 {
-    width: 100%;
-  }
-  .col-9 {
-    width: 100%;
-  }
-  .col-10 {
-    width: 100%;
-  }
-  .col-11 {
-    width: 100%;
-  }
-  .col-12 {
-    width: 100%;
-  }
-
+@media screen and (max-width: 490px) {
   .layout-page {
-    display: flex;
-    flex-direction: column;
-
-    .layout-sub-page-50 {
-      justify-content: space-between;
-      display: flex;
-
-      .col-12 {
-        flex-direction: column;
-      }
+    .layout-resumo {
+      flex-direction: column;
     }
   }
 }

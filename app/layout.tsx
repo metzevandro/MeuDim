@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
 import React from "react";
 import LayoutPage from "@/app/(protected)/_components/layout";
+import { UserProvider } from "@/data/provider";
 
 const inter = Inter({ subsets: ["latin"] });
 

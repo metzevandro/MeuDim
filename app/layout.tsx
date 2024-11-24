@@ -7,7 +7,7 @@ import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
 import React from "react";
 import LayoutPage from "@/app/(protected)/_components/layout";
-import { UserProvider } from "@/data/provider";
+import Provider from "./(protected)/_components/provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,7 +27,9 @@ export default async function RootLayout({
     <SessionProvider session={session}>
       <html lang="pt-br" data-company="whitelabel">
         <body className={inter.className}>
-          <LayoutPage>{children}</LayoutPage>
+          <Provider>
+            <LayoutPage>{children}</LayoutPage>
+          </Provider>
         </body>
       </html>
     </SessionProvider>

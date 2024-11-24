@@ -1,10 +1,10 @@
 "use client";
+import { useUser } from "@/data/provider"; // Importando useUser
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import React from "react";
 
 import {
   Input,
@@ -13,7 +13,6 @@ import {
   Page,
   SavebarTrigger,
 } from "design-system-zeroz";
-import LayoutPage from "../_components/layout";
 import { useCurrentUser } from "@/hooks/user-current-user";
 import { settings } from "@/actions/settings";
 import { SettingsSchema } from "@/schemas/index";
@@ -25,6 +24,7 @@ interface FormValues {
 }
 
 const SettingsPage = () => {
+  const { userData, setUserData } = useUser();
   const user = useCurrentUser();
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
@@ -53,6 +53,18 @@ const SettingsPage = () => {
           update();
           setSuccess(data.success);
           setNotificationOpen(true);
+
+          if (userData) {
+            setUserData({
+              ...userData,
+              user: {
+                ...userData.user,
+                name: values.name || userData.user.name,
+                email: values.email || userData.user.email,
+              },
+            });
+          }
+
           setTimeout(() => {
             setNotificationOpen(false);
           }, 5000);

@@ -50,8 +50,8 @@ export interface Expense {
 }
 
 export interface User {
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
   image: string | null;
   id: string;
   role: string;
@@ -77,7 +77,17 @@ export async function fetchUserData(
       throw new Error("Failed to fetch user data");
     }
     const userData = await response.json();
-    setUserData(userData);
+
+    // Garantir que 'image' seja string | null (não undefined)
+    const formattedUserData: UserData = {
+      user: {
+        ...userData.user,
+        image: userData.user.image ?? null, // Se image for undefined, define como null
+      },
+      expires: userData.expires ?? null, // Garantir que expires também seja string | null
+    };
+
+    setUserData(formattedUserData); // Passando os dados formatados para o setUserData
   } catch (error) {
     console.log(error);
   } finally {

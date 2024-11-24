@@ -27,39 +27,12 @@ import { z } from "zod";
 
 import "./fonte-de-renda.scss";
 import AuthProgress from "@/components/auth/Progress/progress";
-
-interface UserData {
-  user: {
-    name: string;
-    email: string;
-    image: string | null;
-    id: string;
-    role: string;
-    categories: {
-      id: string;
-      name: string;
-      userId: string;
-      createdAt: string;
-    }[];
-    transactions: {
-      id: string;
-      name: string;
-      createdAt: string;
-      userId: string;
-      categories: {
-        id: string;
-        name: string;
-        userId: string;
-        createdAt: string;
-      };
-    };
-  };
-  expires: string;
-}
+import { useUser } from "@/data/provider";
 
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
 export default function Categorias() {
+  const { userData, setUserData } = useUser();
   const [isOpenAside, setIsOpenAside] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
@@ -77,7 +50,6 @@ export default function Categorias() {
     },
   });
 
-  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 

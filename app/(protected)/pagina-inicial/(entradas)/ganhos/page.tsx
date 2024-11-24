@@ -1,9 +1,8 @@
 "use client";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Criar, Deletar, Atualizar } from "@/actions/transaction";
 import { TransactionSchema } from "@/schemas/index";
 import { z } from "zod";
-import { useCurrentUser } from "@/hooks/user-current-user";
 import {
   Aside,
   AsideContent,
@@ -26,46 +25,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import "./ganhos.scss";
 import IntlCurrencyInput from "react-currency-input-field";
 import AuthProgress from "@/components/auth/Progress/progress";
-
-interface UserData {
-  user: {
-    name: string;
-    email: string;
-    image: string | null;
-    id: string;
-    role: string;
-    categories: {
-      id: string;
-      name: string;
-      userId: string;
-      createdAt: string;
-    }[];
-    transactions: {
-      id: string;
-      name: string;
-      createdAt: string;
-      userId: string;
-      category: {
-        id: string;
-        name: string;
-        userId: string;
-        createdAt: string;
-      };
-    }[];
-  };
-  expires: string;
-}
+import { useUser } from "@/data/provider";
 
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
 const HomePage = () => {
+  const { userData, setUserData } = useUser();
   const [isOpenAside, setIsOpenAside] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
   const [editFormStates, setEditFormStates] = useState<{ [key: string]: any }>(
     {},
   );
-  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 

@@ -26,57 +26,12 @@ import IntlCurrencyInput from "react-currency-input-field";
 
 import "./despesas.scss";
 import AuthProgress from "@/components/auth/Progress/progress";
-
-interface UserData {
-  user: User;
-  expires: string;
-}
-
-interface User {
-  name: string;
-  email: string;
-  image: string | null;
-  id: string;
-  role: string;
-  expense: Expense[];
-  categoria: Categoria[];
-  formaDePagamento: FormaDePagamento[];
-}
-
-interface Expense {
-  id: string;
-  amount: string;
-  accountId: string;
-  createdAt: string;
-  categoriaId: string;
-  subcategoriaId: string;
-  formaDePagamentoId: string;
-}
-
-interface Categoria {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: string;
-  Subcategorias: Subcategoria[];
-}
-
-interface Subcategoria {
-  id: string;
-  name: string;
-  categoriaId: string;
-}
-
-interface FormaDePagamento {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: string;
-}
+import { useUser } from "@/data/provider";
 
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
 const HomePage = () => {
+  const { userData, setUserData } = useUser();
   const [isOpenAside, setIsOpenAside] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
@@ -89,7 +44,6 @@ const HomePage = () => {
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
 
-  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 

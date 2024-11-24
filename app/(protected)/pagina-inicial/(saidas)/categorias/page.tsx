@@ -1,5 +1,4 @@
 "use client";
-import { useCurrentUser } from "@/hooks/user-current-user";
 import { NovaCategoriaSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -21,7 +20,6 @@ import {
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import InputEmoji from "react-input-emoji";
 
 import "./categorias.scss";
 import {
@@ -30,42 +28,12 @@ import {
   ExcluirCategoria,
 } from "@/actions/categoria";
 import AuthProgress from "@/components/auth/Progress/progress";
-import EmojiPicker from "emoji-picker-react";
-interface Subcategoria {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: string;
-}
-
-interface Categoria {
-  id: string;
-  name: string;
-  createdAt: string;
-  userId: string;
-  subcategoria: Subcategoria[];
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  image: string | null;
-  role: string;
-  subcategoria: Subcategoria[];
-  categoria: Categoria[];
-}
-
-interface UserData {
-  user: User;
-  expires: string;
-}
+import { useUser } from "@/data/provider";
 
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
 export default function CategoryPage() {
-  const user = useCurrentUser();
-
+  const { userData, setUserData } = useUser();
   const [isAsideOpen, setIsAsideOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
   const [editAsideOpen, setEditAsideOpen] = useState<{
@@ -84,7 +52,6 @@ export default function CategoryPage() {
     },
   });
 
-  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 
@@ -561,8 +528,6 @@ export default function CategoryPage() {
                 value={form.watch("name")}
                 onChange={(e) => form.setValue("name", e.target.value)}
               />
-              <EmojiPicker />
-
               <div
                 style={{
                   display: "flex",

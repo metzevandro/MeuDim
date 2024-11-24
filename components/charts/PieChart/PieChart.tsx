@@ -7,14 +7,13 @@ import {
   PieChart as Chart,
   EmptyState,
 } from "design-system-zeroz";
-import { get } from "http";
 
 interface PieData {
   name: string;
   amount: number;
   fill: string;
-  visitors: number;
-  browser: string;
+  quantity: number;
+  keyName: string;
 }
 
 interface LineChartProps {
@@ -33,14 +32,6 @@ interface LineChartProps {
     | "subcategoria"
     | "fonteDeRenda";
 }
-
-const colors = [
-  "var(--s-color-fill-highlight)",
-  "#873BEC",
-  "#DB2777",
-  "#027AC7",
-  "#138480",
-];
 
 export function PieChart({
   userData,
@@ -215,9 +206,9 @@ export function PieChart({
     return {
       name,
       amount: parseFloat(selectedData[key].toFixed(2)),
-      fill: colors[index % colors.length],
-      visitors: parseFloat(selectedData[key].toFixed(2)),
-      browser: name,
+      fill: '',
+      quantity: parseFloat(selectedData[key].toFixed(2)),
+      keyName: name,
     };
   });
 
@@ -272,11 +263,14 @@ export function PieChart({
                 caption
                 data={data}
                 dataKey="amount"
-                innerRadius={65}
-                outerRadius={100}
+                innerRadius={90}
+                outerRadius={140}
                 label="Total"
                 labelList={false}
                 tooltipFormatter={(value) =>
+                  `R$ ${value.toFixed(2).replace(".", ",")}`
+                }
+                labelFormatter={(value) =>
                   `R$ ${value.toFixed(2).replace(".", ",")}`
                 }
               />

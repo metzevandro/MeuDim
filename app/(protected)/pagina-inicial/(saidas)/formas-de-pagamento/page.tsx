@@ -29,30 +29,12 @@ import { z } from "zod";
 
 import "./forma-de-pagamento.scss";
 import AuthProgress from "@/components/auth/Progress/progress";
-
-interface FormaDePagamento {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: string;
-}
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  image: string | null;
-  role: string;
-  formaDePagamento: FormaDePagamento[];
-}
-
-interface UserData {
-  user: User;
-  expires: string;
-}
+import { useUser } from "@/data/provider";
 
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
 export default function CategoryPage() {
+  const { userData, setUserData } = useUser();
   const [isAsideOpen, setIsAsideOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
   const [editAsideOpen, setEditAsideOpen] = useState<{
@@ -71,7 +53,6 @@ export default function CategoryPage() {
     },
   });
 
-  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 

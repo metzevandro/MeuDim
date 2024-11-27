@@ -230,13 +230,13 @@ export function PieChart({
   const getDescription = () => {
     switch (clientDateType) {
       case "formaDePagamento":
-        return "Formas de Pagamento";
+        return "Despesas";
       case "categoria":
-        return "Categorias";
+        return "Despesas";
       case "subcategoria":
-        return "Subcategorias";
+        return "Despesas";
       case "fonteDeRenda":
-        return "Fontes de Renda";
+        return "Ganhos";
       default:
         return "Dados";
     }

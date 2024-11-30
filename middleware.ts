@@ -22,11 +22,14 @@ export default auth((req) => {
   }
 
   if (isLoggedIn) {
-    if (nextUrl.pathname === "/" || (!isAuthRoute && isPublicRoute)) {
+    if (isAuthRoute) {
+      return;
+    }
+    if (isPublicRoute || nextUrl.pathname === "/") {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, req.url));
     }
   } else {
-    if (!isPublicRoute || nextUrl.pathname === "/") {
+    if (!isPublicRoute) {
       return Response.redirect(new URL("/auth/login", req.url));
     }
   }

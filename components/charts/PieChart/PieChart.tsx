@@ -206,7 +206,7 @@ export function PieChart({
     return {
       name,
       amount: parseFloat(selectedData[key].toFixed(2)),
-      fill: '',
+      fill: "",
       quantity: parseFloat(selectedData[key].toFixed(2)),
       keyName: name,
     };

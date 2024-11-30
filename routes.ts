@@ -11,11 +11,7 @@ export const publicRoutes = ["/auth/login"];
  * @type {string[]}
  */
 
-export const authRoutes = [
-  "/auth/login",
-  "/auth/criar-conta",
-  "/auth/error",
-];
+export const authRoutes = ["/auth/login", "/auth/criar-conta", "/auth/error"];
 
 /**
  * Prefixo para as rotas da API de autenticação

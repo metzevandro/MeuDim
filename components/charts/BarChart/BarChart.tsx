@@ -160,7 +160,7 @@ export function BarChart({
 
   return (
     <Card
-      header={<CardHeader title="Saldo Total" description="" />}
+      header={<CardHeader title="Ganhos x Despesas" description="" />}
       content={
         <CardContent>
           <div className="chart-container" ref={chartContainerRef}>

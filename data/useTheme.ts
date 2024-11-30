@@ -13,7 +13,7 @@ export const useTheme = () => {
     }
 
     const userPrefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
+      "(prefers-color-scheme: dark)",
     ).matches;
     return userPrefersDark ? "dark" : "light";
   });

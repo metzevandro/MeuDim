@@ -123,7 +123,7 @@ export function LineChart({
 
           return {
             month: formattedDate,
-            saldoTotal: totalGanhos - totalDespesas,
+            "Saldo Total": totalGanhos - totalDespesas,
           };
         })
       : generateDatesInMonth(selectedYear, selectedMonth).map((date) => {
@@ -155,7 +155,7 @@ export function LineChart({
 
           return {
             month: formattedDate,
-            saldoTotal: totalGanhos - totalDespesas,
+            "Saldo Total": totalGanhos - totalDespesas,
           };
         });
 
@@ -171,7 +171,7 @@ export function LineChart({
                 return `R$ ${formattedValue.toFixed(2).replace(".", ",")}`;
               }}
               lineStyles={{
-                saldoTotal: {
+                'Saldo Total': {
                   color: loading
                     ? "var(--s-color-fill-disable)"
                     : "var(--s-color-fill-success)",

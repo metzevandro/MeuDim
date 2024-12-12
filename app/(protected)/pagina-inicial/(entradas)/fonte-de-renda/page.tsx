@@ -464,6 +464,7 @@ export default function Categorias() {
                   size="md"
                   variant="primary"
                   label="Adicionar"
+                  disabled={!form.watch("name")}
                   onClick={() => onSubmit(form.getValues())}
                 />
                 <Button

@@ -47,6 +47,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 
+
   async function fetchUserData() {
     try {
       const response = await fetch(`${API}/api/auth/session`);
@@ -550,8 +551,11 @@ const HomePage = () => {
 
   const date = form.watch("data");
   const valor = form.watch("valor");
+  const formaDePagamento = form.watch("formaDePagamento");
+  const name = form.watch("categoria");
+  const subcategoria = form.watch("subcategoria");
 
-  const isFormValid = date && valor;
+  const isFormValid = date && valor && formaDePagamento && name && subcategoria;
 
   return (
     <>

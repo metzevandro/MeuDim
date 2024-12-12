@@ -55,6 +55,12 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 
+  const date = form.watch("date");
+  const name = form.watch("name");
+  const subcategoria = form.watch("subcategoria");
+
+  const isFormValid = date && subcategoria && name;
+
   async function fetchUserData() {
     try {
       const response = await fetch(`${API}/api/auth/session`);
@@ -583,6 +589,7 @@ export default function CategoryPage() {
                   size="md"
                   variant="primary"
                   label="Adicionar"
+                  disabled={!isFormValid}
                   onClick={form.handleSubmit(criar)}
                 />
                 <Button

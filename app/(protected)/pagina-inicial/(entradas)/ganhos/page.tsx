@@ -647,6 +647,7 @@ const HomePage = () => {
                   size="md"
                   variant="primary"
                   label="Adicionar"
+                  disabled={!isFormValid}
                   onClick={() => CriarGanho(form.getValues())}
                 />
                 <Button

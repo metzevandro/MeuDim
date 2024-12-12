@@ -363,6 +363,11 @@ export default function CategoryPage() {
 
   const expandedData: { [key: string]: any; id: string }[] = [];
 
+  const date = form.watch("date");
+  const name = form.watch("name");
+
+  const isFormValid = date && name;
+
   return (
     <>
       <Page
@@ -466,6 +471,7 @@ export default function CategoryPage() {
                   size="md"
                   variant="primary"
                   label="Adicionar"
+                  disabled={!isFormValid}
                   onClick={() => criar(form.getValues())}
                 />
                 <Button

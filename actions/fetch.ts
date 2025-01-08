@@ -66,31 +66,3 @@ export interface UserData {
   user: User;
   expires: string;
 }
-
-export async function fetchUserData(
-  setUserData: React.Dispatch<React.SetStateAction<UserData | null>>,
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-  try {
-    const response = await fetch(`${API}/api/auth/session`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch user data");
-    }
-    const userData = await response.json();
-
-    // Garantir que 'image' seja string | null (não undefined)
-    const formattedUserData: UserData = {
-      user: {
-        ...userData.user,
-        image: userData.user.image ?? null, // Se image for undefined, define como null
-      },
-      expires: userData.expires ?? null, // Garantir que expires também seja string | null
-    };
-
-    setUserData(formattedUserData); // Passando os dados formatados para o setUserData
-  } catch (error) {
-    console.log(error);
-  } finally {
-    setLoading(false);
-  }
-}

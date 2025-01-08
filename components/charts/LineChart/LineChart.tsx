@@ -18,6 +18,7 @@ interface LineChartProps {
   isYearSelected: boolean;
   firstDayOfMonth: Date;
   lastDayOfMonth: Date;
+  skeleton: boolean;
 }
 
 function getFormattedDate(date: Date): string {
@@ -38,7 +39,6 @@ function generateDatesInMonth(year: number, month: number): Date[] {
 
 export function LineChart({
   userData,
-  loading,
   selectedMonth,
   setSelectedMonth,
   selectedYear,
@@ -46,6 +46,7 @@ export function LineChart({
   isYearSelected,
   firstDayOfMonth,
   lastDayOfMonth,
+  skeleton,
 }: LineChartProps) {
   const [chartWidth, setChartWidth] = useState(0);
   const [chartHeight, setChartHeight] = useState(0);
@@ -68,24 +69,6 @@ export function LineChart({
       window.removeEventListener("resize", updateDimensions);
     };
   }, []);
-
-  useEffect(() => {
-    if (loading) {
-      const intervalId = setInterval(() => {
-        setRandomData(
-          Array.from(
-            { length: selectedMonth === 12 ? 12 : lastDayOfMonth.getDate() },
-            () => ({
-              ganhos: Math.floor(Math.random() * 1000),
-              despesas: Math.floor(Math.random() * 1000),
-            }),
-          ),
-        );
-      }, 1000);
-
-      return () => clearInterval(intervalId);
-    }
-  }, [loading, selectedMonth, lastDayOfMonth]);
 
   const dataArea =
     selectedMonth === 12
@@ -166,15 +149,14 @@ export function LineChart({
         <CardContent>
           <div className="chart-container" ref={chartContainerRef}>
             <Chart
+              skeleton={skeleton}
               tooltipFormatter={(value) => {
                 const formattedValue = typeof value === "number" ? value : 0;
                 return `R$ ${formattedValue.toFixed(2).replace(".", ",")}`;
               }}
               lineStyles={{
-                'Saldo Total': {
-                  color: loading
-                    ? "var(--s-color-fill-disable)"
-                    : "var(--s-color-fill-success)",
+                "Saldo Total": {
+                  color: "var(--s-color-fill-success)",
                 },
               }}
               data={dataArea}

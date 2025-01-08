@@ -54,22 +54,34 @@ export const RegisterForm = () => {
     setError("");
 
     startTransition(() => {
-      register(values)
-        .then((data) => {
-          setNotificationOpen(true);
-          setError(data?.error), setSuccess(data?.success);
-          if (data?.success) {
-            login(values).then((data) => {
-              setError(data?.error);
-              setSuccess(data?.success);
-            });
+      register(values).then((data) => {
+        if (data && data.error) {
+          setError(data.error);
+          
+          if (data.field === "email") {
+            form.setError("email", { type: "manual", message: data.error });
+          } else {
+            form.setError("name", { type: "manual", message: data.error });
+            form.setError("password", { type: "manual", message: data.error });
           }
-        })
-        .catch((error) => {
-          console.error(error);
-          setError("Erro ao se registrar. Tente novamente mais tarde.");
-        });
+        } else if (data && data.success) {
+          setSuccess(data.success);
+        }
+        setNotificationOpen(true);
+    
+        if (data?.success) {
+          login(values).then((loginData) => {
+            setError(loginData?.error);
+            setSuccess(loginData?.success);
+          });
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        setError("Erro ao se registrar. Tente novamente mais tarde.");
+      });
     });
+    
   };
 
   const { errors } = form.formState;
@@ -126,10 +138,12 @@ export const RegisterForm = () => {
                   error={!!errors.password}
                   textError={errors.password?.message || ""}
                 />
+
                 <div style={{ width: "fit-content" }}>
                   <InputCheckbox
                     label="Concordo com os Termos e Privacidade."
-                    required
+                    required                  disabled={isPending}
+
                   />
                 </div>
               </div>

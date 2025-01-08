@@ -19,6 +19,7 @@ interface BarChartProps {
   isYearSelected: boolean;
   firstDayOfMonth: Date;
   lastDayOfMonth: Date;
+  skeleton: boolean;
 }
 
 function getFormattedDate(date: Date): string {
@@ -27,7 +28,6 @@ function getFormattedDate(date: Date): string {
 
 export function BarChart({
   userData,
-  loading,
   selectedMonth,
   setSelectedMonth,
   selectedYear,
@@ -35,6 +35,7 @@ export function BarChart({
   isYearSelected,
   firstDayOfMonth,
   lastDayOfMonth,
+  skeleton,
 }: BarChartProps) {
   const [chartWidth, setChartWidth] = useState(0);
   const [chartHeight, setChartHeight] = useState(0);
@@ -57,24 +58,6 @@ export function BarChart({
       window.removeEventListener("resize", updateDimensions);
     };
   }, []);
-
-  useEffect(() => {
-    if (loading) {
-      const intervalId = setInterval(() => {
-        setRandomData(
-          Array.from(
-            { length: selectedMonth === 12 ? 12 : lastDayOfMonth.getDate() },
-            () => ({
-              ganhos: Math.floor(Math.random() * 1000),
-              despesas: Math.floor(Math.random() * 1000),
-            }),
-          ),
-        );
-      }, 1000);
-
-      return () => clearInterval(intervalId);
-    }
-  }, [loading, selectedMonth, lastDayOfMonth]);
 
   const dataBar =
     selectedMonth === 12
@@ -165,19 +148,16 @@ export function BarChart({
         <CardContent>
           <div className="chart-container" ref={chartContainerRef}>
             <Chart
+              skeleton={skeleton}
               tooltipFormatter={(value) =>
                 `R$ ${value.toFixed(2).replace(".", ",")}`
               }
               lineStyles={{
                 despesas: {
-                  color: loading
-                    ? "var(--s-color-fill-disable)"
-                    : "var(--s-color-fill-warning)",
+                  color: "var(--s-color-fill-warning)",
                 },
                 ganhos: {
-                  color: loading
-                    ? "var(--s-color-fill-disable)"
-                    : "var(--s-color-fill-success)",
+                  color: "var(--s-color-fill-success)",
                 },
               }}
               data={dataBar}

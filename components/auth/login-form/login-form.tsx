@@ -1,40 +1,17 @@
-"use client";
-// React e hooks
-import React, { useEffect, useRef, useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-// Bibliotecas externas
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-// Componentes do design system
-import {
-  Input,
-  Button,
-  Link,
-  Card,
-  CardContent,
-  Notification,
-  CardHeader,
-} from "design-system-zeroz";
+import { Input, Button, Link, Notification } from "design-system-zeroz";
 
-// Módulos
 import { LoginSchema } from "@/schemas";
 import { login } from "@/actions/login";
 
-// Styles
 import "./login-form.scss";
 
-/**
- * O componente LoginForm é um formulário para os usuários se logar na plataforma.
- * Ele é renderizado na página de login.
- * o zod resolver para validar os dados do formulário com base no LoginSchema.
- * O formulário possui 2 campos: email e senha. Quando o formulário é enviado, a função onSubmit é chamada.
- * A função onSubmit chama a função login do módulo actions, passando os dados do formulário como argumento.
- * Se o login for bem-sucedido, o usuário é redirecionado para a página dashboard. Se houver um erro, a mensagem de erro é exibida
- * em uma notificação.
- */
 export const LoginForm = () => {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const searchParams = useSearchParams();
@@ -59,9 +36,14 @@ export const LoginForm = () => {
 
     startTransition(() => {
       login(values).then((data) => {
+        if (data && data.error) {
+          setError(data.error);
+          form.setError("email", { type: "manual", message: data.error });
+          form.setError("password", { type: "manual", message: data.error });
+        } else if (data && data.success) {
+          setSuccess(data.success);
+        }
         setNotificationOpen(true);
-        setError(data?.error);
-        setSuccess(data?.success);
       });
     });
   };
@@ -69,9 +51,7 @@ export const LoginForm = () => {
   const { errors } = form.formState;
 
   const router = useRouter();
-  /**
-   * A função navigateTo redireciona o usuário para a rota especificada.
-   */
+
   const navigateTo = (route: string) => {
     router.push(route);
   };
@@ -89,25 +69,25 @@ export const LoginForm = () => {
               <div className="input-field">
                 <Input
                   disabled={isPending}
-                  name="email"
-                  textError={errors.email?.message}
                   error={!!errors.email}
-                  onChange={(e) => form.setValue("email", e.target.value)}
-                  value={form.watch("email")}
+                  {...form.register("email")}
                   label="E-mail"
                   type="email"
                   placeholder="carlos@gmail.com"
+                  name="email"
+                  onChange={(e) => form.setValue("email", e.target.value)}
                 />
                 <Input
                   disabled={isPending}
-                  name="password"
                   textError={errors.password?.message}
                   error={!!errors.password}
-                  onChange={(e) => form.setValue("password", e.target.value)}
-                  value={form.watch("password")}
+                  {...form.register("password")}
                   label="Senha"
                   type="password"
                   placeholder="••••••••"
+                  name="password"
+                  onChange={(e) => form.setValue("password", e.target.value)}
+                  value={form.watch("password")}
                 />
               </div>
 

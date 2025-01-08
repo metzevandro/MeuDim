@@ -131,7 +131,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   });
 
   if (existingUser) {
-    return { error: "Este e-mail já está cadastrado!" };
+    return { error: "Este e-mail já está cadastrado!", field: "email" }; 
   }
 
   const newUser = await db.user.create({

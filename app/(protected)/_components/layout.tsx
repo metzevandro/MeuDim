@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppShell,
   Breadcrumb,
@@ -23,7 +23,7 @@ interface LayoutProps {
 }
 
 const LayoutPage = (props: LayoutProps) => {
-  const { userData, loading } = useUser();
+  const { userData, loading, fetchUserData } = useUser();
   const pathname = usePathname();
   const router = useRouter();
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
@@ -40,6 +40,10 @@ const LayoutPage = (props: LayoutProps) => {
       toggleSidebar();
     }
   };
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
   const isMobile = () => {
     if (typeof window !== "undefined") {

@@ -20,7 +20,7 @@ import { Expense, Transaction } from "@/actions/fetch";
 import { useUser } from "@/data/provider";
 
 const HomePage = () => {
-  const { userData, loading } = useUser();
+  const { userData, loading, fetchUserData } = useUser();
   const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState<number | 12>(
     new Date().getMonth(),
@@ -47,6 +47,10 @@ const HomePage = () => {
   }
 
   useEffect(() => {}, [selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
   const navigateTo = (route: string) => {
     router.push(route);
@@ -472,6 +476,7 @@ const HomePage = () => {
           ></Card>
         </div>
         <BarChart
+          skeleton={loading}
           isYearSelected={isYearSelected}
           setSelectedMonth={setSelectedMonth}
           setSelectedYear={setSelectedYear}
@@ -483,6 +488,7 @@ const HomePage = () => {
           lastDayOfMonth={lastDayOfMonth}
         />
         <LineChart
+          skeleton={loading}
           isYearSelected={isYearSelected}
           setSelectedMonth={setSelectedMonth}
           setSelectedYear={setSelectedYear}
@@ -495,6 +501,7 @@ const HomePage = () => {
         />
         <div className="layout-resumo">
           <PieChart
+            skeleton={loading}
             clientDateType="fonteDeRenda"
             isYearSelected={isYearSelected}
             setSelectedMonth={setSelectedMonth}
@@ -507,6 +514,7 @@ const HomePage = () => {
             lastDayOfMonth={lastDayOfMonth}
           />
           <PieChart
+            skeleton={loading}
             clientDateType="formaDePagamento"
             isYearSelected={isYearSelected}
             setSelectedMonth={setSelectedMonth}
@@ -521,6 +529,7 @@ const HomePage = () => {
         </div>
         <div className="layout-resumo">
           <PieChart
+            skeleton={loading}
             clientDateType="categoria"
             isYearSelected={isYearSelected}
             setSelectedMonth={setSelectedMonth}
@@ -534,6 +543,7 @@ const HomePage = () => {
           />
 
           <PieChart
+            skeleton={loading}
             clientDateType="subcategoria"
             isYearSelected={isYearSelected}
             setSelectedMonth={setSelectedMonth}

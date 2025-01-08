@@ -47,7 +47,6 @@ const HomePage = () => {
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 
-
   async function fetchUserData() {
     try {
       const response = await fetch(`${API}/api/auth/session`);

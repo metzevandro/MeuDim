@@ -31,6 +31,7 @@ interface LineChartProps {
     | "categoria"
     | "subcategoria"
     | "fonteDeRenda";
+  skeleton: boolean;
 }
 
 export function PieChart({
@@ -44,6 +45,7 @@ export function PieChart({
   firstDayOfMonth,
   lastDayOfMonth,
   clientDateType,
+  skeleton,
 }: LineChartProps) {
   const [chartWidth, setChartWidth] = useState(0);
   const [chartHeight, setChartHeight] = useState(0);
@@ -256,6 +258,7 @@ export function PieChart({
               />
             ) : (
               <Chart
+                skeleton={skeleton}
                 nameKey="name"
                 type="donut"
                 width={chartWidth}
@@ -266,7 +269,6 @@ export function PieChart({
                 innerRadius={90}
                 outerRadius={140}
                 label="Total"
-                labelList={false}
                 tooltipFormatter={(value) =>
                   `R$ ${value.toFixed(2).replace(".", ",")}`
                 }

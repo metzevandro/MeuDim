@@ -119,13 +119,13 @@ const SettingsPage = () => {
           <Layout columns="2 - Symmetric">
             <Input
               label="Nome"
-              value={watchedValues.name || ""}
+              value={watchedValues.name }
               onChange={(e) => handleInputChange("name", e.target.value)}
             />
             <Input
               disabled
               label="Email"
-              value={watchedValues.email || ""}
+              value={watchedValues.email }
               onChange={(e) => handleInputChange("email", e.target.value)}
             />
           </Layout>

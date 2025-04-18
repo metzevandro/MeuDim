@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Atualizar, Criar, Deletar } from "@/actions/expense";
 import { ExpenseSchema } from "@/schemas/index";
 import { z } from "zod";
@@ -31,10 +31,11 @@ import { useUser } from "@/data/provider";
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
 const HomePage = () => {
-  const { userData, setUserData } = useUser();
+  const { userData, setUserData, skeleton } = useUser();
   const [isOpenAside, setIsOpenAside] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState<{ [key: string]: boolean }>({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedIdsForModal, setSelectedIdsForModal] = useState<string[]>([]);
   const [editAsideOpen, setEditAsideOpen] = useState<{
     [key: string]: boolean;
   }>({});
@@ -43,7 +44,9 @@ const HomePage = () => {
   const [currentexpense, setCurrentexpense] = useState<any>(null);
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
-
+  const [updateSelectedRows, setUpdateSelectedRows] = useState<
+    ((ids: string[]) => void) | null
+  >(null);
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 
@@ -65,11 +68,9 @@ const HomePage = () => {
     fetchUserData();
   }, []);
 
-  const toggleModal = (categoryId: string) => {
-    setModalOpen((prev) => ({
-      ...prev,
-      [categoryId]: !prev[categoryId],
-    }));
+  const toggleModal = (selectedIds: string[]) => {
+    setSelectedIdsForModal(selectedIds);
+    setModalOpen(!modalOpen);
   };
 
   const editingAside = (categoryId: string, expense: any) => {
@@ -80,32 +81,48 @@ const HomePage = () => {
     }));
 
     if (expense) {
-      form.setValue("data", expense.date);
+      const formattedAmount =
+        typeof expense.amount === "string"
+          ? parseFloat(expense.amount).toFixed(2).replace(".", ",")
+          : expense.amount?.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }) || "0,00";
+
+      form.setValue("data", expense.date || "");
+      form.setValue("valor", formattedAmount);
+      form.setValue("categoria", expense.category || "");
       form.setValue(
-        "valor",
-        expense.amount.replace(/\./g, "").replace(",", "."),
+        "formaDePagamento",
+        expense.FormaDePagamento ||
+          expense.formaDePagamento ||
+          userData?.user.formaDePagamento[0]?.name ||
+          "",
       );
-      form.setValue("categoria", expense.category);
-      form.setValue("formaDePagamento", expense.FormaDePagamento);
-      form.setValue("subcategoria", expense.Subcategoria);
+      form.setValue(
+        "subcategoria",
+        expense.Subcategoria || expense.subcategoria || "",
+      );
     }
   };
+
+  const today = new Date().toLocaleDateString("pt-BR");
 
   const toggleAside = () => {
     setIsOpenAside(!isOpenAside);
     form.reset({
-      data: "",
+      data: today,
       valor: "",
-      formaDePagamento: userData?.user.formaDePagamento[0]?.name,
-      categoria: userData?.user.categoria[0]?.name,
-      subcategoria: userData?.user.categoria[0]?.Subcategorias?.[0]?.name,
+      formaDePagamento: userData?.user.formaDePagamento[0]?.name || "",
+      categoria: userData?.user.categoria[0]?.name || "",
+      subcategoria: userData?.user.categoria[0]?.subcategorias?.[0]?.name || "",
     });
   };
 
   const form = useForm<z.infer<typeof ExpenseSchema>>({
     resolver: zodResolver(ExpenseSchema),
     defaultValues: {
-      data: "",
+      data: today,
       valor: "",
       formaDePagamento: userData?.user.formaDePagamento[0]?.name,
       categoria: userData?.user.categoria[0]?.name,
@@ -115,19 +132,29 @@ const HomePage = () => {
 
   useEffect(() => {
     const categoriaSelecionada = userData?.user?.categoria.find(
-      (categoria: any) => categoria.name === form.watch("categoria"),
+      (categoria: any) => categoria.name === form.getValues("categoria"), // Use form.getValues instead of form.watch
     );
+
     if (categoriaSelecionada) {
-      const novasSubcategorias = categoriaSelecionada.Subcategorias.map(
+      const novasSubcategorias = categoriaSelecionada.subcategorias.map(
         (subcategoria: any) => subcategoria.name,
       );
-      setSubcategorias(novasSubcategorias);
-      form.setValue("subcategoria", novasSubcategorias[0] || "");
-    } else {
+
+      if (
+        JSON.stringify(novasSubcategorias) !== JSON.stringify(subcategorias)
+      ) {
+        setSubcategorias(novasSubcategorias);
+        if (form.getValues("subcategoria") !== novasSubcategorias[0]) {
+          form.setValue("subcategoria", novasSubcategorias[0] || "");
+        }
+      }
+    } else if (subcategorias.length > 0) {
       setSubcategorias([]);
-      form.setValue("subcategoria", "");
+      if (form.getValues("subcategoria") !== "") {
+        form.setValue("subcategoria", "");
+      }
     }
-  }, [form.watch("categoria"), userData?.user?.categoria]);
+  }, [userData?.user?.categoria, form, subcategorias]); // Adjust dependencies to avoid unnecessary re-renders
 
   const startLoading = () => {
     setLoading(0);
@@ -194,221 +221,150 @@ const HomePage = () => {
         setError(data.error);
         setSuccess("");
         setLoadingError(true);
-        setLoading(100);
       } else {
         setError("");
-        setLoading(100);
-        setNotificationOpen(true);
         setSuccess(data.success);
+        setNotificationOpen(true);
         fetchUserData();
+        setSelectedRows([]); // Limpa as checkboxes
+        if (updateSelectedRows) updateSelectedRows([]);
       }
     } catch (error) {
       setError("Ocorreu um erro ao atualizar a despesa");
       setLoadingError(true);
     } finally {
       stopLoading(loadingInterval, !loadingError);
-      fetchUserData();
     }
   };
 
-  const DeletarDespesa = async (categoriaId: string) => {
+  const DeletarDespesas = async (expenseIds: string[]) => {
     setError("");
     setSuccess("");
-    toggleModal(categoriaId);
     const loadingInterval = startLoading();
 
     try {
-      const data: any = await Deletar(categoriaId);
-      if (data.error) {
+      const result = await Deletar(expenseIds);
+
+      if (result.error) {
         setNotificationOpen(true);
-        setError(data.error);
+        setError(result.error);
         setSuccess("");
         setLoadingError(true);
-        setLoading(100);
       } else {
         setError("");
-        setLoading(100);
+        setSuccess(result.success);
         setNotificationOpen(true);
-        setSuccess(data.success);
         fetchUserData();
+        setSelectedRows([]); // Limpa as checkboxes
+        if (updateSelectedRows) updateSelectedRows([]);
       }
     } catch (error) {
-      setError("Ocorreu um erro ao deletar o ganho");
+      setError("Ocorreu um erro ao deletar as despesas");
       setLoadingError(true);
     } finally {
       stopLoading(loadingInterval, !loadingError);
-      fetchUserData();
     }
   };
 
-  const renderCategoryActions = (
-    categoriaId: string,
-    expenseAmount: string,
-    expenseDate: string,
-    expenseCategory: string,
-    subcategoriaName: string,
-    formaDePagamentoName: string,
-  ) => (
-    <div className="actions">
-      <Button
-        size="sm"
-        variant="secondary"
-        label="Editar"
-        onClick={() =>
-          editingAside(categoriaId, {
-            date: expenseDate,
-            amount: expenseAmount,
-            category: expenseCategory,
-            Subcategoria: subcategoriaName,
-            FormaDePagamento: formaDePagamentoName,
-          })
-        }
-      />
-      <Aside
-        isOpen={editAsideOpen[categoriaId] || false}
-        toggleAside={() => editingAside(categoriaId, currentexpense)}
-        content={
-          <AsideContent>
-            <DataPicker
-              onDateChange={(date) => form.setValue("data", date.toISOString())}
-              date={form.watch("data")}
-              placeholder="Ex: 14/02/2023"
-              label="Data"
-            />
-            <div className="input-root">
-              <div className="input-header">
-                <label>Valor</label>
-              </div>
-              <div>
-                <div className="input-content">
-                  <IntlCurrencyInput
-                    placeholder="Ex: 100,00"
-                    decimalsLimit={2}
-                    value={form.watch("valor")}
-                    onValueChange={(value) =>
-                      form.setValue("valor", value || "0")
-                    }
-                    intlConfig={{ locale: "pt-BR", currency: "BRL" }}
-                    decimalSeparator=","
-                  />
-                </div>
+  const renderCategoryActions = (categoriaId: string) => (
+    <Aside
+      isOpen={editAsideOpen[categoriaId] || false}
+      toggleAside={() => editingAside(categoriaId, currentexpense)}
+      content={
+        <AsideContent>
+          <DataPicker
+            onChange={(date) => form.setValue("data", date)}
+            value={form.watch("data")}
+            label="Data"
+          />
+          <div className="input-root">
+            <div className="input-header">
+              <label>Valor</label>
+            </div>
+            <div>
+              <div className="input-content">
+                <IntlCurrencyInput
+                  placeholder="Ex: 100,00"
+                  decimalsLimit={2}
+                  value={form.watch("valor")}
+                  onValueChange={(value) =>
+                    form.setValue("valor", value || "0")
+                  }
+                  intlConfig={{ locale: "pt-BR", currency: "BRL" }}
+                  decimalSeparator=","
+                />
               </div>
             </div>
-            <InputSelect
-              value={form.watch("formaDePagamento") || ""}
-              onChange={(value: string) =>
-                form.setValue("formaDePagamento", value || "")
-              }
-              options={
-                userData?.user.formaDePagamento.map(
-                  (formaDePagamento: any) => formaDePagamento.name,
-                ) || []
-              }
-              label="Forma de Pagamento"
+          </div>
+          <InputSelect
+            value={form.watch("formaDePagamento") || ""}
+            onChange={(value: string) =>
+              form.setValue("formaDePagamento", value || "")
+            }
+            options={
+              userData?.user.formaDePagamento.map(
+                (formaDePagamento: any) => formaDePagamento.name,
+              ) || []
+            }
+            label="Forma de Pagamento"
+          />
+          <InputSelect
+            value={form.watch("categoria") || ""}
+            onChange={(value: string) => {
+              form.setValue("categoria", value || "");
+              const categoriaSelecionada = userData?.user?.categoria.find(
+                (categoria: any) => categoria.name === value
+              );
+              const novasSubcategorias = categoriaSelecionada?.subcategorias.map(
+                (subcategoria: any) => subcategoria.name
+              ) || [];
+              setSubcategorias(novasSubcategorias);
+              form.setValue("subcategoria", novasSubcategorias[0] || "");
+            }}
+            options={
+              userData?.user.categoria.map(
+                (categoria: any) => categoria.name,
+              ) || []
+            }
+            label="Categoria"
+          />
+          <InputSelect
+            value={form.watch("subcategoria") || ""}
+            onChange={(value: string) =>
+              form.setValue("subcategoria", value || "")
+            }
+            options={subcategorias}
+            label="Subcategoria"
+          />
+        </AsideContent>
+      }
+      footer={
+        <AsideFooter>
+          <div
+            style={{
+              width: "min-content",
+              display: "flex",
+              gap: "var(--s-spacing-x-small)",
+            }}
+          >
+            <Button
+              size="md"
+              variant="primary"
+              label="Atualizar"
+              onClick={() => AtualizarDespesa(categoriaId)}
             />
-            <InputSelect
-              value={form.watch("categoria") || ""}
-              onChange={(value: string) =>
-                form.setValue("categoria", value || "")
-              }
-              options={
-                userData?.user.categoria.map(
-                  (categoria: any) => categoria.name,
-                ) || []
-              }
-              label="Categoria"
+            <Button
+              size="md"
+              variant="secondary"
+              label="Cancelar"
+              onClick={() => editingAside(categoriaId, currentexpense)}
             />
-            <InputSelect
-              value={form.watch("subcategoria") || ""}
-              onChange={(value: string) =>
-                form.setValue("subcategoria", value || "")
-              }
-              options={subcategorias}
-              label="Subcategoria"
-            />
-          </AsideContent>
-        }
-        footer={
-          <AsideFooter>
-            <div
-              style={{
-                width: "min-content",
-                display: "flex",
-                gap: "var(--s-spacing-x-small)",
-              }}
-            >
-              <Button
-                size="md"
-                variant="primary"
-                label="Atualizar"
-                onClick={() => AtualizarDespesa(categoriaId)}
-              />
-              <Button
-                size="md"
-                variant="secondary"
-                label="Cancelar"
-                onClick={() => editingAside(categoriaId, currentexpense)}
-              />
-            </div>
-          </AsideFooter>
-        }
-        title="Editar despesa"
-        description="Edite a despesa."
-      />
-      <ButtonIcon
-        size="sm"
-        buttonType="default"
-        typeIcon="delete"
-        variant="warning"
-        onClick={() => toggleModal(categoriaId)}
-      />
-      <Modal
-        hideModal={() => toggleModal(categoriaId)}
-        footer={
-          <FooterModal>
-            <div
-              style={{
-                width: "min-content",
-                display: "flex",
-                gap: "var(--s-spacing-x-small)",
-              }}
-            >
-              <Button
-                size="md"
-                variant="warning"
-                label="Excluir"
-                onClick={() => DeletarDespesa(categoriaId)}
-              />
-              <Button
-                size="md"
-                variant="secondary"
-                label="Cancelar"
-                onClick={() => toggleModal(categoriaId)}
-              />
-            </div>
-          </FooterModal>
-        }
-        content={
-          <ContentModal>
-            <p
-              style={{
-                font: "var(--s-typography-paragraph-regular)",
-                color: "var(--s-color-content-light)",
-                wordBreak: "break-all",
-                whiteSpace: "normal",
-              }}
-            >
-              Esta ação é irreversível e você perderá todo o histórico desta
-              despesa até o momento.
-            </p>
-          </ContentModal>
-        }
-        title="Excluir despesa"
-        description={`Tem certeza de que deseja excluir a despesa de R$ ${expenseAmount}`}
-        isOpen={modalOpen[categoriaId] || false}
-        dismissible={true}
-      />
-    </div>
+          </div>
+        </AsideFooter>
+      }
+      title="Editar despesa"
+      description="Edite a despesa."
+    />
   );
 
   const columns: string[] = [
@@ -416,16 +372,15 @@ const HomePage = () => {
     "Valor",
     "Categoria",
     "Subcategoria",
-    "Forma",
-    "Ações",
+    "Forma de pagamento",
   ];
 
   const getSubcategoriaName = (categoriaId: string, subcategoriaId: string) => {
     const categoria = userData?.user?.categoria.find(
       (cat: any) => cat.id === categoriaId,
     );
-    if (categoria && categoria.Subcategorias) {
-      const subcategoria = categoria.Subcategorias.find(
+    if (categoria && categoria.subcategorias) {
+      const subcategoria = categoria.subcategorias.find(
         (subcat: any) => subcat.id === subcategoriaId,
       );
       if (subcategoria) {
@@ -438,115 +393,54 @@ const HomePage = () => {
   const userDataIsValid = userData && userData.user;
 
   const data: { [key: string]: any; id: string }[] = userData?.user?.expense
-    ? userData?.user.expense.map((expense: any) => {
-        const amountString =
-          typeof expense.amount === "string" ? expense.amount.toString() : "";
-        const amount = parseFloat(amountString.replace(",", ".")) || 0;
-        const formattedAmount = amount.toLocaleString("pt-BR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-        const formattedDate = new Date(expense.createdAt).toLocaleDateString(
-          "pt-BR",
-        );
-        const categoriaId = expense.categoriaId;
-        const category = userData?.user.categoria.find(
-          (cat: any) => cat.id === categoriaId,
-        );
-        const categoryName = category
-          ? category.name
-          : "Categoria Desconhecida";
+    ? userData?.user.expense
+        .slice()
+        .reverse()
+        .map((expense: any) => {
+          const amount =
+            typeof expense.amount === "number"
+              ? expense.amount.toFixed(2).replace(".", ",")
+              : expense.amount.toString();
+          const formattedAmount = parseFloat(
+            amount.replace(",", "."),
+          ).toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+          const formattedDate = new Date(expense.createdAt).toLocaleDateString(
+            "pt-BR",
+          );
+          const categoriaId = expense.categoriaId;
+          const category = userData?.user.categoria.find(
+            (cat: any) => cat.id === categoriaId,
+          );
+          const categoryName = category
+            ? category.name
+            : "Categoria Desconhecida";
 
-        const subcategoriaName = getSubcategoriaName(
-          categoriaId,
-          expense.subcategoriaId,
-        );
+          const subcategoriaName = getSubcategoriaName(
+            categoriaId,
+            expense.subcategoriaId,
+          );
 
-        const formaDePagamentoId = expense.formaDePagamentoId;
-        const formaDePagamento = userData?.user.formaDePagamento.find(
-          (cat: any) => cat.id === formaDePagamentoId,
-        );
-        const formaDePagamentoName = formaDePagamento
-          ? formaDePagamento.name
-          : "Forma de Pagamento Desconhecida";
+          const formaDePagamentoId = expense.formaDePagamentoId;
+          const formaDePagamento = userData?.user.formaDePagamento.find(
+            (cat: any) => cat.id === formaDePagamentoId,
+          );
+          const formaDePagamentoName = formaDePagamento
+            ? formaDePagamento.name
+            : "Forma de Pagamento Desconhecida";
 
-        return {
-          id: expense.id,
-          Data: formattedDate,
-          Categoria: categoryName,
-          Subcategoria: subcategoriaName,
-          Valor: "R$ " + formattedAmount,
-          Forma: formaDePagamentoName,
-          Ações: renderCategoryActions(
-            expense.id,
-            formattedAmount,
-            formattedDate,
-            categoryName,
-            subcategoriaName,
-            formaDePagamentoName,
-          ),
-        };
-      })
-    : [
-        {
-          id: "1",
-          Data: <Skeleton height="32" width="100" />,
-          Categoria: <Skeleton height="32" width="100" />,
-          Subcategoria: <Skeleton height="32" width="100" />,
-          Valor: <Skeleton height="32" width="100" />,
-          Forma: <Skeleton height="32" width="100" />,
-          Ações: (
-            <div className="actions">
-              <Skeleton height="32" width="65" />
-              <Skeleton height="32" width="32" />
-            </div>
-          ),
-        },
-        {
-          id: "2",
-          Data: <Skeleton height="32" width="100" />,
-          Categoria: <Skeleton height="32" width="100" />,
-          Subcategoria: <Skeleton height="32" width="100" />,
-          Valor: <Skeleton height="32" width="100" />,
-          Forma: <Skeleton height="32" width="100" />,
-          Ações: (
-            <div className="actions">
-              <Skeleton height="32" width="65" />
-              <Skeleton height="32" width="32" />
-            </div>
-          ),
-        },
-        {
-          id: "3",
-          Data: <Skeleton height="32" width="100" />,
-          Categoria: <Skeleton height="32" width="100" />,
-          Subcategoria: <Skeleton height="32" width="100" />,
-          Valor: <Skeleton height="32" width="100" />,
-          Forma: <Skeleton height="32" width="100" />,
-          Ações: (
-            <div className="actions">
-              <Skeleton height="32" width="65" />
-              <Skeleton height="32" width="32" />
-            </div>
-          ),
-        },
-        {
-          id: "4",
-          Data: <Skeleton height="32" width="100" />,
-          Categoria: <Skeleton height="32" width="100" />,
-          Subcategoria: <Skeleton height="32" width="100" />,
-          Valor: <Skeleton height="32" width="100" />,
-          Forma: <Skeleton height="32" width="100" />,
-          Ações: (
-            <div className="actions">
-              <Skeleton height="32" width="65" />
-              <Skeleton height="32" width="32" />
-            </div>
-          ),
-        },
-      ];
-
-  const expandedData: { [key: string]: any; id: string }[] = [];
+          return {
+            id: expense.id,
+            Data: formattedDate,
+            Categoria: categoryName,
+            Subcategoria: subcategoriaName,
+            Valor: "R$ " + formattedAmount,
+            "Forma de pagamento": formaDePagamentoName,
+          };
+        })
+    : [];
 
   const date = form.watch("data");
   const valor = form.watch("valor");
@@ -555,6 +449,12 @@ const HomePage = () => {
   const subcategoria = form.watch("subcategoria");
 
   const isFormValid = date && valor && formaDePagamento && name && subcategoria;
+
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+
+  const handleUpdateSelectedRows = useCallback((updateSelectedRows: any) => {
+    setUpdateSelectedRows(() => updateSelectedRows);
+  }, []);
 
   return (
     <>
@@ -601,26 +501,50 @@ const HomePage = () => {
             }}
           >
             <DataTable
-              labelSecondButton=""
-              titleNoDataMessage="Não há dados"
-              descriptionNoDataMessage="Não há dados ainda..."
-              itemPerPage={10}
-              pagesText="Página"
+              textRowsSelected={`despesa${selectedRows.length > 1 ? "s" : ""} selecionada${selectedRows.length > 1 ? "s" : ""}`}
+              rowsPerPage={5}
               columns={columns}
               data={data}
-              expandedData={expandedData}
-              selectable={false}
-              expandable={false}
-              inputPlaceholder="Procurar"
-              typeIconSecondButton="filter_alt"
-              selectableLabelSecondButton="Delete"
-              selectableIconSecondButton="delete"
-              asideTitle="Filters"
-              firstButtonLabelAside="Aplicar"
-              secondButtonLabelAside="Cancel"
-              descriptionNoDataFilteredMessage="This option does not exist in your store, remove the filter and try again."
-              labelButtonNoDataFilteredMessage="Remove filters"
-              titleNoDataFilteredMessage="Your filter did not return any results."
+              withCheckbox={true}
+              skeleton={skeleton}
+              onUpdateSelectedRows={handleUpdateSelectedRows}
+              onSelectedRowsChange={(rows: string[]) => setSelectedRows(rows)}
+              headerSelectedChildren={
+                <>
+                  <Button
+                    label="Excluir"
+                    size="md"
+                    variant="secondary"
+                    typeIcon="delete"
+                    onClick={() => toggleModal(selectedRows)}
+                    disabled={selectedRows.length === 0}
+                  />
+                  {selectedRows.length === 1 && (
+                    <Button
+                      label="Editar"
+                      variant="secondary"
+                      size="md"
+                      onClick={() => {
+                        const selectedExpense = data.find(
+                          (row) => row.id === selectedRows[0],
+                        );
+                        if (selectedExpense) {
+                          editingAside(selectedRows[0], {
+                            date: selectedExpense.Data,
+                            amount: selectedExpense.Valor.replace("R$ ", "")
+                              .replace(".", "")
+                              .replace(",", "."),
+                            category: selectedExpense.Categoria,
+                            Subcategoria: selectedExpense.Subcategoria,
+                            FormaDePagamento:
+                              selectedExpense["Forma de pagamento"],
+                          });
+                        }
+                      }}
+                    />
+                  )}
+                </>
+              }
             />
           </div>
         )}
@@ -632,11 +556,8 @@ const HomePage = () => {
           content={
             <AsideContent>
               <DataPicker
-                onDateChange={(date) =>
-                  form.setValue("data", date.toISOString())
-                }
-                date={form.watch("data")}
-                placeholder="Ex: 14/02/2023"
+                onChange={(date) => form.setValue("data", date)}
+                value={form.watch("data")}
                 label="Data"
               />
               <div className="input-root">
@@ -672,9 +593,17 @@ const HomePage = () => {
               />
               <InputSelect
                 value={form.watch("categoria") || ""}
-                onChange={(value: string) =>
-                  form.setValue("categoria", value || "")
-                }
+                onChange={(value: string) => {
+                  form.setValue("categoria", value || "");
+                  const categoriaSelecionada = userData?.user?.categoria.find(
+                    (categoria: any) => categoria.name === value
+                  );
+                  const novasSubcategorias = categoriaSelecionada?.subcategorias.map(
+                    (subcategoria: any) => subcategoria.name
+                  ) || [];
+                  setSubcategorias(novasSubcategorias);
+                  form.setValue("subcategoria", novasSubcategorias[0] || "");
+                }}
                 options={
                   userData?.user.categoria.map(
                     (categoria: any) => categoria.name,
@@ -737,6 +666,54 @@ const HomePage = () => {
           isOpen={notificationOpen}
         />
       )}
+      <Modal
+        hideModal={() => setModalOpen(false)}
+        footer={
+          <FooterModal>
+            <div
+              style={{
+                width: "min-content",
+                display: "flex",
+                gap: "var(--s-spacing-x-small)",
+              }}
+            >
+              <Button
+                size="md"
+                variant="warning"
+                label="Excluir"
+                onClick={() => {
+                  DeletarDespesas(selectedIdsForModal);
+                  setModalOpen(false);
+                }}
+              />
+              <Button
+                size="md"
+                variant="secondary"
+                label="Cancelar"
+                onClick={() => setModalOpen(false)}
+              />
+            </div>
+          </FooterModal>
+        }
+        content={
+          <ContentModal>
+            <p
+              style={{
+                font: "var(--s-typography-paragraph-regular)",
+                color: "var(--s-color-content-light)",
+                whiteSpace: "normal",
+              }}
+            >
+              {`Você está prestes a excluir ${selectedIdsForModal.length} despesa${selectedIdsForModal.length > 1 ? "s" : ""}. Esta ação é irreversível e você perderá todo o histórico das despesas selecionadas.`}
+            </p>
+          </ContentModal>
+        }
+        title="Excluir despesas"
+        description={`Tem certeza de que deseja excluir ${selectedIdsForModal.length} despesa${selectedIdsForModal.length > 1 ? "s" : ""}?`}
+        isOpen={modalOpen}
+        dismissible={true}
+      />
+      {renderCategoryActions(selectedRows[0])}
     </>
   );
 };

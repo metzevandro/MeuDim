@@ -74,10 +74,15 @@ export function PieChart({
     ) {
       userData.user.expense.forEach((expense: any) => {
         const expenseDate = new Date(expense.createdAt);
-        if (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth) {
+        if (
+          expenseDate >= new Date(firstDayOfMonth) &&
+          expenseDate <= new Date(lastDayOfMonth)
+        ) {
           const formaDePagamentoId = expense.formaDePagamentoId;
           const amountString =
-            typeof expense.amount === "string" ? expense.amount : "";
+            typeof expense.amount === "string"
+              ? expense.amount
+              : expense.amount?.toString() || "0";
           const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
           if (totals[formaDePagamentoId]) {
@@ -99,10 +104,15 @@ export function PieChart({
     ) {
       userData.user.expense.forEach((expense: any) => {
         const expenseDate = new Date(expense.createdAt);
-        if (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth) {
+        if (
+          expenseDate >= new Date(firstDayOfMonth) &&
+          expenseDate <= new Date(lastDayOfMonth)
+        ) {
           const categoriaId = expense.categoriaId;
           const amountString =
-            typeof expense.amount === "string" ? expense.amount : "";
+            typeof expense.amount === "string"
+              ? expense.amount
+              : expense.amount?.toString() || "0";
           const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
           if (categoriaTotals[categoriaId]) {
@@ -125,12 +135,14 @@ export function PieChart({
       userData.user.transactions.forEach((transaction: any) => {
         const transactionDate = new Date(transaction.createdAt);
         if (
-          transactionDate >= firstDayOfMonth &&
-          transactionDate <= lastDayOfMonth
+          transactionDate >= new Date(firstDayOfMonth) &&
+          transactionDate <= new Date(lastDayOfMonth)
         ) {
           const categoryId = transaction.categoryId;
           const amountString =
-            typeof transaction.amount === "string" ? transaction.amount : "";
+            typeof transaction.amount === "string"
+              ? transaction.amount
+              : transaction.amount?.toString() || "0";
           const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
           if (totals[categoryId]) {
@@ -152,10 +164,15 @@ export function PieChart({
     ) {
       userData.user.expense.forEach((expense: any) => {
         const expenseDate = new Date(expense.createdAt);
-        if (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth) {
+        if (
+          expenseDate >= new Date(firstDayOfMonth) &&
+          expenseDate <= new Date(lastDayOfMonth)
+        ) {
           const subcategoriaId = expense.subcategoriaId;
           const amountString =
-            typeof expense.amount === "string" ? expense.amount : "";
+            typeof expense.amount === "string"
+              ? expense.amount
+              : expense.amount?.toString() || "0";
           const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
           if (totals[subcategoriaId]) {
@@ -180,39 +197,41 @@ export function PieChart({
             ? processFonteDeRenda()
             : {};
 
-  const data: PieData[] = Object.keys(selectedData).map((key, index) => {
-    let name = "Unknown";
-    if (clientDateType === "formaDePagamento") {
-      name =
-        userData?.user?.formaDePagamento.find((forma: any) => forma.id === key)
-          ?.name || "Unknown Forma de Pagamento";
-    } else if (clientDateType === "categoria") {
-      const categoria = userData?.user?.categoria?.find(
-        (categorias: any) => categorias.id === key,
-      );
-      name = categoria?.name || "Unknown Category";
-    } else if (clientDateType === "subcategoria") {
-      userData?.user?.categoria.forEach((categoria: any) => {
-        const foundSubcategoria = categoria.Subcategorias.find(
-          (subcategoria: any) => subcategoria.id === key,
+  const data: PieData[] = Object.keys(selectedData)
+    .map((key, index) => {
+      let name = "Unknown";
+      if (clientDateType === "formaDePagamento") {
+        name =
+          userData?.user?.formaDePagamento.find(
+            (forma: any) => forma.id === key,
+          )?.name || "Unknown Forma de Pagamento";
+      } else if (clientDateType === "categoria") {
+        const categoria = userData?.user?.categoria?.find(
+          (categorias: any) => categorias.id === key,
         );
-        if (foundSubcategoria) {
-          name = foundSubcategoria.name;
-        }
-      });
-    } else if (clientDateType === "fonteDeRenda") {
-      name =
-        userData?.user?.categories.find((category: any) => category.id === key)
-          ?.name || "Unknown Fonte de Renda";
-    }
-    return {
-      name,
-      amount: parseFloat(selectedData[key].toFixed(2)),
-      fill: "",
-      quantity: parseFloat(selectedData[key].toFixed(2)),
-      keyName: name,
-    };
-  });
+        name = categoria?.name || "Unknown Category";
+      } else if (clientDateType === "subcategoria") {
+        const subcategoria = userData?.user?.categoria
+          ?.flatMap((cat: any) => cat.subcategorias || [])
+          ?.find((sub: any) => sub.id === key);
+        name = subcategoria?.name || `Subcategoria Desconhecida (${key})`;
+      } else if (clientDateType === "fonteDeRenda") {
+        name =
+          userData?.user?.categories.find(
+            (category: any) => category.id === key,
+          )?.name || "Unknown Fonte de Renda";
+      }
+
+      const amount = parseFloat(selectedData[key]?.toFixed(2)) || 0;
+      return {
+        name,
+        amount,
+        fill: "",
+        quantity: amount,
+        keyName: name,
+      };
+    })
+    .filter((item) => item.amount > 0);
 
   const getTitle = () => {
     switch (clientDateType) {
@@ -266,8 +285,8 @@ export function PieChart({
                 caption
                 data={data}
                 dataKey="amount"
-                innerRadius={90}
-                outerRadius={140}
+                innerRadius={100}
+                outerRadius={150}
                 label="Total"
                 tooltipFormatter={(value) =>
                   `R$ ${value.toFixed(2).replace(".", ",")}`

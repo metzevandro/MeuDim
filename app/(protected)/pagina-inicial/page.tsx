@@ -18,9 +18,10 @@ import { BarChart } from "@/components/charts/BarChart/BarChart";
 import { LineChart } from "@/components/charts/LineChart/LineChart";
 import { Expense, Transaction } from "@/actions/fetch";
 import { useUser } from "@/data/provider";
+import LayoutPage from "@/app/(protected)/_components/layout";
 
 const HomePage = () => {
-  const { userData, loading, fetchUserData } = useUser();
+  const { userData, skeleton, fetchUserData } = useUser();
   const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState<number | 12>(
     new Date().getMonth(),
@@ -49,8 +50,10 @@ const HomePage = () => {
   useEffect(() => {}, [selectedMonth, selectedYear]);
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    if (!userData?.user) {
+      fetchUserData();
+    }
+  }, [userData]);
 
   const navigateTo = (route: string) => {
     router.push(route);
@@ -69,9 +72,10 @@ const HomePage = () => {
         (transactionDate >= firstDayOfMonth &&
           transactionDate <= lastDayOfMonth)
       ) {
-        const amountString =
-          typeof transaction.amount === "string" ? transaction.amount : "";
-        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+        const amount =
+          typeof transaction.amount === "number"
+            ? transaction.amount
+            : parseFloat(transaction.amount.replace(",", ".")) || 0;
         return acc + amount;
       }
       return acc;
@@ -94,9 +98,10 @@ const HomePage = () => {
         (selectedMonth === 12 && expenseDate.getFullYear() === selectedYear) ||
         (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth)
       ) {
-        const amountString =
-          typeof expense.amount === "string" ? expense.amount : "";
-        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+        const amount =
+          typeof expense.amount === "number"
+            ? expense.amount
+            : parseFloat(expense.amount.replace(",", ".")) || 0;
         return acc + amount;
       }
       return acc;
@@ -109,32 +114,31 @@ const HomePage = () => {
   };
 
   const sumSaldo = () => {
-    if (!userData?.user || !Array.isArray(userData.user.transactions)) {
+    if (!userData?.user) {
       return "0,00";
     }
 
-    const totalGanhos = userData.user.transactions.reduce(
-      (acc, transaction) => {
-        const amountString =
-          typeof transaction.amount === "string" ? transaction.amount : "";
-        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+    const totalGanhos =
+      userData.user.transactions?.reduce((acc, transaction) => {
+        const amount =
+          typeof transaction.amount === "number"
+            ? transaction.amount
+            : parseFloat(transaction.amount.replace(",", ".")) || 0;
         return acc + amount;
-      },
-      0,
-    );
+      }, 0) || 0;
 
-    if (!userData?.user || !Array.isArray(userData.user.expense)) {
-      return "0,00";
-    }
+    const totalDespesas =
+      userData.user.expense?.reduce((acc, expense) => {
+        const amount =
+          typeof expense.amount === "number"
+            ? expense.amount
+            : parseFloat(expense.amount.replace(",", ".")) || 0;
+        return acc + amount;
+      }, 0) || 0;
 
-    const totalDespesa = userData.user.expense.reduce((acc, expense) => {
-      const amountString =
-        typeof expense.amount === "string" ? expense.amount : "";
-      const amount = parseFloat(amountString.replace(",", ".")) || 0;
-      return acc + amount;
-    }, 0);
+    const saldo = totalGanhos - totalDespesas;
 
-    return (totalGanhos - totalDespesa).toLocaleString("pt-BR", {
+    return saldo.toLocaleString("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -160,12 +164,12 @@ const HomePage = () => {
     currentValue: number,
     previousValue: number,
   ): { percentageChange: number; amount: number } => {
-    let percentageChange;
-    let difference = currentValue - previousValue;
+    let percentageChange = 0;
+    const difference = currentValue - previousValue;
 
-    if (previousValue === 0) {
-      percentageChange = currentValue > 0 ? 100 : 0;
-    } else {
+    if (previousValue === 0 && currentValue > 0) {
+      percentageChange = 100;
+    } else if (previousValue !== 0) {
       percentageChange = (difference / previousValue) * 100;
     }
 
@@ -186,9 +190,10 @@ const HomePage = () => {
     return transactions.reduce((acc, transaction) => {
       const transactionDate = new Date(transaction.createdAt);
       if (transactionDate >= firstDay && transactionDate <= lastDay) {
-        const amountString =
-          typeof transaction.amount === "string" ? transaction.amount : "";
-        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+        const amount =
+          typeof transaction.amount === "number"
+            ? transaction.amount
+            : parseFloat(transaction.amount.replace(",", ".")) || 0;
         return acc + amount;
       }
       return acc;
@@ -206,9 +211,10 @@ const HomePage = () => {
     return expenses.reduce((acc, expense) => {
       const expenseDate = new Date(expense.createdAt);
       if (expenseDate >= firstDay && expenseDate <= lastDay) {
-        const amountString =
-          typeof expense.amount === "string" ? expense.amount : "";
-        const amount = parseFloat(amountString.replace(",", ".")) || 0;
+        const amount =
+          typeof expense.amount === "number"
+            ? expense.amount
+            : parseFloat(expense.amount.replace(",", ".")) || 0;
         return acc + amount;
       }
       return acc;
@@ -240,19 +246,20 @@ const HomePage = () => {
   );
 
   const ganhoChangeResult = calculatePercentageChange(
-    currentMonthGanhos,
-    previousMonthGanhos,
+    currentMonthGanhos || 0,
+    previousMonthGanhos || 0,
   );
+
+  const ganhoPercentageChange = ganhoChangeResult.percentageChange || 0;
+  const ganhoAmount = ganhoChangeResult.amount || 0;
+
   const despesasChangeResult = calculatePercentageChange(
-    currentMonthDespesas,
-    previousMonthDespesas,
+    currentMonthDespesas || 0,
+    previousMonthDespesas || 0,
   );
 
-  const ganhoPercentageChange = ganhoChangeResult.percentageChange;
-  const ganhoAmount = ganhoChangeResult.amount;
-
-  const despesasPercentageChange = despesasChangeResult.percentageChange;
-  const despesasAmount = despesasChangeResult.amount;
+  const despesasPercentageChange = despesasChangeResult.percentageChange || 0;
+  const despesasAmount = despesasChangeResult.amount || 0;
 
   const [showSaldo, setShowSaldo] = useState<boolean>(true);
 
@@ -272,292 +279,327 @@ const HomePage = () => {
     }
   }, [showSaldo]);
 
+  const namePage = `Confira suas finanças, ${skeleton ? "..." : userData?.user.name} !`;
+
   return (
-    <Page
-      skeletonButtonPrimary={loading}
-      skeletonButtonSecondary={loading}
-      namePage={`Confira suas finanças, ${loading === true ? "... " : userData?.user.name}!`}
-      buttonContentSecondary={showSaldo ? "Ocultar números" : "Exibir números"}
-      withActionSecondary
-      onClickActionSecondary={() => setShowSaldo(!showSaldo)}
-      iconButtonSecondary={showSaldo ? "visibility_off" : "visibility"}
-      description={
-        <span>
-          Saldo total:
-          <strong> R$ {showSaldo ? sumSaldo() : "•••••••"}</strong>
-        </span>
-      }
-    >
-      <div className="layout-page">
-        <div className="input-field">
-          <InputSelect
-            label="Mês"
-            options={monthOptions.map((option) => option.label)}
-            value={
-              monthOptions.find(
-                (option) => option.value === selectedMonth.toString(),
-              )?.label || "Ano"
-            }
-            onChange={(value) =>
-              setSelectedMonth(
-                monthOptions.findIndex((option) => option.label === value),
-              )
-            }
-          />
+      <Page
+        skeletonButtonPrimary={skeleton}
+        skeletonButtonSecondary={skeleton}
+        namePage={namePage}
+        buttonContentSecondary={showSaldo ? "Ocultar números" : "Exibir números"}
+        withActionSecondary
+        onClickActionSecondary={() => setShowSaldo(!showSaldo)}
+        iconButtonSecondary={showSaldo ? "visibility_off" : "visibility"}
+        description={
+          <span>
+            Saldo total:
+            <strong> R$ {showSaldo ? sumSaldo() : "•••••••"}</strong>
+          </span>
+        }
+      >
+        <div className="layout-page">
+          <div className="input-field">
+            <InputSelect
+              label="Mês"
+              options={monthOptions.map((option) => option.label)}
+              value={
+                monthOptions.find(
+                  (option) => option.value === selectedMonth.toString(),
+                )?.label || "Ano"
+              }
+              onChange={(value) =>
+                setSelectedMonth(
+                  monthOptions.findIndex((option) => option.label === value),
+                )
+              }
+            />
 
-          <InputSelect
-            label="Ano"
-            options={Array.from({ length: 5 }, (_, index) =>
-              (new Date().getFullYear() - index).toString(),
-            )}
-            value={selectedYear.toString()}
-            onChange={(value) => setSelectedYear(parseInt(value))}
-          />
-        </div>
-        <div className="layout-resumo">
-          <Card
-            footer={
-              <CardFooter>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "var(--s-spacing-xx-small)",
-                  }}
-                >
-                  <Button
-                    skeleton={loading}
-                    label="Adicionar ganho"
-                    variant="primary"
-                    size="md"
-                    onClick={() => navigateTo("/pagina-inicial/ganhos")}
-                  />
-                  <Button
-                    skeleton={loading}
-                    label="Consultar ganhos"
-                    variant="secondary"
-                    size="md"
-                    onClick={() => navigateTo("/pagina-inicial/ganhos")}
-                  />
-                </div>
-              </CardFooter>
-            }
-            header={<CardHeader title="Ganhos" description={``} />}
-            content={
-              <CardContent>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "var(--s-spacing-nano)",
-                  }}
-                >
-                  {loading === true ? (
-                    <>
-                      <Skeleton height="32" width="100" />
-                    </>
-                  ) : (
-                    <h1 className="dinheiro">
-                      R$ {showSaldo ? sumGanhos() : "•••••••"}
-                    </h1>
-                  )}
+            <InputSelect
+              label="Ano"
+              options={Array.from({ length: 5 }, (_, index) =>
+                (new Date().getFullYear() - index).toString(),
+              )}
+              value={selectedYear.toString()}
+              onChange={(value) => setSelectedYear(parseInt(value))}
+            />
+          </div>
+          <div className="layout-resumo">
+            <Card
+              footer={
+                <CardFooter>
                   <div
-                    className={`porcentagem-ganhos ${parseFloat(ganhoPercentageChange.toFixed(2)) == 0 ? "neutral" : parseFloat(ganhoPercentageChange.toFixed(2)) > 0 ? "positivo" : "negativo"}`}
+                    style={{
+                      display: "flex",
+                      gap: "var(--s-spacing-xx-small)",
+                    }}
                   >
-                    {parseFloat(ganhoPercentageChange.toFixed(2)) == 0 ? (
-                      <small>Você ainda não registrou nenhuma entrada</small>
-                    ) : (
-                      <small>
-                        {parseFloat(ganhoPercentageChange.toFixed(2)) < 0
-                          ? "-"
-                          : "+"}
-                        R${" "}
-                        {ganhoAmount
-                          .toFixed(2)
-                          .toString()
-                          .replace(".", ",")
-                          .replace("-", "")}{" "}
-                        (
-                        {ganhoPercentageChange
-                          .toFixed(2)
-                          .toString()
-                          .replace(".", ",")}
-                        %) comparado ao periodo anterior
-                        <strong className="material-symbols-outlined sm">
-                          {parseFloat(ganhoPercentageChange.toFixed(2)) < 0
-                            ? "trending_down"
-                            : "trending_up"}
-                        </strong>
-                      </small>
-                    )}
+                    <Button
+                      skeleton={skeleton}
+                      label="Adicionar ganho"
+                      variant="primary"
+                      size="md"
+                      onClick={() => navigateTo("/pagina-inicial/ganhos")}
+                    />
+                    <Button
+                      skeleton={skeleton}
+                      label="Consultar ganhos"
+                      variant="secondary"
+                      size="md"
+                      onClick={() => navigateTo("/pagina-inicial/ganhos")}
+                    />
                   </div>
-                </div>
-              </CardContent>
-            }
-          ></Card>
-          <Card
-            header={<CardHeader title="Despesas" description={``} />}
-            content={
-              <CardContent>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "var(--s-spacing-nano)",
-                  }}
-                >
-                  {loading === true ? (
-                    <>
-                      <Skeleton height="32" width="100" />
-                    </>
-                  ) : (
-                    <h1 className="dinheiro">
-                      R$ {showSaldo ? sumDespesas() : "•••••••"}
-                    </h1>
-                  )}
-
+                </CardFooter>
+              }
+              header={<CardHeader title="Ganhos" description={``} />}
+              content={
+                <CardContent>
                   <div
-                    className={`porcentagem-despesas ${parseFloat(despesasPercentageChange.toFixed(2)) == 0 ? "neutral" : parseFloat(despesasPercentageChange.toFixed(2)) < 0 ? "positivo" : "negativo"}`}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "var(--s-spacing-nano)",
+                    }}
                   >
-                    {parseFloat(despesasPercentageChange.toFixed(2)) == 0 ? (
-                      <small>Você ainda não registrou nenhuma despesa</small>
+                    {skeleton === true ? (
+                      <>
+                        <Skeleton height="24" width="100" />
+                      </>
                     ) : (
-                      <small>
-                        {parseFloat(despesasPercentageChange.toFixed(2)) > 0
-                          ? "-"
-                          : "+"}
-                        R${" "}
-                        {despesasAmount
-                          .toFixed(2)
-                          .toString()
-                          .replace(".", ",")
-                          .replace("-", "")}{" "}
-                        (
-                        {despesasPercentageChange
-                          .toFixed(2)
-                          .toString()
-                          .replace(".", ",")}
-                        %) comparado ao periodo anterior
-                        <strong className="material-symbols-outlined sm">
-                          {parseFloat(despesasPercentageChange.toFixed(2)) > 0
-                            ? "trending_down"
-                            : "trending_up"}
-                        </strong>
-                      </small>
+                      <h1 className="dinheiro">
+                        R$ {showSaldo ? sumGanhos() : "•••••••"}
+                      </h1>
                     )}
+                    <div
+                      className={`porcentagem-ganhos ${
+                        ganhoPercentageChange === 0
+                          ? "neutral"
+                          : ganhoPercentageChange > 0
+                            ? "positivo"
+                            : "negativo"
+                      }`}
+                    >
+                      {previousMonthGanhos === 0 && currentMonthGanhos === 0 ? (
+                        <small>Você ainda não registrou nenhuma entrada</small>
+                      ) : previousMonthGanhos === 0 ? (
+                        <small>
+                          +R${" "}
+                          {currentMonthGanhos
+                            .toFixed(2)
+                            .toString()
+                            .replace(".", ",")}{" "}
+                          ( 100%) comparado ao período anterior
+                          <strong className="material-symbols-outlined sm">
+                            trending_up
+                          </strong>
+                        </small>
+                      ) : (
+                        <small>
+                          {ganhoPercentageChange < 0 ? "-" : "+"}
+                          R${" "}
+                          {ganhoAmount
+                            .toFixed(2)
+                            .toString()
+                            .replace(".", ",")
+                            .replace("-", "")}{" "}
+                          (
+                          {ganhoPercentageChange
+                            .toFixed(2)
+                            .toString()
+                            .replace(".", ",")}
+                          %) comparado ao período anterior
+                          <strong className="material-symbols-outlined sm">
+                            {ganhoPercentageChange < 0
+                              ? "trending_down"
+                              : "trending_up"}
+                          </strong>
+                        </small>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            }
-            footer={
-              <CardFooter>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "var(--s-spacing-xx-small)",
-                  }}
-                >
-                  <Button
-                    skeleton={loading}
-                    label="Adicionar despesa"
-                    variant="primary"
-                    size="md"
-                    onClick={() => navigateTo("/pagina-inicial/despesas")}
-                  />
-                  <Button
-                    skeleton={loading}
-                    label="Consultar despesas"
-                    variant="secondary"
-                    size="md"
-                    onClick={() => navigateTo("/pagina-inicial/despesas")}
-                  />
-                </div>
-              </CardFooter>
-            }
-          ></Card>
-        </div>
-        <BarChart
-          skeleton={loading}
-          isYearSelected={isYearSelected}
-          setSelectedMonth={setSelectedMonth}
-          setSelectedYear={setSelectedYear}
-          userData={userData}
-          loading={loading}
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-          firstDayOfMonth={firstDayOfMonth}
-          lastDayOfMonth={lastDayOfMonth}
-        />
-        <LineChart
-          skeleton={loading}
-          isYearSelected={isYearSelected}
-          setSelectedMonth={setSelectedMonth}
-          setSelectedYear={setSelectedYear}
-          userData={userData}
-          loading={loading}
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-          firstDayOfMonth={firstDayOfMonth}
-          lastDayOfMonth={lastDayOfMonth}
-        />
-        <div className="layout-resumo">
-          <PieChart
-            skeleton={loading}
-            clientDateType="fonteDeRenda"
-            isYearSelected={isYearSelected}
-            setSelectedMonth={setSelectedMonth}
-            setSelectedYear={setSelectedYear}
-            userData={userData}
-            loading={loading}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-            firstDayOfMonth={firstDayOfMonth}
-            lastDayOfMonth={lastDayOfMonth}
-          />
-          <PieChart
-            skeleton={loading}
-            clientDateType="formaDePagamento"
-            isYearSelected={isYearSelected}
-            setSelectedMonth={setSelectedMonth}
-            setSelectedYear={setSelectedYear}
-            userData={userData}
-            loading={loading}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-            firstDayOfMonth={firstDayOfMonth}
-            lastDayOfMonth={lastDayOfMonth}
-          />
-        </div>
-        <div className="layout-resumo">
-          <PieChart
-            skeleton={loading}
-            clientDateType="categoria"
-            isYearSelected={isYearSelected}
-            setSelectedMonth={setSelectedMonth}
-            setSelectedYear={setSelectedYear}
-            userData={userData}
-            loading={loading}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-            firstDayOfMonth={firstDayOfMonth}
-            lastDayOfMonth={lastDayOfMonth}
-          />
+                </CardContent>
+              }
+            />
+            <Card
+              header={<CardHeader title="Despesas" description={``} />}
+              content={
+                <CardContent>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "var(--s-spacing-nano)",
+                    }}
+                  >
+                    {skeleton === true ? (
+                      <>
+                        <Skeleton height="24" width="100" />
+                      </>
+                    ) : (
+                      <h1 className="dinheiro">
+                        R$ {showSaldo ? sumDespesas() : "•••••••"}
+                      </h1>
+                    )}
 
-          <PieChart
-            skeleton={loading}
-            clientDateType="subcategoria"
+                    <div
+                      className={`porcentagem-despesas ${
+                        despesasPercentageChange === 0
+                          ? "neutral"
+                          : despesasPercentageChange > 0
+                            ? "negativo"
+                            : "positivo"
+                      }`}
+                    >
+                      {previousMonthDespesas === 0 &&
+                      currentMonthDespesas === 0 ? (
+                        <small>Você ainda não registrou nenhuma despesa</small>
+                      ) : previousMonthDespesas === 0 ? (
+                        <small>
+                          {despesasPercentageChange > 0 ? "-" : "+"}
+                          {currentMonthDespesas
+                            .toFixed(2)
+                            .toString()
+                            .replace(".", ",")}{" "}
+                          (100%) comparado ao período anterior
+                          <strong className="material-symbols-outlined sm">
+                            trending_up
+                          </strong>
+                        </small>
+                      ) : (
+                        <small>
+                          {despesasPercentageChange > 0 ? "-" : "+"}
+                          R${" "}
+                          {despesasAmount
+                            .toFixed(2)
+                            .toString()
+                            .replace(".", ",")
+                            .replace("-", "")}{" "}
+                          (
+                          {despesasPercentageChange
+                            .toFixed(2)
+                            .toString()
+                            .replace(".", ",")}
+                          %) comparado ao período anterior
+                          <strong className="material-symbols-outlined sm">
+                            {despesasPercentageChange > 0
+                              ? "trending_down"
+                              : "trending_up"}
+                          </strong>
+                        </small>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              }
+              footer={
+                <CardFooter>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "var(--s-spacing-xx-small)",
+                    }}
+                  >
+                    <Button
+                      skeleton={skeleton}
+                      label="Adicionar despesa"
+                      variant="primary"
+                      size="md"
+                      onClick={() => navigateTo("/pagina-inicial/despesas")}
+                    />
+                    <Button
+                      skeleton={skeleton}
+                      label="Consultar despesas"
+                      variant="secondary"
+                      size="md"
+                      onClick={() => navigateTo("/pagina-inicial/despesas")}
+                    />
+                  </div>
+                </CardFooter>
+              }
+            />
+          </div>
+          <BarChart
+            skeleton={skeleton}
             isYearSelected={isYearSelected}
             setSelectedMonth={setSelectedMonth}
             setSelectedYear={setSelectedYear}
             userData={userData}
-            loading={loading}
+            loading={skeleton}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
             firstDayOfMonth={firstDayOfMonth}
             lastDayOfMonth={lastDayOfMonth}
           />
-        </div>{" "}
-      </div>
-    </Page>
+          <LineChart
+            skeleton={skeleton}
+            isYearSelected={isYearSelected}
+            setSelectedMonth={setSelectedMonth}
+            setSelectedYear={setSelectedYear}
+            userData={userData}
+            loading={skeleton}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            firstDayOfMonth={firstDayOfMonth}
+            lastDayOfMonth={lastDayOfMonth}
+          />
+          <div className="layout-resumo">
+            <PieChart
+              skeleton={skeleton}
+              clientDateType="fonteDeRenda"
+              isYearSelected={isYearSelected}
+              setSelectedMonth={setSelectedMonth}
+              setSelectedYear={setSelectedYear}
+              userData={userData}
+              loading={skeleton}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              firstDayOfMonth={firstDayOfMonth}
+              lastDayOfMonth={lastDayOfMonth}
+            />
+            <PieChart
+              skeleton={skeleton}
+              clientDateType="formaDePagamento"
+              isYearSelected={isYearSelected}
+              setSelectedMonth={setSelectedMonth}
+              setSelectedYear={setSelectedYear}
+              userData={userData}
+              loading={skeleton}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              firstDayOfMonth={firstDayOfMonth}
+              lastDayOfMonth={lastDayOfMonth}
+            />
+          </div>
+          <div className="layout-resumo">
+            <PieChart
+              skeleton={skeleton}
+              clientDateType="categoria"
+              isYearSelected={isYearSelected}
+              setSelectedMonth={setSelectedMonth}
+              setSelectedYear={setSelectedYear}
+              userData={userData}
+              loading={skeleton}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              firstDayOfMonth={firstDayOfMonth}
+              lastDayOfMonth={lastDayOfMonth}
+            />
+
+            <PieChart
+              skeleton={skeleton}
+              clientDateType="subcategoria"
+              isYearSelected={isYearSelected}
+              setSelectedMonth={setSelectedMonth}
+              setSelectedYear={setSelectedYear}
+              userData={userData}
+              loading={skeleton}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              firstDayOfMonth={firstDayOfMonth}
+              lastDayOfMonth={lastDayOfMonth}
+            />
+          </div>{" "}
+        </div>
+      </Page>
   );
 };
 

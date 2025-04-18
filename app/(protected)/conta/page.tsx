@@ -1,5 +1,5 @@
 "use client";
-import { useUser } from "@/data/provider"; // Importando useUser
+import { useUser } from "@/data/provider";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSession } from "next-auth/react";
@@ -119,13 +119,13 @@ const SettingsPage = () => {
           <Layout columns="2 - Symmetric">
             <Input
               label="Nome"
-              value={watchedValues.name }
+              value={watchedValues.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
             />
             <Input
               disabled
               label="Email"
-              value={watchedValues.email }
+              value={watchedValues.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
             />
           </Layout>

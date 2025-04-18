@@ -13,7 +13,6 @@ export const SettingsSchema = z
       if (data.password && !data.newPassword) {
         return false;
       }
-
       return true;
     },
     {
@@ -26,7 +25,6 @@ export const SettingsSchema = z
       if (data.newPassword && !data.password) {
         return false;
       }
-
       return true;
     },
     {
@@ -61,11 +59,11 @@ export const TransactionSchema = z.object({
 });
 
 export const ExpenseSchema = z.object({
-  valor: z.string(),
-  data: z.string(),
-  categoria: z.string(),
-  formaDePagamento: z.string(),
-  subcategoria: z.string(),
+  valor: z.string().min(0, "O valor deve ser maior ou igual a 0"),
+  data: z.string().nonempty("A data é obrigatória"),
+  categoria: z.string().nonempty("A categoria é obrigatória"),
+  formaDePagamento: z.string().nonempty("A forma de pagamento é obrigatória"),
+  subcategoria: z.string().nonempty("A subcategoria é obrigatória"),
 });
 
 export const NewCategorySchema = z.object({
@@ -77,4 +75,9 @@ export const NovaCategoriaSchema = z.object({
   name: z.string().min(1, "É necessário um nome para a fonte de renda!"),
   date: z.date(),
   subcategoria: z.string(),
+});
+
+export const FormaDePagamentoSchema = z.object({
+  name: z.string().min(1, "O nome da forma de pagamento é obrigatório."),
+  date: z.date(),
 });

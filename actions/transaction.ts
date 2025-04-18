@@ -21,6 +21,17 @@ export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
 
     const { date, category, amount } = validatedFields;
 
+    const [day, month, year] = date.split("/");
+    const formattedDate = new Date(
+      parseInt(year, 10),
+      parseInt(month, 10) - 1,
+      parseInt(day, 10),
+    );
+
+    if (isNaN(formattedDate.getTime())) {
+      return { error: "Data inválida" };
+    }
+
     const categoryExists = await db.fonteDeRenda.findFirst({
       where: { name: category, userId: dbUser.id },
     });
@@ -29,11 +40,17 @@ export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
       return { error: "A fonte de renda especificada não existe" };
     }
 
+    const formattedAmount = parseFloat(amount.toString().replace(",", "."));
+
+    if (isNaN(formattedAmount) || formattedAmount <= 0) {
+      return { error: "Valor inválido ou menor que R$ 0,00" };
+    }
+
     await db.transaction.create({
       data: {
-        amount: amount,
+        amount: formattedAmount,
         accountId: dbUser.id,
-        createdAt: date,
+        createdAt: formattedDate.toISOString(),
         categoryId: categoryExists.id,
       },
     });
@@ -45,72 +62,95 @@ export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
   }
 };
 
-export const Deletar = async (categoryId: string) => {
-  const user = await currentUser();
-
-  if (!user || !user.id) {
-    return { error: "Não autorizado" };
-  }
-
-  const dbUser = await getUserById(user.id);
-
-  if (!dbUser) {
-    return { error: "Não autorizado" };
-  }
-
+export const Deletar = async (transactionIds: string[]) => {
   try {
-    await db.transaction.delete({
-      where: {
-        id: categoryId,
-        accountId: dbUser.id,
-      },
+    const user = await currentUser();
+
+    if (!user || !user.id) {
+      return { error: "Não autorizado" };
+    }
+
+    const dbUser = await getUserById(user.id);
+
+    if (!dbUser) {
+      return { error: "Não autorizado" };
+    }
+
+    const transactions = await db.transaction.findMany({
+      where: { id: { in: transactionIds }, accountId: dbUser.id },
     });
 
-    return { success: "Ganho excluído com sucesso" };
-  } catch (error) {
-    console.log(error);
-    return { error: "Não foi possível excluir o ganho!" };
+    if (transactions.length !== transactionIds.length) {
+      return { error: "Uma ou mais transações especificadas não existem" };
+    }
+
+    await db.transaction.deleteMany({
+      where: { id: { in: transactionIds } },
+    });
+
+    return { success: `Ganho${transactionIds.length > 1 ? "s" : ""} excluído${transactionIds.length > 1 ? "s" : ""} com sucesso` };
+  } catch {
+    return { error: "Erro ao excluir os ganhos" };
   }
 };
 
 export const Atualizar = async (
   values: z.infer<typeof TransactionSchema>,
-  categoryId: string,
+  transactionId: string,
 ) => {
-  const validatedFields = TransactionSchema.safeParse(values);
-  const user = await currentUser();
-
-  if (!validatedFields.success) {
-    return { error: "Os itens estão informados incorretamente" };
-  }
-
-  if (!user || !user.id) {
-    return { error: "Não autorizado" };
-  }
-
-  const dbUser = await getUserById(user.id);
-  if (!dbUser) {
-    return { error: "Não autorizado" };
-  }
-
-  const { amount, category, date } = validatedFields.data;
-
-  const categoryExists = await db.fonteDeRenda.findFirst({
-    where: { name: category, userId: dbUser.id },
-  });
-
-  if (!categoryExists) {
-    return { error: "A fonte de renda especificada não existe" };
-  }
-
-  console.log(date, amount, category);
-
   try {
+    const validatedFields = TransactionSchema.parse(values);
+    const user = await currentUser();
+
+    if (!user || !user.id) {
+      return { error: "Não autorizado" };
+    }
+
+    const dbUser = await getUserById(user.id);
+    if (!dbUser) {
+      return { error: "Não autorizado" };
+    }
+
+    const { date, category, amount } = validatedFields;
+
+    const [day, month, year] = date.split("/");
+    const formattedDate = new Date(
+      parseInt(year, 10),
+      parseInt(month, 10) - 1,
+      parseInt(day, 10),
+    );
+
+    if (isNaN(formattedDate.getTime())) {
+      return { error: "Data inválida" };
+    }
+
+    const categoryExists = await db.fonteDeRenda.findFirst({
+      where: { name: category, userId: dbUser.id },
+    });
+
+    if (!categoryExists) {
+      return { error: "A fonte de renda especificada não existe" };
+    }
+
+    const transactionExists = await db.transaction.findFirst({
+      where: { id: transactionId, accountId: dbUser.id },
+    });
+
+    if (!transactionExists) {
+      return { error: "A transação especificada não existe" };
+    }
+
+    const formattedAmount = parseFloat(amount.toString().replace(",", "."));
+
+    if (isNaN(formattedAmount) || formattedAmount <= 0) {
+      return { error: "Valor inválido ou menor que R$ 0,00" };
+    }
+
     await db.transaction.update({
-      where: { id: categoryId },
+      where: { id: transactionId },
       data: {
-        createdAt: date,
-        amount: amount,
+        amount: formattedAmount,
+        createdAt: formattedDate.toISOString(),
         accountId: dbUser.id,
         categoryId: categoryExists.id,
       },
@@ -118,6 +158,7 @@ export const Atualizar = async (
 
     return { success: "Ganho atualizado com sucesso" };
   } catch (error) {
+    console.log(error);
     return { error: "Erro ao atualizar o ganho" };
   }
 };

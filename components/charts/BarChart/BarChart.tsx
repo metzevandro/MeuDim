@@ -75,7 +75,8 @@ export function BarChart({
                 const transactionDate = new Date(transaction.createdAt);
                 if (transactionDate >= firstDay && transactionDate <= lastDay) {
                   const amount =
-                    parseFloat(transaction.amount.replace(",", ".")) || 0;
+                    parseFloat(String(transaction.amount).replace(",", ".")) ||
+                    0;
                   return acc + amount;
                 }
                 return acc;
@@ -88,7 +89,7 @@ export function BarChart({
               const expenseDate = new Date(expense.createdAt);
               if (expenseDate >= firstDay && expenseDate <= lastDay) {
                 const amount =
-                  parseFloat(expense.amount.replace(",", ".")) || 0;
+                  parseFloat(String(expense.amount).replace(",", ".")) || 0;
                 return acc + amount;
               }
               return acc;
@@ -115,7 +116,7 @@ export function BarChart({
             })
             .reduce(
               (acc: number, transaction: any) =>
-                acc + parseFloat(transaction.amount.replace(",", ".")),
+                acc + parseFloat(String(transaction.amount).replace(",", ".")),
               0,
             );
 
@@ -130,7 +131,7 @@ export function BarChart({
             })
             .reduce(
               (acc: number, expense: any) =>
-                acc + parseFloat(expense.amount.replace(",", ".")),
+                acc + parseFloat(String(expense.amount).replace(",", ".")),
               0,
             );
 

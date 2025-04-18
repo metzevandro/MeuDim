@@ -15,12 +15,24 @@ export const Criar = async (values: z.infer<typeof ExpenseSchema>) => {
     }
 
     const dbUser = await getUserById(user.id);
+
     if (!dbUser) {
       return { error: "Não autorizado" };
     }
 
     const { data, categoria, valor, formaDePagamento, subcategoria } =
       validatedFields;
+
+    const [day, month, year] = data.split("/");
+    const formattedDate = new Date(
+      parseInt(year, 10),
+      parseInt(month, 10) - 1,
+      parseInt(day, 10),
+    );
+
+    if (isNaN(formattedDate.getTime() + 10)) {
+      return { error: "Data inválida" };
+    }
 
     const categoryExists = await db.categoria.findFirst({
       where: { name: categoria, userId: dbUser.id },
@@ -46,27 +58,36 @@ export const Criar = async (values: z.infer<typeof ExpenseSchema>) => {
       return { error: "A subcategoria especificada não existe" };
     }
 
+    const formattedAmount = parseFloat(valor.replace(",", "."));
+
+    if (formattedAmount <= 0) {
+      return { error: "Valor deve ser maior que R$ 0,00" };
+    }
+
+    if (isNaN(formattedAmount)) {
+      return { error: "Valor inválido" };
+    }
+
     await db.expense.create({
       data: {
-        amount: valor,
+        amount: formattedAmount,
         accountId: dbUser.id,
-        createdAt: data,
+        createdAt: formattedDate.toISOString(),
         categoriaId: categoryExists.id,
         formaDePagamentoId: formaDePagamentoExiste.id,
         subcategoriaId: subcategoriaExiste?.id,
       },
     });
 
-    return { success: "Despesa adicionado com sucesso" };
+    return { success: "Despesa adicionada com sucesso" };
   } catch (error) {
-    console.log("Erro ao criar a despesa:", error);
     return { error: "Erro ao criar a despesa" };
   }
 };
 
 export const Atualizar = async (
   values: z.infer<typeof ExpenseSchema>,
-  categoryId: string,
+  expenseId: string,
 ) => {
   try {
     const validatedFields = ExpenseSchema.parse(values);
@@ -77,12 +98,24 @@ export const Atualizar = async (
     }
 
     const dbUser = await getUserById(user.id);
+
     if (!dbUser) {
       return { error: "Não autorizado" };
     }
 
     const { data, categoria, valor, formaDePagamento, subcategoria } =
       validatedFields;
+
+    const [day, month, year] = data.split("/");
+    const formattedDate = new Date(
+      parseInt(year, 10),
+      parseInt(month, 10) - 1,
+      parseInt(day, 10),
+    );
+
+    if (isNaN(formattedDate.getTime())) {
+      return { error: "Data inválida" };
+    }
 
     const categoryExists = await db.categoria.findFirst({
       where: { name: categoria, userId: dbUser.id },
@@ -105,15 +138,28 @@ export const Atualizar = async (
     });
 
     if (!subcategoriaExiste) {
-      return { error: "A forma de pagamento especificada não existe" };
+      return { error: "A subcategoria especificada não existe" };
+    }
+
+    const expenseExists = await db.expense.findFirst({
+      where: { id: expenseId, accountId: dbUser.id },
+    });
+
+    if (!expenseExists) {
+      return { error: "A despesa especificada não existe" };
+    }
+
+    const formattedAmount = parseFloat(valor.replace(",", "."));
+
+    if (isNaN(formattedAmount) || formattedAmount <= 0) {
+      return { error: "Valor inválido ou menor que R$ 0,00" };
     }
 
     await db.expense.update({
-      where: { id: categoryId },
+      where: { id: expenseId },
       data: {
-        amount: valor,
-        accountId: dbUser.id,
-        createdAt: data,
+        amount: formattedAmount,
+        createdAt: formattedDate.toISOString(),
         categoriaId: categoryExists.id,
         formaDePagamentoId: formaDePagamentoExiste.id,
         subcategoriaId: subcategoriaExiste?.id,
@@ -122,33 +168,38 @@ export const Atualizar = async (
 
     return { success: "Despesa atualizada com sucesso" };
   } catch (error) {
-    console.log("Erro ao criar a despesa:", error);
-    return { error: "Erro ao criar a despesa" };
+    return { error: "Erro ao atualizar a despesa" };
   }
 };
 
-export const Deletar = async (categoryId: string) => {
-  const user = await currentUser();
-
-  if (!user || !user.id) {
-    return { error: "Não autorizado" };
-  }
-
-  const dbUser = await getUserById(user.id);
-  if (!dbUser) {
-    return { error: "Não autorizado" };
-  }
-
+export const Deletar = async (expenseIds: string[]) => {
   try {
-    await db.expense.delete({
-      where: {
-        id: categoryId,
-        accountId: dbUser.id,
-      },
+    const user = await currentUser();
+
+    if (!user || !user.id) {
+      return { error: "Não autorizado" };
+    }
+
+    const dbUser = await getUserById(user.id);
+
+    if (!dbUser) {
+      return { error: "Não autorizado" };
+    }
+
+    const expenses = await db.expense.findMany({
+      where: { id: { in: expenseIds }, accountId: dbUser.id },
     });
 
-    return { success: "Despesa excluída com sucesso" };
+    if (expenses.length !== expenseIds.length) {
+      return { error: "Uma ou mais despesas especificadas não existem" };
+    }
+
+    await db.expense.deleteMany({
+      where: { id: { in: expenseIds } },
+    });
+
+    return { success: `Despesa${expenseIds.length > 1 ? "s" : ""} deletada${expenseIds.length > 1 ? "s" : ""} com sucesso` };
   } catch (error) {
-    return { error: "Não foi possível excluir a categoria!" };
+    return { error: "Erro ao deletar as despesas" };
   }
 };

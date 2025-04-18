@@ -34,7 +34,7 @@ export async function getCategoriaByUserId(userId: string) {
   return await db.categoria.findMany({
     where: { userId },
     include: {
-      Subcategorias: true,
+      subcategorias: true,
     },
   });
 }

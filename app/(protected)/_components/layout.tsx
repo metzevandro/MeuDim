@@ -23,10 +23,11 @@ interface LayoutProps {
 }
 
 const LayoutPage = (props: LayoutProps) => {
-  const { userData, loading, fetchUserData } = useUser();
+  const { userData, skeleton, fetchUserData } = useUser();
   const pathname = usePathname();
   const router = useRouter();
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const { theme, toggleTheme } = useTheme();
 
@@ -43,6 +44,7 @@ const LayoutPage = (props: LayoutProps) => {
 
   useEffect(() => {
     fetchUserData();
+    setIsMounted(true);
   }, []);
 
   const isMobile = () => {
@@ -161,11 +163,11 @@ const LayoutPage = (props: LayoutProps) => {
         />
       </SideBar>
       <Header
-        skeleton={loading}
+        skeleton={skeleton}
         breadcrumb={<Breadcrumb items={getBreadcrumbItems()} />}
         onClick={toggleSidebar}
       >
-        <HeaderProfile skeleton={loading} name={userData?.user?.name || ""}>
+        <HeaderProfile skeleton={skeleton} name={userData?.user?.name || ""}>
           <Dropdown dropdown>
             <DropdownTitle content="Conta" />
             <DropdownItem
@@ -174,11 +176,13 @@ const LayoutPage = (props: LayoutProps) => {
               onClick={() => navigateTo("/conta")}
             />
             <DropdownTitle content="Tema" />
-            <DropdownItem
-              content={theme === "light" ? "Dark" : "Light"}
-              typeIcon={theme === "light" ? "dark_mode" : "light_mode"}
-              onClick={toggleTheme}
-            />
+            {isMounted && (
+              <DropdownItem
+                content={theme === "light" ? "Dark" : "Light"}
+                typeIcon={theme === "light" ? "dark_mode" : "light_mode"}
+                onClick={toggleTheme}
+              />
+            )}
             <DropdownTitle content="Sair" />
             <DropdownItem
               content="Sair"

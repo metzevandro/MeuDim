@@ -4,7 +4,7 @@ const API = process.env.NEXT_PUBLIC_APP_URL;
 
 interface UserContextType {
   userData: UserData | null;
-  loading: boolean;
+  skeleton: boolean;
   setUserData: React.Dispatch<React.SetStateAction<UserData | null>>;
   fetchUserData: () => Promise<void>;
 }
@@ -13,10 +13,10 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [skeleton, setSkeleton] = useState(false);
 
   const fetchUserData = async () => {
-    setLoading(true);
+    setSkeleton(true);
     try {
       const response = await fetch(`${API}/api/auth/session`);
       const data = await response.json();
@@ -24,13 +24,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error("Error fetching user data:", error);
     } finally {
-      setLoading(false);
+      setSkeleton(false);
     }
   };
 
   return (
     <UserContext.Provider
-      value={{ userData, loading, setUserData, fetchUserData }}
+      value={{ userData, skeleton, setUserData, fetchUserData }}
     >
       {children}
     </UserContext.Provider>

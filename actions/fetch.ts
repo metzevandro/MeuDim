@@ -17,7 +17,7 @@ export interface Category {
   name: string;
   userId: string;
   createdAt: string;
-  Subcategorias: Subcategorias[];
+  subcategorias: Subcategorias[];
 }
 
 export interface Transaction {

@@ -36,7 +36,6 @@ export const CriarFonteDeRenda = async (
       },
     });
 
-    revalidatePath("/pagina-inicial/entradas/fonte-de-renda");
 
     return {
       success: "Fonte de renda criada com sucesso",
@@ -48,7 +47,7 @@ export const CriarFonteDeRenda = async (
   }
 };
 
-export const ExcluirFonteDeRenda = async (categoryId: string) => {
+export const ExcluirFonteDeRenda = async (categoryIds: string[]) => {
   const user = await currentUser();
 
   if (!user || !user.id) {
@@ -61,29 +60,29 @@ export const ExcluirFonteDeRenda = async (categoryId: string) => {
   }
 
   try {
-    const fonteDeRendaExiste = await db.fonteDeRenda.findUnique({
-      where: {
-        id: categoryId,
-        userId: dbUser.id,
-      },
+    const fontesDeRenda = await db.fonteDeRenda.findMany({
+      where: { id: { in: categoryIds }, userId: dbUser.id },
     });
 
-    if (!fonteDeRendaExiste) {
-      return { error: "Fonte de renda inexistente!" };
+    if (fontesDeRenda.length !== categoryIds.length) {
+      return { error: "Uma ou mais fontes de renda especificadas não existem" };
     }
 
-    await db.fonteDeRenda.delete({
-      where: {
-        id: categoryId,
-        userId: dbUser.id,
-      },
+    const hasTransactions = await db.transaction.findMany({
+      where: { categoryId: { in: categoryIds } },
     });
 
-    return {
-      success: "Fonte de renda excluída com sucesso",
-    };
-  } catch (error) {
-    return { error: "Não foi possível excluir a fonte de renda!", data: null };
+    if (hasTransactions.length > 0) {
+      return { error: "Não é possível excluir fontes de renda associadas a ganhos" };
+    }
+
+    await db.fonteDeRenda.deleteMany({
+      where: { id: { in: categoryIds } },
+    });
+
+    return { success: `Fonte${categoryIds.length > 1 ? "s" : ""} de renda excluída${categoryIds.length > 1 ? "s" : ""} com sucesso` };
+  } catch {
+    return { error: "Erro ao excluir as fontes de renda" };
   }
 };
 

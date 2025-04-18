@@ -88,7 +88,7 @@ export function LineChart({
 
           const totalGanhos = transactionsUntilDate.reduce(
             (acc: any, transaction: any) =>
-              acc + parseFloat(transaction.amount.replace(",", ".")),
+              acc + parseFloat(String(transaction.amount).replace(",", ".")),
             0,
           );
 
@@ -100,7 +100,7 @@ export function LineChart({
 
           const totalDespesas = expensesUntilDate.reduce(
             (acc: any, expense: any) =>
-              acc + parseFloat(expense.amount.replace(",", ".")),
+              acc + parseFloat(String(expense.amount).replace(",", ".")),
             0,
           );
 
@@ -120,7 +120,7 @@ export function LineChart({
 
           const totalGanhos = transactionsUntilDate.reduce(
             (acc: any, transaction: any) =>
-              acc + parseFloat(transaction.amount.replace(",", ".")),
+              acc + parseFloat(String(transaction.amount).replace(",", ".")),
             0,
           );
 
@@ -132,7 +132,7 @@ export function LineChart({
 
           const totalDespesas = expensesUntilDate.reduce(
             (acc: any, expense: any) =>
-              acc + parseFloat(expense.amount.replace(",", ".")),
+              acc + parseFloat(String(expense.amount).replace(",", ".")),
             0,
           );
 
@@ -160,7 +160,7 @@ export function LineChart({
                 },
               }}
               data={dataArea}
-              type="monotone"
+              type="linear"
               height={chartHeight}
               width={chartWidth}
               dots={false}

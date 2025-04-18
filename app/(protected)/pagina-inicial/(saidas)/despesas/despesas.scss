@@ -14,3 +14,13 @@
     height: 32px;
   }
 }
+
+.button-edit {
+  opacity: 1;
+  transition: 0.3s all ease-in-out;
+
+  &.hidden {
+    opacity: 0;
+    transition: 0.3s all ease-in-out;
+  }
+}

@@ -22,7 +22,7 @@ model User {
   accounts Account[]
 
   expenses    Expense[]
-  transaction Transaction[]
+  transactions Transaction[]
 }
 
 model Account {
@@ -46,26 +46,26 @@ model Account {
 
 model Transaction {
   id         String       @id @default(cuid())
-  amount     String
-  accountId  String       
-  createdAt  String
-  categoryId String       
-  category   FonteDeRenda @relation(fields: [categoryId], references: [id])
+  amount     Float        
+  accountId  String
+  createdAt  DateTime  
+  categoryId String
+  category   FonteDeRenda @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   user       User         @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
 
 model Expense {
   id                 String            @id @default(cuid())
-  amount             String
-  accountId          String            
-  createdAt          String
-  categoriaId        String           
-  subcategoriaId     String           
+  amount             Float             
+  accountId          String
+  createdAt          DateTime        
+  categoriaId        String
+  subcategoriaId     String?
+  formaDePagamentoId String?           
   user               User              @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  Categoria          Categoria?        @relation(fields: [categoriaId], references: [id])
-  Subcategoria       Subcategoria?     @relation(fields: [subcategoriaId], references: [id])
-  FormaDePagamento   FormaDePagamento? @relation(fields: [formaDePagamentoId], references: [id])
-  formaDePagamentoId String          
+  Categoria          Categoria?        @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  Subcategoria       Subcategoria?     @relation(fields: [subcategoriaId], references: [id], onDelete: Restrict)
+  FormaDePagamento   FormaDePagamento? @relation(fields: [formaDePagamentoId], references: [id], onDelete: Restrict)
 }
 
 model Categoria {
@@ -74,8 +74,8 @@ model Categoria {
   userId    String
   createdAt DateTime
 
-  Expense       Expense[]
-  Subcategorias Subcategoria[]
+  expenses       Expense[]      
+  subcategorias  Subcategoria[]
 
   @@unique([name, userId])
 }
@@ -86,7 +86,7 @@ model Subcategoria {
   categoriaId String
 
   categoria Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
-  Expense   Expense[]
+  expenses  Expense[] 
 
   @@unique([name, categoriaId])
 }
@@ -97,18 +97,17 @@ model FormaDePagamento {
   userId    String
   createdAt DateTime
 
-  Expense Expense[]
+  expenses Expense[] 
 
   @@unique([name, userId])
 }
 
 model FonteDeRenda {
-  id        String   @id @default(cuid())
-  name      String
-  userId    String
-  createdAt DateTime
-
-  Transaction Transaction[]
+  id          String        @id @default(cuid())
+  name        String
+  userId      String
+  createdAt   DateTime
+  transactions Transaction[]
 
   @@unique([name, userId])
 }

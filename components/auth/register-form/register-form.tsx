@@ -14,12 +14,16 @@ import {
   Link,
   Notification,
   InputCheckbox,
+  Modal,
+  FooterModal,
 } from "design-system-zeroz";
 
 // Módulos
 import { RegisterSchema } from "@/schemas/index";
 import { register } from "@/actions/register";
 import { login } from "@/actions/login";
+import { createInitialData } from "@/actions/createInitialData";
+import { useUser } from "@/data/provider"; // Importar o hook useUser
 
 // Styles
 import "./register-form.scss";
@@ -40,6 +44,11 @@ export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [showModal, setShowModal] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isConfirmingConfirm, setIsConfirmingConfirm] = useState(false);
+  const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+  
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -54,34 +63,75 @@ export const RegisterForm = () => {
     setError("");
 
     startTransition(() => {
-      register(values).then((data) => {
-        if (data && data.error) {
-          setError(data.error);
-          
-          if (data.field === "email") {
-            form.setError("email", { type: "manual", message: data.error });
-          } else {
-            form.setError("name", { type: "manual", message: data.error });
-            form.setError("password", { type: "manual", message: data.error });
+      register(values)
+        .then((data) => {
+          if (data.error) {
+            setError(data.error);
+
+            if (data.field === "email") {
+              form.setError("email", { type: "manual", message: data.error });
+            } else {
+              form.setError("name", { type: "manual", message: data.error });
+              form.setError("password", {
+                type: "manual",
+                message: data.error,
+              });
+            }
+          } else if (data.success && data.userId) {
+            setSuccess(data.success);
+            setUserId(data.userId);
+            setShowModal(true);
           }
-        } else if (data && data.success) {
-          setSuccess(data.success);
-        }
-        setNotificationOpen(true);
-    
-        if (data?.success) {
-          login(values).then((loginData) => {
-            setError(loginData?.error);
-            setSuccess(loginData?.success);
-          });
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        setError("Erro ao se registrar. Tente novamente mais tarde.");
-      });
+          setNotificationOpen(true);
+        })
+        .catch((error) => {
+          console.error(error);
+          setError("Erro ao se registrar. Tente novamente mais tarde.");
+        });
     });
-    
+  };
+
+  const handleModalConfirm = async () => {
+    setIsConfirmingConfirm(true);
+    try {
+      if (userId) {
+        await createInitialData(userId);
+      }
+      await loginUser();
+    } catch (error) {
+      console.error("Erro ao confirmar no modal:", error);
+      setError("Erro ao processar sua solicitação. Tente novamente mais tarde.");
+    } finally {
+      setIsConfirmingConfirm(false);
+      setShowModal(false);
+    }
+  };
+
+  const handleModalCancel = async () => {
+    if (isConfirmingCancel) return; // Prevent cancel action during confirmation
+    setIsConfirmingCancel(true); // Set "Não, obrigado" button to loading
+    try {
+      await loginUser();
+    } catch (error) {
+      console.error("Erro ao cancelar no modal:", error);
+      setError("Erro ao processar sua solicitação. Tente novamente mais tarde.");
+    } finally {
+      setIsConfirmingCancel(false);
+      setShowModal(false);
+    }
+  };
+
+  const loginUser = async () => {
+    try {
+      const values = form.getValues();
+      const loginData = await login(values);
+      if (loginData.error) {
+        setError(loginData.error);
+      } else {
+        setSuccess(loginData.success);
+      }
+    } catch (error) {
+    }
   };
 
   const { errors } = form.formState;
@@ -142,8 +192,8 @@ export const RegisterForm = () => {
                 <div style={{ width: "fit-content" }}>
                   <InputCheckbox
                     label="Concordo com os Termos e Privacidade."
-                    required                  disabled={isPending}
-
+                    required
+                    disabled={isPending}
                   />
                 </div>
               </div>
@@ -186,6 +236,40 @@ export const RegisterForm = () => {
           isOpen={notificationOpen}
         />
       )}
+        <Modal
+          title="Deseja pré-cadastrar dados iniciais?"
+          description="Categorias, subcategorias, fontes de renda e formas de pagamento serão criadas automaticamente."
+          hideModal={() => setShowModal(false)}
+          isOpen={showModal}
+          dismissible={false}
+          footer={
+            <FooterModal>
+              <div
+                style={{
+                  width: "min-content",
+                  display: "flex",
+                  gap: "var(--s-spacing-x-small)",
+                }}
+              >
+                <Button
+                  size="md"
+                  variant={isConfirmingConfirm ? "is-loading" : "primary"}
+                  label="Confirmar"
+                  onClick={handleModalConfirm}
+                  disabled={isConfirmingCancel || isConfirmingConfirm}
+                />
+                <Button
+                  size="md"
+                  variant={isConfirmingCancel ? "is-loading" : "secondary"}
+                  label="Não, obrigado"
+                  onClick={handleModalCancel}
+                  disabled={isConfirmingCancel || isConfirmingConfirm}
+                />
+              </div>
+            </FooterModal>
+          }
+        />
+    
     </>
   );
 };

@@ -17,6 +17,7 @@ import { useTheme } from "@/data/useTheme";
 import { Sair } from "@/actions/logout";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@/data/provider";
+import { useLogout } from "./sair";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -41,6 +42,8 @@ const LayoutPage = (props: LayoutProps) => {
       toggleSidebar();
     }
   };
+
+  const logout = useLogout();
 
   useEffect(() => {
     fetchUserData();
@@ -185,12 +188,11 @@ const LayoutPage = (props: LayoutProps) => {
             )}
             <DropdownTitle content="Sair" />
             <DropdownItem
-              content="Sair"
-              typeIcon="logout"
-              onClick={() => {
-                Sair();
-              }}
-            />
+  content="Sair"
+  typeIcon="logout"
+  onClick={logout}
+/>
+
           </Dropdown>
         </HeaderProfile>
       </Header>

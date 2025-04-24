@@ -1,4 +1,3 @@
-const API = process.env.NEXT_PUBLIC_APP_URL;
 export interface Subcategorias {
   id: string;
   name: string;

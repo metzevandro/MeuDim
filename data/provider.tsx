@@ -7,6 +7,7 @@ interface UserContextType {
   skeleton: boolean;
   setUserData: React.Dispatch<React.SetStateAction<UserData | null>>;
   fetchUserData: () => Promise<void>;
+  logout: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -28,13 +29,17 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const logout = () => {
+    setUserData(null);
+  };  
+
   return (
     <UserContext.Provider
-      value={{ userData, skeleton, setUserData, fetchUserData }}
+      value={{ userData, skeleton, setUserData, fetchUserData, logout }}
     >
       {children}
     </UserContext.Provider>
-  );
+  );  
 };
 
 export const useUser = () => {

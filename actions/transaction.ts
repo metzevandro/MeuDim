@@ -88,7 +88,9 @@ export const Deletar = async (transactionIds: string[]) => {
       where: { id: { in: transactionIds } },
     });
 
-    return { success: `Ganho${transactionIds.length > 1 ? "s" : ""} excluído${transactionIds.length > 1 ? "s" : ""} com sucesso` };
+    return {
+      success: `Ganho${transactionIds.length > 1 ? "s" : ""} excluído${transactionIds.length > 1 ? "s" : ""} com sucesso`,
+    };
   } catch {
     return { error: "Erro ao excluir os ganhos" };
   }

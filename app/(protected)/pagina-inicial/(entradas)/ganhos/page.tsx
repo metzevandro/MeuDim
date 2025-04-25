@@ -175,7 +175,7 @@ const HomePage = () => {
         setSuccess(data.success);
         setNotificationOpen(true);
         fetchUserData();
-        setSelectedRows([]); // Limpa as checkboxes
+        setSelectedRows([]);
         if (updateSelectedRows) updateSelectedRows([]);
       }
     } catch (error) {
@@ -548,7 +548,6 @@ const HomePage = () => {
               style={{
                 font: "var(--s-typography-paragraph-regular)",
                 color: "var(--s-color-content-light)",
-                wordBreak: "break-all",
                 whiteSpace: "normal",
               }}
             >

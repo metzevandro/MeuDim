@@ -2,7 +2,10 @@
 import { db } from "@/lib/db";
 
 const categorias = [
-  { categoria: "Alimentação", subcategorias: ["Delivery", "Lanches", "Restaurantes", "Supermercado"] },
+  {
+    categoria: "Alimentação",
+    subcategorias: ["Delivery", "Lanches", "Restaurantes", "Supermercado"],
+  },
   {
     categoria: "Animais de estimação",
     subcategorias: ["Alimentação de pets", "Produtos para pets", "Veterinário"],
@@ -101,7 +104,12 @@ const categorias = [
   },
 ];
 
-const formaDePagamento = ["Cartão de crédito", "Cartão de débito", "Dinheiro", "PIX"];
+const formaDePagamento = [
+  "Cartão de crédito",
+  "Cartão de débito",
+  "Dinheiro",
+  "PIX",
+];
 const fonteDeRenda = ["Freelance", "Investimentos", "Salário"];
 
 export const createInitialData = async (userId: string) => {

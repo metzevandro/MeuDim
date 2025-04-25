@@ -187,12 +187,7 @@ const LayoutPage = (props: LayoutProps) => {
               />
             )}
             <DropdownTitle content="Sair" />
-            <DropdownItem
-  content="Sair"
-  typeIcon="logout"
-  onClick={logout}
-/>
-
+            <DropdownItem content="Sair" typeIcon="logout" onClick={logout} />
           </Dropdown>
         </HeaderProfile>
       </Header>

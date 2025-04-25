@@ -48,7 +48,7 @@ export const RegisterForm = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [isConfirmingConfirm, setIsConfirmingConfirm] = useState(false);
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
-  
+
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -100,7 +100,9 @@ export const RegisterForm = () => {
       await loginUser();
     } catch (error) {
       console.error("Erro ao confirmar no modal:", error);
-      setError("Erro ao processar sua solicitação. Tente novamente mais tarde.");
+      setError(
+        "Erro ao processar sua solicitação. Tente novamente mais tarde.",
+      );
     } finally {
       setIsConfirmingConfirm(false);
       setShowModal(false);
@@ -114,7 +116,9 @@ export const RegisterForm = () => {
       await loginUser();
     } catch (error) {
       console.error("Erro ao cancelar no modal:", error);
-      setError("Erro ao processar sua solicitação. Tente novamente mais tarde.");
+      setError(
+        "Erro ao processar sua solicitação. Tente novamente mais tarde.",
+      );
     } finally {
       setIsConfirmingCancel(false);
       setShowModal(false);
@@ -130,8 +134,7 @@ export const RegisterForm = () => {
       } else {
         setSuccess(loginData.success);
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const { errors } = form.formState;
@@ -236,40 +239,39 @@ export const RegisterForm = () => {
           isOpen={notificationOpen}
         />
       )}
-        <Modal
-          title="Deseja pré-cadastrar dados iniciais?"
-          description="Categorias, subcategorias, fontes de renda e formas de pagamento serão criadas automaticamente."
-          hideModal={() => setShowModal(false)}
-          isOpen={showModal}
-          dismissible={false}
-          footer={
-            <FooterModal>
-              <div
-                style={{
-                  width: "min-content",
-                  display: "flex",
-                  gap: "var(--s-spacing-x-small)",
-                }}
-              >
-                <Button
-                  size="md"
-                  variant={isConfirmingConfirm ? "is-loading" : "primary"}
-                  label="Confirmar"
-                  onClick={handleModalConfirm}
-                  disabled={isConfirmingCancel || isConfirmingConfirm}
-                />
-                <Button
-                  size="md"
-                  variant={isConfirmingCancel ? "is-loading" : "secondary"}
-                  label="Não, obrigado"
-                  onClick={handleModalCancel}
-                  disabled={isConfirmingCancel || isConfirmingConfirm}
-                />
-              </div>
-            </FooterModal>
-          }
-        />
-    
+      <Modal
+        title="Deseja pré-cadastrar dados iniciais?"
+        description="Categorias, subcategorias, fontes de renda e formas de pagamento serão criadas automaticamente."
+        hideModal={() => setShowModal(false)}
+        isOpen={showModal}
+        dismissible={false}
+        footer={
+          <FooterModal>
+            <div
+              style={{
+                width: "min-content",
+                display: "flex",
+                gap: "var(--s-spacing-x-small)",
+              }}
+            >
+              <Button
+                size="md"
+                variant={isConfirmingConfirm ? "is-loading" : "primary"}
+                label="Confirmar"
+                onClick={handleModalConfirm}
+                disabled={isConfirmingCancel || isConfirmingConfirm}
+              />
+              <Button
+                size="md"
+                variant={isConfirmingCancel ? "is-loading" : "secondary"}
+                label="Não, obrigado"
+                onClick={handleModalCancel}
+                disabled={isConfirmingCancel || isConfirmingConfirm}
+              />
+            </div>
+          </FooterModal>
+        }
+      />
     </>
   );
 };

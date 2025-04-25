@@ -282,324 +282,324 @@ const HomePage = () => {
   const namePage = `Confira suas finanças, ${skeleton ? "..." : userData?.user.name} !`;
 
   return (
-      <Page
-        skeletonButtonPrimary={skeleton}
-        skeletonButtonSecondary={skeleton}
-        namePage={namePage}
-        buttonContentSecondary={showSaldo ? "Ocultar números" : "Exibir números"}
-        withActionSecondary
-        onClickActionSecondary={() => setShowSaldo(!showSaldo)}
-        iconButtonSecondary={showSaldo ? "visibility_off" : "visibility"}
-        description={
-          <span>
-            Saldo total:
-            <strong> R$ {showSaldo ? sumSaldo() : "•••••••"}</strong>
-          </span>
-        }
-      >
-        <div className="layout-page">
-          <div className="input-field">
-            <InputSelect
-              label="Mês"
-              options={monthOptions.map((option) => option.label)}
-              value={
-                monthOptions.find(
-                  (option) => option.value === selectedMonth.toString(),
-                )?.label || "Ano"
-              }
-              onChange={(value) =>
-                setSelectedMonth(
-                  monthOptions.findIndex((option) => option.label === value),
-                )
-              }
-            />
-
-            <InputSelect
-              label="Ano"
-              options={Array.from({ length: 5 }, (_, index) =>
-                (new Date().getFullYear() - index).toString(),
-              )}
-              value={selectedYear.toString()}
-              onChange={(value) => setSelectedYear(parseInt(value))}
-            />
-          </div>
-          <div className="layout-resumo">
-            <Card
-              footer={
-                <CardFooter>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "var(--s-spacing-xx-small)",
-                    }}
-                  >
-                    <Button
-                      skeleton={skeleton}
-                      label="Adicionar ganho"
-                      variant="primary"
-                      size="md"
-                      onClick={() => navigateTo("/pagina-inicial/ganhos")}
-                    />
-                    <Button
-                      skeleton={skeleton}
-                      label="Consultar ganhos"
-                      variant="secondary"
-                      size="md"
-                      onClick={() => navigateTo("/pagina-inicial/ganhos")}
-                    />
-                  </div>
-                </CardFooter>
-              }
-              header={<CardHeader title="Ganhos" description={``} />}
-              content={
-                <CardContent>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--s-spacing-nano)",
-                    }}
-                  >
-                    {skeleton === true ? (
-                      <>
-                        <Skeleton height="24" width="100" />
-                      </>
-                    ) : (
-                      <h1 className="dinheiro">
-                        R$ {showSaldo ? sumGanhos() : "•••••••"}
-                      </h1>
-                    )}
-                    <div
-                      className={`porcentagem-ganhos ${
-                        ganhoPercentageChange === 0
-                          ? "neutral"
-                          : ganhoPercentageChange > 0
-                            ? "positivo"
-                            : "negativo"
-                      }`}
-                    >
-                      {previousMonthGanhos === 0 && currentMonthGanhos === 0 ? (
-                        <small>Você ainda não registrou nenhuma entrada</small>
-                      ) : previousMonthGanhos === 0 ? (
-                        <small>
-                          +R${" "}
-                          {currentMonthGanhos
-                            .toFixed(2)
-                            .toString()
-                            .replace(".", ",")}{" "}
-                          ( 100%) comparado ao período anterior
-                          <strong className="material-symbols-outlined sm">
-                            trending_up
-                          </strong>
-                        </small>
-                      ) : (
-                        <small>
-                          {ganhoPercentageChange < 0 ? "-" : "+"}
-                          R${" "}
-                          {ganhoAmount
-                            .toFixed(2)
-                            .toString()
-                            .replace(".", ",")
-                            .replace("-", "")}{" "}
-                          (
-                          {ganhoPercentageChange
-                            .toFixed(2)
-                            .toString()
-                            .replace(".", ",")}
-                          %) comparado ao período anterior
-                          <strong className="material-symbols-outlined sm">
-                            {ganhoPercentageChange < 0
-                              ? "trending_down"
-                              : "trending_up"}
-                          </strong>
-                        </small>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              }
-            />
-            <Card
-              header={<CardHeader title="Despesas" description={``} />}
-              content={
-                <CardContent>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--s-spacing-nano)",
-                    }}
-                  >
-                    {skeleton === true ? (
-                      <>
-                        <Skeleton height="24" width="100" />
-                      </>
-                    ) : (
-                      <h1 className="dinheiro">
-                        R$ {showSaldo ? sumDespesas() : "•••••••"}
-                      </h1>
-                    )}
-
-                    <div
-                      className={`porcentagem-despesas ${
-                        despesasPercentageChange === 0
-                          ? "neutral"
-                          : despesasPercentageChange > 0
-                            ? "negativo"
-                            : "positivo"
-                      }`}
-                    >
-                      {previousMonthDespesas === 0 &&
-                      currentMonthDespesas === 0 ? (
-                        <small>Você ainda não registrou nenhuma despesa</small>
-                      ) : previousMonthDespesas === 0 ? (
-                        <small>
-                          {despesasPercentageChange > 0 ? "-" : "+"}
-                          {currentMonthDespesas
-                            .toFixed(2)
-                            .toString()
-                            .replace(".", ",")}{" "}
-                          (100%) comparado ao período anterior
-                          <strong className="material-symbols-outlined sm">
-                            trending_up
-                          </strong>
-                        </small>
-                      ) : (
-                        <small>
-                          {despesasPercentageChange > 0 ? "-" : "+"}
-                          R${" "}
-                          {despesasAmount
-                            .toFixed(2)
-                            .toString()
-                            .replace(".", ",")
-                            .replace("-", "")}{" "}
-                          (
-                          {despesasPercentageChange
-                            .toFixed(2)
-                            .toString()
-                            .replace(".", ",")}
-                          %) comparado ao período anterior
-                          <strong className="material-symbols-outlined sm">
-                            {despesasPercentageChange > 0
-                              ? "trending_down"
-                              : "trending_up"}
-                          </strong>
-                        </small>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              }
-              footer={
-                <CardFooter>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "var(--s-spacing-xx-small)",
-                    }}
-                  >
-                    <Button
-                      skeleton={skeleton}
-                      label="Adicionar despesa"
-                      variant="primary"
-                      size="md"
-                      onClick={() => navigateTo("/pagina-inicial/despesas")}
-                    />
-                    <Button
-                      skeleton={skeleton}
-                      label="Consultar despesas"
-                      variant="secondary"
-                      size="md"
-                      onClick={() => navigateTo("/pagina-inicial/despesas")}
-                    />
-                  </div>
-                </CardFooter>
-              }
-            />
-          </div>
-          <BarChart
-            skeleton={skeleton}
-            isYearSelected={isYearSelected}
-            setSelectedMonth={setSelectedMonth}
-            setSelectedYear={setSelectedYear}
-            userData={userData}
-            loading={skeleton}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-            firstDayOfMonth={firstDayOfMonth}
-            lastDayOfMonth={lastDayOfMonth}
+    <Page
+      skeletonButtonPrimary={skeleton}
+      skeletonButtonSecondary={skeleton}
+      namePage={namePage}
+      buttonContentSecondary={showSaldo ? "Ocultar números" : "Exibir números"}
+      withActionSecondary
+      onClickActionSecondary={() => setShowSaldo(!showSaldo)}
+      iconButtonSecondary={showSaldo ? "visibility_off" : "visibility"}
+      description={
+        <span>
+          Saldo total:
+          <strong> R$ {showSaldo ? sumSaldo() : "•••••••"}</strong>
+        </span>
+      }
+    >
+      <div className="layout-page">
+        <div className="input-field">
+          <InputSelect
+            label="Mês"
+            options={monthOptions.map((option) => option.label)}
+            value={
+              monthOptions.find(
+                (option) => option.value === selectedMonth.toString(),
+              )?.label || "Ano"
+            }
+            onChange={(value) =>
+              setSelectedMonth(
+                monthOptions.findIndex((option) => option.label === value),
+              )
+            }
           />
-          <LineChart
-            skeleton={skeleton}
-            isYearSelected={isYearSelected}
-            setSelectedMonth={setSelectedMonth}
-            setSelectedYear={setSelectedYear}
-            userData={userData}
-            loading={skeleton}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-            firstDayOfMonth={firstDayOfMonth}
-            lastDayOfMonth={lastDayOfMonth}
-          />
-          <div className="layout-resumo">
-            <PieChart
-              skeleton={skeleton}
-              clientDateType="fonteDeRenda"
-              isYearSelected={isYearSelected}
-              setSelectedMonth={setSelectedMonth}
-              setSelectedYear={setSelectedYear}
-              userData={userData}
-              loading={skeleton}
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              firstDayOfMonth={firstDayOfMonth}
-              lastDayOfMonth={lastDayOfMonth}
-            />
-            <PieChart
-              skeleton={skeleton}
-              clientDateType="formaDePagamento"
-              isYearSelected={isYearSelected}
-              setSelectedMonth={setSelectedMonth}
-              setSelectedYear={setSelectedYear}
-              userData={userData}
-              loading={skeleton}
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              firstDayOfMonth={firstDayOfMonth}
-              lastDayOfMonth={lastDayOfMonth}
-            />
-          </div>
-          <div className="layout-resumo">
-            <PieChart
-              skeleton={skeleton}
-              clientDateType="categoria"
-              isYearSelected={isYearSelected}
-              setSelectedMonth={setSelectedMonth}
-              setSelectedYear={setSelectedYear}
-              userData={userData}
-              loading={skeleton}
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              firstDayOfMonth={firstDayOfMonth}
-              lastDayOfMonth={lastDayOfMonth}
-            />
 
-            <PieChart
-              skeleton={skeleton}
-              clientDateType="subcategoria"
-              isYearSelected={isYearSelected}
-              setSelectedMonth={setSelectedMonth}
-              setSelectedYear={setSelectedYear}
-              userData={userData}
-              loading={skeleton}
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              firstDayOfMonth={firstDayOfMonth}
-              lastDayOfMonth={lastDayOfMonth}
-            />
-          </div>{" "}
+          <InputSelect
+            label="Ano"
+            options={Array.from({ length: 5 }, (_, index) =>
+              (new Date().getFullYear() - index).toString(),
+            )}
+            value={selectedYear.toString()}
+            onChange={(value) => setSelectedYear(parseInt(value))}
+          />
         </div>
-      </Page>
+        <div className="layout-resumo">
+          <Card
+            footer={
+              <CardFooter>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "var(--s-spacing-xx-small)",
+                  }}
+                >
+                  <Button
+                    skeleton={skeleton}
+                    label="Adicionar ganho"
+                    variant="primary"
+                    size="md"
+                    onClick={() => navigateTo("/pagina-inicial/ganhos")}
+                  />
+                  <Button
+                    skeleton={skeleton}
+                    label="Consultar ganhos"
+                    variant="secondary"
+                    size="md"
+                    onClick={() => navigateTo("/pagina-inicial/ganhos")}
+                  />
+                </div>
+              </CardFooter>
+            }
+            header={<CardHeader title="Ganhos" description={``} />}
+            content={
+              <CardContent>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "var(--s-spacing-nano)",
+                  }}
+                >
+                  {skeleton === true ? (
+                    <>
+                      <Skeleton height="24" width="100" />
+                    </>
+                  ) : (
+                    <h1 className="dinheiro">
+                      R$ {showSaldo ? sumGanhos() : "•••••••"}
+                    </h1>
+                  )}
+                  <div
+                    className={`porcentagem-ganhos ${
+                      ganhoPercentageChange === 0
+                        ? "neutral"
+                        : ganhoPercentageChange > 0
+                          ? "positivo"
+                          : "negativo"
+                    }`}
+                  >
+                    {previousMonthGanhos === 0 && currentMonthGanhos === 0 ? (
+                      <small>Você ainda não registrou nenhuma entrada</small>
+                    ) : previousMonthGanhos === 0 ? (
+                      <small>
+                        +R${" "}
+                        {currentMonthGanhos
+                          .toFixed(2)
+                          .toString()
+                          .replace(".", ",")}{" "}
+                        ( 100%) comparado ao período anterior
+                        <strong className="material-symbols-outlined sm">
+                          trending_up
+                        </strong>
+                      </small>
+                    ) : (
+                      <small>
+                        {ganhoPercentageChange < 0 ? "-" : "+"}
+                        R${" "}
+                        {ganhoAmount
+                          .toFixed(2)
+                          .toString()
+                          .replace(".", ",")
+                          .replace("-", "")}{" "}
+                        (
+                        {ganhoPercentageChange
+                          .toFixed(2)
+                          .toString()
+                          .replace(".", ",")}
+                        %) comparado ao período anterior
+                        <strong className="material-symbols-outlined sm">
+                          {ganhoPercentageChange < 0
+                            ? "trending_down"
+                            : "trending_up"}
+                        </strong>
+                      </small>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            }
+          />
+          <Card
+            header={<CardHeader title="Despesas" description={``} />}
+            content={
+              <CardContent>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "var(--s-spacing-nano)",
+                  }}
+                >
+                  {skeleton === true ? (
+                    <>
+                      <Skeleton height="24" width="100" />
+                    </>
+                  ) : (
+                    <h1 className="dinheiro">
+                      R$ {showSaldo ? sumDespesas() : "•••••••"}
+                    </h1>
+                  )}
+
+                  <div
+                    className={`porcentagem-despesas ${
+                      despesasPercentageChange === 0
+                        ? "neutral"
+                        : despesasPercentageChange > 0
+                          ? "negativo"
+                          : "positivo"
+                    }`}
+                  >
+                    {previousMonthDespesas === 0 &&
+                    currentMonthDespesas === 0 ? (
+                      <small>Você ainda não registrou nenhuma despesa</small>
+                    ) : previousMonthDespesas === 0 ? (
+                      <small>
+                        {despesasPercentageChange > 0 ? "-" : "+"}
+                        {currentMonthDespesas
+                          .toFixed(2)
+                          .toString()
+                          .replace(".", ",")}{" "}
+                        (100%) comparado ao período anterior
+                        <strong className="material-symbols-outlined sm">
+                          trending_up
+                        </strong>
+                      </small>
+                    ) : (
+                      <small>
+                        {despesasPercentageChange > 0 ? "-" : "+"}
+                        R${" "}
+                        {despesasAmount
+                          .toFixed(2)
+                          .toString()
+                          .replace(".", ",")
+                          .replace("-", "")}{" "}
+                        (
+                        {despesasPercentageChange
+                          .toFixed(2)
+                          .toString()
+                          .replace(".", ",")}
+                        %) comparado ao período anterior
+                        <strong className="material-symbols-outlined sm">
+                          {despesasPercentageChange > 0
+                            ? "trending_down"
+                            : "trending_up"}
+                        </strong>
+                      </small>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            }
+            footer={
+              <CardFooter>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "var(--s-spacing-xx-small)",
+                  }}
+                >
+                  <Button
+                    skeleton={skeleton}
+                    label="Adicionar despesa"
+                    variant="primary"
+                    size="md"
+                    onClick={() => navigateTo("/pagina-inicial/despesas")}
+                  />
+                  <Button
+                    skeleton={skeleton}
+                    label="Consultar despesas"
+                    variant="secondary"
+                    size="md"
+                    onClick={() => navigateTo("/pagina-inicial/despesas")}
+                  />
+                </div>
+              </CardFooter>
+            }
+          />
+        </div>
+        <BarChart
+          skeleton={skeleton}
+          isYearSelected={isYearSelected}
+          setSelectedMonth={setSelectedMonth}
+          setSelectedYear={setSelectedYear}
+          userData={userData}
+          loading={skeleton}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          firstDayOfMonth={firstDayOfMonth}
+          lastDayOfMonth={lastDayOfMonth}
+        />
+        <LineChart
+          skeleton={skeleton}
+          isYearSelected={isYearSelected}
+          setSelectedMonth={setSelectedMonth}
+          setSelectedYear={setSelectedYear}
+          userData={userData}
+          loading={skeleton}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          firstDayOfMonth={firstDayOfMonth}
+          lastDayOfMonth={lastDayOfMonth}
+        />
+        <div className="layout-resumo">
+          <PieChart
+            skeleton={skeleton}
+            clientDateType="fonteDeRenda"
+            isYearSelected={isYearSelected}
+            setSelectedMonth={setSelectedMonth}
+            setSelectedYear={setSelectedYear}
+            userData={userData}
+            loading={skeleton}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            firstDayOfMonth={firstDayOfMonth}
+            lastDayOfMonth={lastDayOfMonth}
+          />
+          <PieChart
+            skeleton={skeleton}
+            clientDateType="formaDePagamento"
+            isYearSelected={isYearSelected}
+            setSelectedMonth={setSelectedMonth}
+            setSelectedYear={setSelectedYear}
+            userData={userData}
+            loading={skeleton}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            firstDayOfMonth={firstDayOfMonth}
+            lastDayOfMonth={lastDayOfMonth}
+          />
+        </div>
+        <div className="layout-resumo">
+          <PieChart
+            skeleton={skeleton}
+            clientDateType="categoria"
+            isYearSelected={isYearSelected}
+            setSelectedMonth={setSelectedMonth}
+            setSelectedYear={setSelectedYear}
+            userData={userData}
+            loading={skeleton}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            firstDayOfMonth={firstDayOfMonth}
+            lastDayOfMonth={lastDayOfMonth}
+          />
+
+          <PieChart
+            skeleton={skeleton}
+            clientDateType="subcategoria"
+            isYearSelected={isYearSelected}
+            setSelectedMonth={setSelectedMonth}
+            setSelectedYear={setSelectedYear}
+            userData={userData}
+            loading={skeleton}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            firstDayOfMonth={firstDayOfMonth}
+            lastDayOfMonth={lastDayOfMonth}
+          />
+        </div>{" "}
+      </div>
+    </Page>
   );
 };
 

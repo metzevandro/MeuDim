@@ -36,7 +36,6 @@ export const CriarFonteDeRenda = async (
       },
     });
 
-
     return {
       success: "Fonte de renda criada com sucesso",
       data: { createdAt: date, name: name, id: dbUser.id },
@@ -73,14 +72,18 @@ export const ExcluirFonteDeRenda = async (categoryIds: string[]) => {
     });
 
     if (hasTransactions.length > 0) {
-      return { error: "Não é possível excluir fontes de renda associadas a ganhos" };
+      return {
+        error: "Não é possível excluir fontes de renda associadas a ganhos",
+      };
     }
 
     await db.fonteDeRenda.deleteMany({
       where: { id: { in: categoryIds } },
     });
 
-    return { success: `Fonte${categoryIds.length > 1 ? "s" : ""} de renda excluída${categoryIds.length > 1 ? "s" : ""} com sucesso` };
+    return {
+      success: `Fonte${categoryIds.length > 1 ? "s" : ""} de renda excluída${categoryIds.length > 1 ? "s" : ""} com sucesso`,
+    };
   } catch {
     return { error: "Erro ao excluir as fontes de renda" };
   }

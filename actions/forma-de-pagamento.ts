@@ -69,7 +69,9 @@ export const AtualizarFormaDePagamento = async (
   }
 };
 
-export const ExcluirFormaDePagamento = async (formaDePagamentoIds: string[]) => {
+export const ExcluirFormaDePagamento = async (
+  formaDePagamentoIds: string[],
+) => {
   try {
     const user = await currentUser();
 
@@ -83,7 +85,9 @@ export const ExcluirFormaDePagamento = async (formaDePagamentoIds: string[]) => 
     });
 
     if (formasDePagamento.length !== formaDePagamentoIds.length) {
-      return { error: "Uma ou mais formas de pagamento especificadas não existem" };
+      return {
+        error: "Uma ou mais formas de pagamento especificadas não existem",
+      };
     }
 
     const hasExpenses = await db.expense.findMany({
@@ -91,14 +95,19 @@ export const ExcluirFormaDePagamento = async (formaDePagamentoIds: string[]) => 
     });
 
     if (hasExpenses.length > 0) {
-      return { error: "Não é possível excluir formas de pagamento associadas a despesas" };
+      return {
+        error:
+          "Não é possível excluir formas de pagamento associadas a despesas",
+      };
     }
 
     await db.formaDePagamento.deleteMany({
       where: { id: { in: formaDePagamentoIds } },
     });
 
-    return { success: `Forma${formaDePagamentoIds.length > 1 ? "s" : ""} de pagamento excluída${formaDePagamentoIds.length > 1 ? "s" : ""} com sucesso` };
+    return {
+      success: `Forma${formaDePagamentoIds.length > 1 ? "s" : ""} de pagamento excluída${formaDePagamentoIds.length > 1 ? "s" : ""} com sucesso`,
+    };
   } catch {
     return { error: "Erro ao excluir as formas de pagamento" };
   }

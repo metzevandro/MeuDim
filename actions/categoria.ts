@@ -69,14 +69,18 @@ export const ExcluirCategoria = async (categoryIds: string[]) => {
     });
 
     if (hasExpenses.length > 0) {
-      return { error: "Não é possível excluir categorias associadas a despesas" };
+      return {
+        error: "Não é possível excluir categorias associadas a despesas",
+      };
     }
 
     await db.categoria.deleteMany({
       where: { id: { in: categoryIds } },
     });
 
-    return { success: `Categoria${categoryIds.length > 1 ? "s" : ""} excluída${categoryIds.length > 1 ? "s" : ""} com sucesso` };
+    return {
+      success: `Categoria${categoryIds.length > 1 ? "s" : ""} excluída${categoryIds.length > 1 ? "s" : ""} com sucesso`,
+    };
   } catch {
     return { error: "Erro ao excluir as categorias" };
   }

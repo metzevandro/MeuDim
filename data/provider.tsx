@@ -31,7 +31,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     setUserData(null);
-  };  
+  };
 
   return (
     <UserContext.Provider
@@ -39,7 +39,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     >
       {children}
     </UserContext.Provider>
-  );  
+  );
 };
 
 export const useUser = () => {

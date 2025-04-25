@@ -54,14 +54,12 @@ const SettingsPage = () => {
         name: userData.user.name ?? "",
         email: userData.user.email ?? "",
       };
-      setFormValues(updatedValues); 
-      form.reset(updatedValues);    
+      setFormValues(updatedValues);
+      form.reset(updatedValues);
     }
   }, [userData]);
-  
 
-  const formChanged =
-    form.watch("name") !== formValues.name;
+  const formChanged = form.watch("name") !== formValues.name;
 
   const handleCancel = () => {
     form.reset(formValues); // Reset para os valores iniciais

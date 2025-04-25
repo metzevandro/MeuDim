@@ -159,8 +159,8 @@ export default function CategoryPage() {
     }
   };
   const [updateSelectedRows, setUpdateSelectedRows] = useState<
-      ((ids: string[]) => void) | null
-    >(null);
+    ((ids: string[]) => void) | null
+  >(null);
 
   const atualizarCategoria = async (categoryId: string) => {
     setEditAsideOpen((prev) => ({ ...prev, [categoryId]: false }));
@@ -268,7 +268,7 @@ export default function CategoryPage() {
 
   const renderCategoryActions = (categoryId: string) => {
     const selectedCategory = userData?.user?.categoria.find(
-      (cat: any) => cat.id === categoryId
+      (cat: any) => cat.id === categoryId,
     );
 
     return (
@@ -290,12 +290,13 @@ export default function CategoryPage() {
                 value={form.watch("subcategoria") || ""}
                 onChange={(e) => form.setValue("subcategoria", e.target.value)}
               />
+               <div style={{ width: "min-content" }}>
               <Button
                 label="Adicionar"
                 size="md"
                 variant="primary"
                 onClick={() => adicionarSubcategoria(categoryId)}
-              />
+              /></div>
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {(subcategoriasMap[categoryId] || []).map((subcategoria) => (
@@ -311,6 +312,13 @@ export default function CategoryPage() {
         }
         footer={
           <AsideFooter>
+            <div
+                style={{
+                  width: "min-content",
+                  display: "flex",
+                  gap: "var(--s-spacing-x-small)",
+                }}
+              >
             <Button
               size="md"
               variant="primary"
@@ -322,7 +330,7 @@ export default function CategoryPage() {
               variant="secondary"
               label="Cancelar"
               onClick={() => editingAside(categoryId, null)}
-            />
+            /></div>
           </AsideFooter>
         }
         title="Editar categoria"
@@ -334,53 +342,56 @@ export default function CategoryPage() {
   const columns: string[] = ["Data", "Categoria", "Subcategorias"];
 
   const data = userData?.user?.categoria
-    ? [...userData.user.categoria]
-        .reverse()
-        .map((categoria: any) => {
-          const subcategorias = categoria.subcategorias || [];
-          let totalWidth = 0;
-          const maxWidth = 400;
-          const displayedSubcategorias: any[] = [];
-          let remainingCount = 0;
+    ? [...userData.user.categoria].reverse().map((categoria: any) => {
+        const subcategorias = categoria.subcategorias || [];
+        let totalWidth = 0;
+        const maxWidth = 400;
+        const displayedSubcategorias: any[] = [];
+        let remainingCount = 0;
 
-          subcategorias.forEach((sub: any) => {
-            const subWidth = sub.name.length * 8 + 32;
-            if (totalWidth + subWidth <= maxWidth) {
-              displayedSubcategorias.push(sub);
-              totalWidth += subWidth;
-            } else {
-              remainingCount++;
-            }
-          });
+        subcategorias.forEach((sub: any) => {
+          const subWidth = sub.name.length * 8 + 32;
+          if (totalWidth + subWidth <= maxWidth) {
+            displayedSubcategorias.push(sub);
+            totalWidth += subWidth;
+          } else {
+            remainingCount++;
+          }
+        });
 
-          return {
-            id: categoria.id,
-            Data: new Date(categoria.createdAt).toLocaleDateString("pt-BR"),
-            Categoria: categoria.name,
-            Subcategorias: (
-              <div style={{ display: "flex", gap: "4px", flexWrap: "nowrap" }}>
-                {displayedSubcategorias.map((sub: any) => (
-                  <Badge type="light" variant="primary" key={sub.id} label={sub.name} />
-                ))}
-                {remainingCount > 0 && (
-                  <Badge
-                    type="light"
-                    variant="primary"
-                    label={`+${remainingCount}`}
-                  />
-                )}
-              </div>
-            ),
-          };
-        })
+        return {
+          id: categoria.id,
+          Data: new Date(categoria.createdAt).toLocaleDateString("pt-BR"),
+          Categoria: categoria.name,
+          Subcategorias: (
+            <div style={{ display: "flex", gap: "4px", flexWrap: "nowrap" }}>
+              {displayedSubcategorias.map((sub: any) => (
+                <Badge
+                  type="light"
+                  variant="primary"
+                  key={sub.id}
+                  label={sub.name}
+                />
+              ))}
+              {remainingCount > 0 && (
+                <Badge
+                  type="light"
+                  variant="primary"
+                  label={`+${remainingCount}`}
+                />
+              )}
+            </div>
+          ),
+        };
+      })
     : [];
 
   const isFormValid = form.watch("name") && form.watch("date");
   const userDataIsValid = userData && userData.user;
 
   const handleUpdateSelectedRows = useCallback((updateSelectedRows: any) => {
-      setUpdateSelectedRows(() => updateSelectedRows);
-    }, []);
+    setUpdateSelectedRows(() => updateSelectedRows);
+  }, []);
 
   return (
     <>
@@ -420,7 +431,7 @@ export default function CategoryPage() {
           </div>
         ) : (
           <DataTable
-          minColumnWidths={[0, 0, 420]}
+            minColumnWidths={[0, 0, 420]}
             textRowsSelected={`categoria${selectedIdsForModal.length > 1 ? "s" : ""} selecionada${selectedIdsForModal.length > 1 ? "s" : ""}`}
             skeleton={skeleton}
             rowsPerPage={5}
@@ -482,12 +493,13 @@ export default function CategoryPage() {
                     form.setValue("subcategoria", e.target.value)
                   }
                 />
+                <div style={{ width: "min-content" }}>
                 <Button
                   label="Adicionar"
                   size="md"
                   variant="primary"
                   onClick={() => adicionarSubcategoria("new")}
-                />
+                /></div>
               </div>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 {(subcategoriasMap["new"] || []).map((subcategoria) => (
@@ -574,15 +586,19 @@ export default function CategoryPage() {
         }
         content={
           <ContentModal>
-            <p style={{
-  font: "var(--s-typography-paragraph-regular)",
-  color: "var(--s-color-content-light)",
-  whiteSpace: "normal",
-}}>
-  Esta ação é irreversível. Todo o histórico dessas categorias será perdido. {selectedIdsForModal.length} categoria{selectedIdsForModal.length > 1 ? "s" : ""} ser{selectedIdsForModal.length > 1 ? "ão" : "á"} excluída{selectedIdsForModal.length > 1 ? "s" : ""}.
-</p>
-
-
+            <p
+              style={{
+                font: "var(--s-typography-paragraph-regular)",
+                color: "var(--s-color-content-light)",
+                whiteSpace: "normal",
+              }}
+            >
+              Esta ação é irreversível. Todo o histórico dessas categorias será
+              perdido. {selectedIdsForModal.length} categoria
+              {selectedIdsForModal.length > 1 ? "s" : ""} ser
+              {selectedIdsForModal.length > 1 ? "ão" : "á"} excluída
+              {selectedIdsForModal.length > 1 ? "s" : ""}.
+            </p>
           </ContentModal>
         }
         title="Excluir categorias"

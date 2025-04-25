@@ -313,11 +313,12 @@ const HomePage = () => {
             onChange={(value: string) => {
               form.setValue("categoria", value || "");
               const categoriaSelecionada = userData?.user?.categoria.find(
-                (categoria: any) => categoria.name === value
+                (categoria: any) => categoria.name === value,
               );
-              const novasSubcategorias = categoriaSelecionada?.subcategorias.map(
-                (subcategoria: any) => subcategoria.name
-              ) || [];
+              const novasSubcategorias =
+                categoriaSelecionada?.subcategorias.map(
+                  (subcategoria: any) => subcategoria.name,
+                ) || [];
               setSubcategorias(novasSubcategorias);
               form.setValue("subcategoria", novasSubcategorias[0] || "");
             }}
@@ -596,11 +597,12 @@ const HomePage = () => {
                 onChange={(value: string) => {
                   form.setValue("categoria", value || "");
                   const categoriaSelecionada = userData?.user?.categoria.find(
-                    (categoria: any) => categoria.name === value
+                    (categoria: any) => categoria.name === value,
                   );
-                  const novasSubcategorias = categoriaSelecionada?.subcategorias.map(
-                    (subcategoria: any) => subcategoria.name
-                  ) || [];
+                  const novasSubcategorias =
+                    categoriaSelecionada?.subcategorias.map(
+                      (subcategoria: any) => subcategoria.name,
+                    ) || [];
                   setSubcategorias(novasSubcategorias);
                   form.setValue("subcategoria", novasSubcategorias[0] || "");
                 }}

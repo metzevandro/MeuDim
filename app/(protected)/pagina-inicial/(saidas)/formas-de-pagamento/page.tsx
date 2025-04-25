@@ -63,7 +63,7 @@ export default function CategoryPage() {
 
   useEffect(() => {
     fetchUserData();
-  }, []); 
+  }, []);
 
   const toggleAside = () => {
     setIsAsideOpen(!isAsideOpen);
@@ -130,7 +130,6 @@ export default function CategoryPage() {
         setError(data.error);
         setSuccess("");
         setLoadingError(true);
-
       } else {
         setError("");
         setSuccess(data.success);
@@ -170,7 +169,7 @@ export default function CategoryPage() {
         setError("");
         setSuccess(data.success);
         await fetchUserData();
-        setSelectedRows([]); 
+        setSelectedRows([]);
         if (updateSelectedRows) updateSelectedRows([]);
       }
     } catch (error) {
@@ -344,7 +343,7 @@ export default function CategoryPage() {
             data={data}
             withCheckbox={true}
             onSelectedRowsChange={handleSelectedRowsChange}
-            onUpdateSelectedRows={handleUpdateSelectedRows} 
+            onUpdateSelectedRows={handleUpdateSelectedRows}
             headerSelectedChildren={
               <>
                 <Button
@@ -423,38 +422,39 @@ export default function CategoryPage() {
           footer={
             <FooterModal>
               <div
-              style={{
-                width: "min-content",
-                display: "flex",
-                gap: "var(--s-spacing-x-small)",
-              }}
-            >
-              <Button
-                size="md"
-                variant="warning"
-                label="Excluir"
-                onClick={() => {
-                  excluir(selectedIdsForModal);
-                  setModalOpen(false);
+                style={{
+                  width: "min-content",
+                  display: "flex",
+                  gap: "var(--s-spacing-x-small)",
                 }}
-              />
-              <Button
-                size="md"
-                variant="secondary"
-                label="Cancelar"
-                onClick={() => setModalOpen(false)}
-              /></div>
+              >
+                <Button
+                  size="md"
+                  variant="warning"
+                  label="Excluir"
+                  onClick={() => {
+                    excluir(selectedIdsForModal);
+                    setModalOpen(false);
+                  }}
+                />
+                <Button
+                  size="md"
+                  variant="secondary"
+                  label="Cancelar"
+                  onClick={() => setModalOpen(false)}
+                />
+              </div>
             </FooterModal>
           }
           content={
             <ContentModal>
               <p
-              style={{
-                font: "var(--s-typography-paragraph-regular)",
-                color: "var(--s-color-content-light)",
-                whiteSpace: "normal",
-              }}
-            >
+                style={{
+                  font: "var(--s-typography-paragraph-regular)",
+                  color: "var(--s-color-content-light)",
+                  whiteSpace: "normal",
+                }}
+              >
                 {`Você está prestes a excluir ${selectedIdsForModal.length} forma${selectedIdsForModal.length > 1 ? "s" : ""} de pagamento. Esta ação é irreversível.`}
               </p>
             </ContentModal>

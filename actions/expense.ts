@@ -198,7 +198,9 @@ export const Deletar = async (expenseIds: string[]) => {
       where: { id: { in: expenseIds } },
     });
 
-    return { success: `Despesa${expenseIds.length > 1 ? "s" : ""} deletada${expenseIds.length > 1 ? "s" : ""} com sucesso` };
+    return {
+      success: `Despesa${expenseIds.length > 1 ? "s" : ""} deletada${expenseIds.length > 1 ? "s" : ""} com sucesso`,
+    };
   } catch (error) {
     return { error: "Erro ao deletar as despesas" };
   }

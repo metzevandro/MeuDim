@@ -129,18 +129,18 @@ export default function FonteDeRendaPage() {
         setError(data.error);
         setSuccess("");
         setLoadingError(true);
-        setNotificationOpen(true); 
+        setNotificationOpen(true);
       } else {
         setError("");
         setSuccess(data.success);
-        setNotificationOpen(true); 
+        setNotificationOpen(true);
         await fetchUserData();
       }
     } catch (error) {
       console.error("Error creating income source:", error);
       setError("Ocorreu um erro ao criar a fonte de renda.");
       setLoadingError(true);
-      setNotificationOpen(true); 
+      setNotificationOpen(true);
     } finally {
       stopLoading(loadingInterval, !loadingError);
     }
@@ -180,7 +180,7 @@ export default function FonteDeRendaPage() {
       console.error("Error updating income source:", error);
       setError("Ocorreu um erro ao atualizar a fonte de renda.");
       setLoadingError(true);
-      setNotificationOpen(true); 
+      setNotificationOpen(true);
     } finally {
       stopLoading(loadingInterval, !loadingError);
     }
@@ -309,9 +309,7 @@ export default function FonteDeRendaPage() {
         }
       >
         <AuthProgress loading={loading} error={loadingError} />
-        {(
-          userDataIsValid ? userData.user.categories.length < 1 : undefined
-        ) ? (
+        {(userDataIsValid ? userData.user.categories.length < 1 : undefined) ? (
           <div
             style={{
               display: "flex",
@@ -422,26 +420,40 @@ export default function FonteDeRendaPage() {
           hideModal={() => setModalOpen(false)}
           footer={
             <FooterModal>
-              <Button
-                size="md"
-                variant="warning"
-                label="Excluir"
-                onClick={() => {
-                  excluir(selectedIdsForModal);
-                  setModalOpen(false);
+              <div
+                style={{
+                  width: "min-content",
+                  display: "flex",
+                  gap: "var(--s-spacing-x-small)",
                 }}
-              />
-              <Button
-                size="md"
-                variant="secondary"
-                label="Cancelar"
-                onClick={() => setModalOpen(false)}
-              />
+              >
+                <Button
+                  size="md"
+                  variant="warning"
+                  label="Excluir"
+                  onClick={() => {
+                    excluir(selectedIdsForModal);
+                    setModalOpen(false);
+                  }}
+                />
+                <Button
+                  size="md"
+                  variant="secondary"
+                  label="Cancelar"
+                  onClick={() => setModalOpen(false)}
+                />
+              </div>
             </FooterModal>
           }
           content={
             <ContentModal>
-              <p>
+              <p
+                style={{
+                  font: "var(--s-typography-paragraph-regular)",
+                  color: "var(--s-color-content-light)",
+                  whiteSpace: "normal",
+                }}
+              >
                 {`Você está prestes a excluir ${selectedIdsForModal.length} fonte${selectedIdsForModal.length > 1 ? "s" : ""} de renda. Esta ação é irreversível.`}
               </p>
             </ContentModal>

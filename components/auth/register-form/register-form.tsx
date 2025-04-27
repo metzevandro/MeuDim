@@ -218,14 +218,14 @@ export const RegisterForm = () => {
         </div>
         <div className="sign-up-image">
           <div className="sign-up-video" />
-          <video 
-  src="/video.mp4" 
-  autoPlay 
-  muted 
-  loop 
-  playsInline 
-  webkit-playsinline 
-/>
+          <video
+            src="/video.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            webkit-playsinline
+          />
         </div>
       </div>
       {error && (

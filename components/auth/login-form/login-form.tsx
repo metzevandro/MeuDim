@@ -109,14 +109,14 @@ export const LoginForm = () => {
         </div>
         <div className="login-image">
           <div className="login-video" />
-          <video 
-  src="/video.mp4" 
-  autoPlay 
-  muted 
-  loop 
-  playsInline 
-  webkit-playsinline 
-/>
+          <video
+            src="/video.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            webkit-playsinline
+          />
         </div>
       </div>
       {error && (

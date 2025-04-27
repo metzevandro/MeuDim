@@ -290,13 +290,14 @@ export default function CategoryPage() {
                 value={form.watch("subcategoria") || ""}
                 onChange={(e) => form.setValue("subcategoria", e.target.value)}
               />
-               <div style={{ width: "min-content" }}>
-              <Button
-                label="Adicionar"
-                size="md"
-                variant="primary"
-                onClick={() => adicionarSubcategoria(categoryId)}
-              /></div>
+              <div style={{ width: "min-content" }}>
+                <Button
+                  label="Adicionar"
+                  size="md"
+                  variant="primary"
+                  onClick={() => adicionarSubcategoria(categoryId)}
+                />
+              </div>
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {(subcategoriasMap[categoryId] || []).map((subcategoria) => (
@@ -313,24 +314,25 @@ export default function CategoryPage() {
         footer={
           <AsideFooter>
             <div
-                style={{
-                  width: "min-content",
-                  display: "flex",
-                  gap: "var(--s-spacing-x-small)",
-                }}
-              >
-            <Button
-              size="md"
-              variant="primary"
-              label="Atualizar"
-              onClick={() => atualizarCategoria(categoryId)}
-            />
-            <Button
-              size="md"
-              variant="secondary"
-              label="Cancelar"
-              onClick={() => editingAside(categoryId, null)}
-            /></div>
+              style={{
+                width: "min-content",
+                display: "flex",
+                gap: "var(--s-spacing-x-small)",
+              }}
+            >
+              <Button
+                size="md"
+                variant="primary"
+                label="Atualizar"
+                onClick={() => atualizarCategoria(categoryId)}
+              />
+              <Button
+                size="md"
+                variant="secondary"
+                label="Cancelar"
+                onClick={() => editingAside(categoryId, null)}
+              />
+            </div>
           </AsideFooter>
         }
         title="Editar categoria"
@@ -494,12 +496,13 @@ export default function CategoryPage() {
                   }
                 />
                 <div style={{ width: "min-content" }}>
-                <Button
-                  label="Adicionar"
-                  size="md"
-                  variant="primary"
-                  onClick={() => adicionarSubcategoria("new")}
-                /></div>
+                  <Button
+                    label="Adicionar"
+                    size="md"
+                    variant="primary"
+                    onClick={() => adicionarSubcategoria("new")}
+                  />
+                </div>
               </div>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 {(subcategoriasMap["new"] || []).map((subcategoria) => (

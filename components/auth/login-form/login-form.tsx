@@ -12,9 +12,10 @@ import { login } from "@/actions/login";
 
 import "./login-form.scss";
 
-const InputWithRef = forwardRef<HTMLInputElement, React.ComponentProps<typeof Input>>((props, ref) => (
-  <Input {...props} inputRef={ref} />
-));
+const InputWithRef = forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input>
+>((props, ref) => <Input {...props} inputRef={ref} />);
 InputWithRef.displayName = "InputWithRef";
 
 export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
@@ -116,13 +117,7 @@ export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
         </div>
         <div className="login-image">
           <div className="login-video" />
-          <video
-            src="/video.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
+          <video src="/video.mp4" autoPlay muted loop playsInline />
         </div>
       </div>
       {error && (

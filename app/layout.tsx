@@ -8,7 +8,8 @@ import { SessionProvider } from "next-auth/react";
 import React from "react";
 import LayoutPage from "@/app/(protected)/_components/layout";
 import Provider from "./(protected)/_components/provider";
-import Loader from "./(protected)/_components/loader"; 
+import Loader from "./(protected)/_components/loader";
+import Head from "next/head";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -27,6 +28,12 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <html lang="pt-br" data-company="whitelabel">
+        <Head>
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+          />
+        </Head>
         <body className={inter.className}>
           <Loader>
             <Provider>

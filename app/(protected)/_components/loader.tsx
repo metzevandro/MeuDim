@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Inter } from "next/font/google";
-import Image from 'next/image';
+import Image from "next/image";
 
-import './styles.scss';
+import "./styles.scss";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Loader({ children }: { children: React.ReactNode }) {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [positionY, setPositionY] = useState(1); 
+  const [positionY, setPositionY] = useState(1);
   const [direction, setDirection] = useState(1);
 
   const fontsReady = useRef(false);
@@ -19,7 +19,7 @@ export default function Loader({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const animate = () => {
       setPositionY((prev) => {
-        const next = prev + direction * 0.3; 
+        const next = prev + direction * 0.3;
         if (next > 10) {
           setDirection(-1);
           return 10;

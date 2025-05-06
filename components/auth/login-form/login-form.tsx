@@ -1,5 +1,6 @@
 import React, { useState, useTransition, forwardRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +16,7 @@ import "./login-form.scss";
 const InputWithRef = forwardRef<HTMLInputElement, React.ComponentProps<typeof Input>>((props, ref) => (
   <Input {...props} inputRef={ref} />
 ));
+InputWithRef.displayName = "InputWithRef";
 
 export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -65,7 +67,7 @@ export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
       <div className="login-page" ref={ref}>
         <div className="login-card">
           <div className="login-form">
-            <img src="/MeuDim-Icon.svg" alt="" height={48} />
+            <Image src="/MeuDim-Icon.svg" alt="MeuDim Icon" height={48} width={48} />
             <header>
               <h1>Que bom ter você de volta</h1>
             </header>
@@ -145,3 +147,4 @@ export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
     </>
   );
 });
+LoginForm.displayName = "LoginForm";

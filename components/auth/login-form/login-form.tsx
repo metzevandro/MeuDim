@@ -1,4 +1,4 @@
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, forwardRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useForm } from "react-hook-form";
@@ -12,7 +12,11 @@ import { login } from "@/actions/login";
 
 import "./login-form.scss";
 
-export const LoginForm = () => {
+const InputWithRef = forwardRef<HTMLInputElement, React.ComponentProps<typeof Input>>((props, ref) => (
+  <Input {...props} inputRef={ref} />
+));
+
+export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const searchParams = useSearchParams();
   const urlError =
@@ -58,7 +62,7 @@ export const LoginForm = () => {
 
   return (
     <>
-      <div className="login-page">
+      <div className="login-page" ref={ref}>
         <div className="login-card">
           <div className="login-form">
             {/* <img src="/MeuDim-Icon.svg" alt="" height={48} /> */}
@@ -67,7 +71,7 @@ export const LoginForm = () => {
             </header>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="input-field">
-                <Input
+                <InputWithRef
                   disabled={isPending}
                   error={!!errors.email}
                   {...form.register("email")}
@@ -76,8 +80,9 @@ export const LoginForm = () => {
                   placeholder="carlos@gmail.com"
                   name="email"
                   onChange={(e) => form.setValue("email", e.target.value)}
+                  autoComplete="email"
                 />
-                <Input
+                <InputWithRef
                   disabled={isPending}
                   textError={errors.password?.message}
                   error={!!errors.password}
@@ -88,6 +93,7 @@ export const LoginForm = () => {
                   name="password"
                   onChange={(e) => form.setValue("password", e.target.value)}
                   value={form.watch("password")}
+                  autoComplete="current-password"
                 />
               </div>
 
@@ -115,7 +121,6 @@ export const LoginForm = () => {
             muted
             loop
             playsInline
-            webkit-playsinline
           />
         </div>
       </div>
@@ -139,4 +144,4 @@ export const LoginForm = () => {
       )}
     </>
   );
-};
+});

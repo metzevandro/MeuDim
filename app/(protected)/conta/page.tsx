@@ -1,6 +1,6 @@
 "use client";
 import { useUser } from "@/data/provider";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,7 +31,7 @@ const SettingsPage = () => {
     defaultValues: formValues,
   });
 
-  const fetchUserData = useCallback(async () => {
+  async function fetchUserData() {
     try {
       const response = await fetch(`${API}/api/auth/session`);
       if (!response.ok) {
@@ -42,11 +42,11 @@ const SettingsPage = () => {
     } catch (error) {
       console.log(error);
     }
-  }, [setUserData]);
+  }
 
   useEffect(() => {
     fetchUserData();
-  }, [fetchUserData]);
+  }, []);
 
   useEffect(() => {
     if (userData?.user) {
@@ -57,7 +57,7 @@ const SettingsPage = () => {
       setFormValues(updatedValues);
       form.reset(updatedValues);
     }
-  }, [userData, form]);
+  }, [userData]);
 
   const formChanged = form.watch("name") !== formValues.name;
 

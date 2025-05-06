@@ -47,12 +47,10 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 
-  const fetchUserData = useCallback(async () => {
+  async function fetchUserData() {
     try {
       const response = await fetch(`${API}/api/auth/session`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-      }
+      if (!response.ok) throw new Error("Failed to fetch user data");
       const userData = await response.json();
       setUserData(userData);
       setLoadingError(!userData?.user?.formaDePagamento);
@@ -61,11 +59,11 @@ export default function CategoryPage() {
       console.error("Error fetching user data:", error);
       setLoadingError(true);
     }
-  }, [setUserData]);
+  }
 
   useEffect(() => {
     fetchUserData();
-  }, [fetchUserData]);
+  }, []);
 
   const toggleAside = () => {
     setIsAsideOpen(!isAsideOpen);

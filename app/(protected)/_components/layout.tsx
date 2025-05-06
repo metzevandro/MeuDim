@@ -25,7 +25,7 @@ interface LayoutProps {
 
 const LayoutPage = (props: LayoutProps) => {
   const { userData, skeleton, fetchUserData } = useUser();
-  const pathname = usePathname();
+  const pathname = usePathname() || "";
   const router = useRouter();
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -48,7 +48,7 @@ const LayoutPage = (props: LayoutProps) => {
   useEffect(() => {
     fetchUserData();
     setIsMounted(true);
-  }, [fetchUserData]);
+  }, []);
 
   const isMobile = () => {
     if (typeof window !== "undefined") {
@@ -58,7 +58,7 @@ const LayoutPage = (props: LayoutProps) => {
   };
 
   const getBreadcrumbItems = () => {
-    const pathnames = (pathname ?? "").split("/").filter((x) => x);
+    const pathnames = pathname.split("/").filter((x) => x);
 
     const items = pathnames.map((path, index) => {
       let pageName = path.charAt(0).toUpperCase() + path.slice(1);

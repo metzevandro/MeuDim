@@ -18,6 +18,7 @@ import { BarChart } from "@/components/charts/BarChart/BarChart";
 import { LineChart } from "@/components/charts/LineChart/LineChart";
 import { Expense, Transaction } from "@/actions/fetch";
 import { useUser } from "@/data/provider";
+import LayoutPage from "@/app/(protected)/_components/layout";
 
 const HomePage = () => {
   const { userData, skeleton, fetchUserData } = useUser();
@@ -52,11 +53,7 @@ const HomePage = () => {
     if (!userData?.user) {
       fetchUserData();
     }
-  }, [userData, fetchUserData]);
-
-  useEffect(() => {
-    fetchUserData();
-  }, [fetchUserData]);
+  }, [userData]);
 
   const navigateTo = (route: string) => {
     router.push(route);

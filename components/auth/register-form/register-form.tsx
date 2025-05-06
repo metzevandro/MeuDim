@@ -151,7 +151,7 @@ export const RegisterForm = () => {
       <div className="sign-up-page">
         <div className="sign-up-card">
           <div className="sign-up-form">
-            {/* <img src="/MeuDim-Icon.svg" alt="" height={48} /> */}
+            <img src="/MeuDim-Icon.svg" alt="" height={48} />
             <header>
               <h1>Crie sua conta grátis</h1>
               <p>

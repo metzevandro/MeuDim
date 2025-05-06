@@ -50,7 +50,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(0);
   const [loadingError, setLoadingError] = useState(false);
 
-  const fetchUserData = useCallback(async () => {
+  async function fetchUserData() {
     try {
       const response = await fetch(`${API}/api/auth/session`);
       if (!response.ok) {
@@ -58,14 +58,15 @@ const HomePage = () => {
       }
       const userData = await response.json();
       setUserData(userData);
+      setLoading(0);
     } catch (error) {
       console.log(error);
     }
-  }, [setUserData]);
+  }
 
   useEffect(() => {
     fetchUserData();
-  }, [fetchUserData]);
+  }, []);
 
   const toggleModal = (selectedIds: string[]) => {
     setSelectedIdsForModal(selectedIds);

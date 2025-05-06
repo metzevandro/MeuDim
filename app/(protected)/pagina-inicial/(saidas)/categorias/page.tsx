@@ -57,7 +57,7 @@ export default function CategoryPage() {
     },
   });
 
-  async function fetchUserData() {
+  const fetchUserData = useCallback(async () => {
     try {
       const response = await fetch(`${API}/api/auth/session`);
       if (!response.ok) {
@@ -69,7 +69,7 @@ export default function CategoryPage() {
     } catch (error) {
       console.log(error);
     }
-  }
+  }, [setUserData]);
 
   useEffect(() => {
     fetchUserData();

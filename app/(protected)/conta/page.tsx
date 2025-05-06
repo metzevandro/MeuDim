@@ -1,6 +1,6 @@
 "use client";
 import { useUser } from "@/data/provider";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,7 +31,7 @@ const SettingsPage = () => {
     defaultValues: formValues,
   });
 
-  async function fetchUserData() {
+  const fetchUserData = useCallback(async () => {
     try {
       const response = await fetch(`${API}/api/auth/session`);
       if (!response.ok) {
@@ -42,7 +42,7 @@ const SettingsPage = () => {
     } catch (error) {
       console.log(error);
     }
-  }
+  }, [setUserData]);
 
   useEffect(() => {
     fetchUserData();

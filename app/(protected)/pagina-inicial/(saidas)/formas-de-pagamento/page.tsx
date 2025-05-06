@@ -63,7 +63,7 @@ export default function CategoryPage() {
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [fetchUserData]);
 
   const toggleAside = () => {
     setIsAsideOpen(!isAsideOpen);

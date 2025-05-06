@@ -55,6 +55,10 @@ const HomePage = () => {
     }
   }, [userData]);
 
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
   const navigateTo = (route: string) => {
     router.push(route);
   };

@@ -61,7 +61,7 @@ const HomePage = () => {
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [fetchUserData]);
 
   const toggleModal = (selectedIds: string[]) => {
     setSelectedIdsForModal(selectedIds);

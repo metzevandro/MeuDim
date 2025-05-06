@@ -73,7 +73,7 @@ export default function CategoryPage() {
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [fetchUserData]);
 
   useEffect(() => {
     if (userData?.user?.categoria) {

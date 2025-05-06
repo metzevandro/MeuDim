@@ -15,6 +15,7 @@ import "./login-form.scss";
 const InputWithRef = forwardRef<HTMLInputElement, React.ComponentProps<typeof Input>>((props, ref) => (
   <Input {...props} inputRef={ref} />
 ));
+InputWithRef.displayName = "InputWithRef";
 
 export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -145,3 +146,4 @@ export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
     </>
   );
 });
+LoginForm.displayName = "LoginForm";

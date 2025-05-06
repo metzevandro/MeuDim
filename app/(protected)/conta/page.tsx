@@ -46,7 +46,7 @@ const SettingsPage = () => {
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [fetchUserData]);
 
   useEffect(() => {
     if (userData?.user) {
@@ -57,7 +57,7 @@ const SettingsPage = () => {
       setFormValues(updatedValues);
       form.reset(updatedValues);
     }
-  }, [userData]);
+  }, [userData, form]);
 
   const formChanged = form.watch("name") !== formValues.name;
 

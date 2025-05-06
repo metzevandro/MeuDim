@@ -62,7 +62,7 @@ export default function FonteDeRendaPage() {
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [fetchUserData]);
 
   const toggleAside = () => {
     setIsAsideOpen(!isAsideOpen);

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Inter } from "next/font/google";
+import Image from 'next/image';
 
 import './styles.scss';
 
@@ -56,9 +57,11 @@ export default function Loader({ children }: { children: React.ReactNode }) {
   if (!fontsLoaded) {
     return (
       <div className="loader">
-        <img
+        <Image
           src="/meuDim.svg"
           alt="Loading"
+          width={100}
+          height={100}
           className="oscillating-image"
           style={{ transform: `translateY(${positionY}px)` }}
         />

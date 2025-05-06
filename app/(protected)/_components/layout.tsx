@@ -48,7 +48,7 @@ const LayoutPage = (props: LayoutProps) => {
   useEffect(() => {
     fetchUserData();
     setIsMounted(true);
-  }, []);
+  }, [fetchUserData]);
 
   const isMobile = () => {
     if (typeof window !== "undefined") {

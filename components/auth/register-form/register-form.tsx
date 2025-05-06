@@ -24,7 +24,6 @@ import { RegisterSchema } from "@/schemas/index";
 import { register } from "@/actions/register";
 import { login } from "@/actions/login";
 import { createInitialData } from "@/actions/createInitialData";
-import { useUser } from "@/data/provider"; // Importar o hook useUser
 
 // Styles
 import "./register-form.scss";

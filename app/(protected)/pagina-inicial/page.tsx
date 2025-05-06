@@ -52,7 +52,7 @@ const HomePage = () => {
     if (!userData?.user) {
       fetchUserData();
     }
-  }, [userData]);
+  }, [userData, fetchUserData]);
 
   useEffect(() => {
     fetchUserData();

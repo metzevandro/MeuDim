@@ -22,7 +22,7 @@ export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const searchParams = useSearchParams();
   const urlError =
-    searchParams.get("error") === "OAuthAccountNotLinked"
+    searchParams?.get("error") === "OAuthAccountNotLinked"
       ? "O email já esta em uso"
       : "";
   const [error, setError] = useState<string | undefined>("");

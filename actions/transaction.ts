@@ -22,13 +22,19 @@ export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
     const { date, category, amount } = validatedFields;
 
     const [day, month, year] = date.split("/");
+
     const formattedDate = new Date(
-      parseInt(year, 10),
-      parseInt(month, 10) - 1,
-      parseInt(day, 10),
+      Date.UTC(
+        parseInt(year, 10),
+        parseInt(month, 10) - 1,
+        parseInt(day, 10),
+        12,
+        0,
+        0
+      )
     );
 
-    if (isNaN(formattedDate.getTime() + 10)) {
+    if (isNaN(formattedDate.getTime())) {
       return { error: "Data inválida" };
     }
 
@@ -116,13 +122,19 @@ export const Atualizar = async (
     const { date, category, amount } = validatedFields;
 
     const [day, month, year] = date.split("/");
+
     const formattedDate = new Date(
-      parseInt(year, 10),
-      parseInt(month, 10) - 1,
-      parseInt(day, 10),
+      Date.UTC(
+        parseInt(year, 10),
+        parseInt(month, 10) - 1,
+        parseInt(day, 10),
+        12,
+        0,
+        0
+      )
     );
 
-    if (isNaN(formattedDate.getTime() + 10)) {
+    if (isNaN(formattedDate.getTime())) {
       return { error: "Data inválida" };
     }
 

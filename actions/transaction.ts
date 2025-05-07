@@ -28,7 +28,7 @@ export const Criar = async (values: z.infer<typeof TransactionSchema>) => {
       parseInt(day, 10),
     );
 
-    if (isNaN(formattedDate.getTime())) {
+    if (isNaN(formattedDate.getTime() + 10)) {
       return { error: "Data inválida" };
     }
 
@@ -122,7 +122,7 @@ export const Atualizar = async (
       parseInt(day, 10),
     );
 
-    if (isNaN(formattedDate.getTime())) {
+    if (isNaN(formattedDate.getTime() + 10)) {
       return { error: "Data inválida" };
     }
 

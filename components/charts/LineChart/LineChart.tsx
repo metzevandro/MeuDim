@@ -37,6 +37,20 @@ function generateDatesInMonth(year: number, month: number): Date[] {
   return dates;
 }
 
+function generateDatesInYear(year: number): Date[] {
+  const dates: Date[] = [];
+  const start = new Date(year, 0, 1);
+  const end = new Date(year, 11, 31);
+  for (
+    let d = new Date(start);
+    d <= end;
+    d.setDate(d.getDate() + 1)
+  ) {
+    dates.push(new Date(d));
+  }
+  return dates;
+}
+
 export function LineChart({
   userData,
   selectedMonth,
@@ -72,18 +86,13 @@ export function LineChart({
 
   const dataArea =
     selectedMonth === 12
-      ? Array.from({ length: 12 }, (_, month) => {
-          const firstDay = new Date(selectedYear, month, 1);
-          const lastDay = new Date(selectedYear, month + 1, 0);
-          const formattedDate = firstDay.toLocaleString("pt-BR", {
-            month: "short",
-            year: "numeric",
-          });
+      ? generateDatesInYear(selectedYear).map((date) => {
+          const formattedDate = getFormattedDate(date);
 
           const transactionsUntilDate =
             userData?.user?.transactions?.filter((transaction: any) => {
               const transactionDate = new Date(transaction.createdAt);
-              return transactionDate <= lastDay;
+              return transactionDate <= date;
             }) || [];
 
           const totalGanhos = transactionsUntilDate.reduce(
@@ -95,7 +104,7 @@ export function LineChart({
           const expensesUntilDate =
             userData?.user?.expense?.filter((expense: any) => {
               const expenseDate = new Date(expense.createdAt);
-              return expenseDate <= lastDay;
+              return expenseDate <= date;
             }) || [];
 
           const totalDespesas = expensesUntilDate.reduce(

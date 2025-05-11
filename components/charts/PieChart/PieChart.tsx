@@ -77,10 +77,14 @@ export function PieChart({
     if (Array.isArray(expenses) && expenses.length > 0) {
       expenses.forEach((item: any) => {
         const itemDate = new Date(item.createdAt);
-        if (
-          itemDate >= new Date(firstDayOfMonth) &&
-          itemDate <= new Date(lastDayOfMonth)
-        ) {
+
+        const isInPeriod =
+          selectedMonth === 12
+            ? itemDate.getFullYear() === selectedYear
+            : itemDate >= new Date(firstDayOfMonth) &&
+              itemDate <= new Date(lastDayOfMonth);
+
+        if (isInPeriod) {
           let key = "";
           if (clientDateType === "formaDePagamento") {
             key = item.formaDePagamentoId;

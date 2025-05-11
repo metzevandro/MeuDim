@@ -41,11 +41,7 @@ function generateDatesInYear(year: number): Date[] {
   const dates: Date[] = [];
   const start = new Date(year, 0, 1);
   const end = new Date(year, 11, 31);
-  for (
-    let d = new Date(start);
-    d <= end;
-    d.setDate(d.getDate() + 1)
-  ) {
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
     dates.push(new Date(d));
   }
   return dates;

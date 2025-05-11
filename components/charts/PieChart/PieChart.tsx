@@ -14,6 +14,7 @@ interface PieData {
   fill: string;
   quantity: number;
   keyName: string;
+  others?: PieData[];
 }
 
 interface LineChartProps {
@@ -66,29 +67,41 @@ export function PieChart({
     };
   }, []);
 
-  const processFormaDePagamento = () => {
+  const processData = () => {
     const totals: { [key: string]: number } = {};
-    if (
-      Array.isArray(userData?.user?.expense) &&
-      userData.user.expense.length > 0
-    ) {
-      userData.user.expense.forEach((expense: any) => {
-        const expenseDate = new Date(expense.createdAt);
+    const expenses =
+      clientDateType === "fonteDeRenda"
+        ? userData?.user?.transactions
+        : userData?.user?.expense;
+
+    if (Array.isArray(expenses) && expenses.length > 0) {
+      expenses.forEach((item: any) => {
+        const itemDate = new Date(item.createdAt);
         if (
-          expenseDate >= new Date(firstDayOfMonth) &&
-          expenseDate <= new Date(lastDayOfMonth)
+          itemDate >= new Date(firstDayOfMonth) &&
+          itemDate <= new Date(lastDayOfMonth)
         ) {
-          const formaDePagamentoId = expense.formaDePagamentoId;
+          let key = "";
+          if (clientDateType === "formaDePagamento") {
+            key = item.formaDePagamentoId;
+          } else if (clientDateType === "categoria") {
+            key = item.categoriaId;
+          } else if (clientDateType === "subcategoria") {
+            key = item.subcategoriaId;
+          } else if (clientDateType === "fonteDeRenda") {
+            key = item.categoryId;
+          }
+
           const amountString =
-            typeof expense.amount === "string"
-              ? expense.amount
-              : expense.amount?.toString() || "0";
+            typeof item.amount === "string"
+              ? item.amount
+              : item.amount?.toString() || "0";
           const amount = parseFloat(amountString.replace(",", ".")) || 0;
 
-          if (totals[formaDePagamentoId]) {
-            totals[formaDePagamentoId] += amount;
+          if (totals[key]) {
+            totals[key] += amount;
           } else {
-            totals[formaDePagamentoId] = amount;
+            totals[key] = amount;
           }
         }
       });
@@ -96,142 +109,84 @@ export function PieChart({
     return totals;
   };
 
-  const processCategoria = () => {
-    const categoriaTotals: { [categoriaId: string]: number } = {};
-    if (
-      Array.isArray(userData?.user?.expense) &&
-      userData.user.expense.length > 0
-    ) {
-      userData.user.expense.forEach((expense: any) => {
-        const expenseDate = new Date(expense.createdAt);
-        if (
-          expenseDate >= new Date(firstDayOfMonth) &&
-          expenseDate <= new Date(lastDayOfMonth)
-        ) {
-          const categoriaId = expense.categoriaId;
-          const amountString =
-            typeof expense.amount === "string"
-              ? expense.amount
-              : expense.amount?.toString() || "0";
-          const amount = parseFloat(amountString.replace(",", ".")) || 0;
-
-          if (categoriaTotals[categoriaId]) {
-            categoriaTotals[categoriaId] += amount;
-          } else {
-            categoriaTotals[categoriaId] = amount;
-          }
-        }
-      });
+  const getNameById = (key: string): string => {
+    if (clientDateType === "formaDePagamento") {
+      return (
+        userData?.user?.formaDePagamento.find((forma: any) => forma.id === key)
+          ?.name || "Forma de Pagamento Desconhecida"
+      );
+    } else if (clientDateType === "categoria") {
+      return (
+        userData?.user?.categoria.find((categoria: any) => categoria.id === key)
+          ?.name || "Categoria Desconhecida"
+      );
+    } else if (clientDateType === "subcategoria") {
+      const subcategoria = userData?.user?.categoria
+        ?.flatMap((cat: any) => cat.subcategorias || [])
+        ?.find((sub: any) => sub.id === key);
+      return subcategoria?.name || `Subcategoria Desconhecida (${key})`;
+    } else if (clientDateType === "fonteDeRenda") {
+      return (
+        userData?.user?.categories.find((category: any) => category.id === key)
+          ?.name || "Fonte de Renda Desconhecida"
+      );
     }
-    return categoriaTotals;
+    return "Desconhecido";
   };
 
-  const processFonteDeRenda = () => {
-    const totals: { [key: string]: number } = {};
-    if (
-      Array.isArray(userData?.user?.transactions) &&
-      userData.user.transactions.length > 0
-    ) {
-      userData.user.transactions.forEach((transaction: any) => {
-        const transactionDate = new Date(transaction.createdAt);
-        if (
-          transactionDate >= new Date(firstDayOfMonth) &&
-          transactionDate <= new Date(lastDayOfMonth)
-        ) {
-          const categoryId = transaction.categoryId;
-          const amountString =
-            typeof transaction.amount === "string"
-              ? transaction.amount
-              : transaction.amount?.toString() || "0";
-          const amount = parseFloat(amountString.replace(",", ".")) || 0;
+  const defaultColors = [
+    "var(--s-color-chart-1)",
+    "var(--s-color-chart-2)",
+    "var(--s-color-chart-3)",
+    "var(--s-color-chart-4)",
+    "var(--s-color-chart-5)",
+    "var(--s-color-chart-6)",
+    "var(--s-color-chart-7)",
+    "var(--s-color-chart-8)",
+    "var(--s-color-chart-9)",
+    "var(--s-color-chart-10)",
+  ];
 
-          if (totals[categoryId]) {
-            totals[categoryId] += amount;
-          } else {
-            totals[categoryId] = amount;
-          }
-        }
-      });
-    }
-    return totals;
-  };
+  const rawData = processData();
 
-  const processSubcategoria = () => {
-    const totals: { [key: string]: number } = {};
-    if (
-      Array.isArray(userData?.user?.expense) &&
-      userData.user.expense.length > 0
-    ) {
-      userData.user.expense.forEach((expense: any) => {
-        const expenseDate = new Date(expense.createdAt);
-        if (
-          expenseDate >= new Date(firstDayOfMonth) &&
-          expenseDate <= new Date(lastDayOfMonth)
-        ) {
-          const subcategoriaId = expense.subcategoriaId;
-          const amountString =
-            typeof expense.amount === "string"
-              ? expense.amount
-              : expense.amount?.toString() || "0";
-          const amount = parseFloat(amountString.replace(",", ".")) || 0;
-
-          if (totals[subcategoriaId]) {
-            totals[subcategoriaId] += amount;
-          } else {
-            totals[subcategoriaId] = amount;
-          }
-        }
-      });
-    }
-    return totals;
-  };
-
-  const selectedData =
-    clientDateType === "formaDePagamento"
-      ? processFormaDePagamento()
-      : clientDateType === "categoria"
-        ? processCategoria()
-        : clientDateType === "subcategoria"
-          ? processSubcategoria()
-          : clientDateType === "fonteDeRenda"
-            ? processFonteDeRenda()
-            : {};
-
-  const data: PieData[] = Object.keys(selectedData)
+  const data: PieData[] = Object.keys(rawData)
     .map((key, index) => {
-      let name = "Unknown";
-      if (clientDateType === "formaDePagamento") {
-        name =
-          userData?.user?.formaDePagamento.find(
-            (forma: any) => forma.id === key,
-          )?.name || "Unknown Forma de Pagamento";
-      } else if (clientDateType === "categoria") {
-        const categoria = userData?.user?.categoria?.find(
-          (categorias: any) => categorias.id === key,
-        );
-        name = categoria?.name || "Unknown Category";
-      } else if (clientDateType === "subcategoria") {
-        const subcategoria = userData?.user?.categoria
-          ?.flatMap((cat: any) => cat.subcategorias || [])
-          ?.find((sub: any) => sub.id === key);
-        name = subcategoria?.name || `Subcategoria Desconhecida (${key})`;
-      } else if (clientDateType === "fonteDeRenda") {
-        name =
-          userData?.user?.categories.find(
-            (category: any) => category.id === key,
-          )?.name || "Unknown Fonte de Renda";
-      }
-
-      const amount = parseFloat(selectedData[key]?.toFixed(2)) || 0;
+      const amount = parseFloat(rawData[key]?.toFixed(2)) || 0;
+      const name = getNameById(key);
       return {
         name,
         amount,
-        fill: "",
+        fill: defaultColors[index % defaultColors.length],
         quantity: amount,
         keyName: name,
       };
     })
     .filter((item) => item.amount > 0);
+
+  const processedData = React.useMemo(() => {
+    if (skeleton) return data;
+    if (data.length <= 5) return data;
+    const sorted = [...data].sort((a, b) => b.amount - a.amount);
+    const main = sorted.slice(0, 5);
+    const others = sorted.slice(5);
+    const othersAmount = others.reduce((acc, curr) => acc + curr.amount, 0);
+    if (othersAmount === 0) return main;
+    const othersColor =
+      main.length < defaultColors.length
+        ? defaultColors[main.length]
+        : defaultColors[defaultColors.length - 1];
+    return [
+      ...main,
+      {
+        name: "Outros",
+        amount: othersAmount,
+        fill: othersColor,
+        quantity: othersAmount,
+        keyName: "Outros",
+        others,
+      },
+    ];
+  }, [data, skeleton]);
 
   const getTitle = () => {
     switch (clientDateType) {
@@ -251,9 +206,7 @@ export function PieChart({
   const getDescription = () => {
     switch (clientDateType) {
       case "formaDePagamento":
-        return "Despesas";
       case "categoria":
-        return "Despesas";
       case "subcategoria":
         return "Despesas";
       case "fonteDeRenda":
@@ -269,7 +222,7 @@ export function PieChart({
       content={
         <CardContent>
           <div className="chart-container" ref={chartContainerRef}>
-            {loading === false && data.length === 0 ? (
+            {loading === false && processedData.length === 0 ? (
               <EmptyState
                 icon="database"
                 title="Sem dados no período selecionado"
@@ -283,15 +236,15 @@ export function PieChart({
                 width={chartWidth}
                 height={chartHeight}
                 caption
-                data={data}
+                data={processedData}
                 dataKey="amount"
-                innerRadius={100}
-                outerRadius={150}
+                innerRadius={80}
+                outerRadius={130}
                 label="Total"
-                tooltipFormatter={(value) =>
+                tooltipFormatter={(value: number) =>
                   `R$ ${value.toFixed(2).replace(".", ",")}`
                 }
-                labelFormatter={(value) =>
+                labelFormatter={(value: number) =>
                   `R$ ${value.toFixed(2).replace(".", ",")}`
                 }
               />

@@ -31,8 +31,8 @@ export const Criar = async (values: z.infer<typeof ExpenseSchema>) => {
         parseInt(day, 10),
         12,
         0,
-        0
-      )
+        0,
+      ),
     );
 
     if (isNaN(formattedDate.getTime())) {
@@ -119,8 +119,8 @@ export const Atualizar = async (
         parseInt(day, 10),
         12,
         0,
-        0
-      )
+        0,
+      ),
     );
 
     if (isNaN(formattedDate.getTime())) {

@@ -140,7 +140,6 @@ export function PieChart({
     "var(--s-color-chart-3)",
     "var(--s-color-chart-4)",
     "var(--s-color-chart-5)",
-    "var(--s-color-chart-6)",
     "var(--s-color-chart-7)",
     "var(--s-color-chart-8)",
     "var(--s-color-chart-9)",

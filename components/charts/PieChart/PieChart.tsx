@@ -159,7 +159,7 @@ export function PieChart({
       return {
         name,
         amount,
-        fill: defaultColors[index], 
+        fill: defaultColors[index % defaultColors.length],
         quantity: amount,
         keyName: name,
       };
@@ -170,11 +170,14 @@ export function PieChart({
     if (skeleton) return data;
     if (data.length <= 5) return data;
     const sorted = [...data].sort((a, b) => b.amount - a.amount);
-    const main = sorted.slice(0, 5).map((item, idx) => ({ ...item, fill: defaultColors[idx] }));
+    const main = sorted.slice(0, 5);
     const others = sorted.slice(5);
     const othersAmount = others.reduce((acc, curr) => acc + curr.amount, 0);
     if (others.length === 0 || othersAmount <= 0) return main;
-    const othersColor = defaultColors[main.length];
+    const othersColor =
+      main.length < defaultColors.length
+        ? defaultColors[main.length]
+        : defaultColors[defaultColors.length - 1];
     return [
       ...main,
       {

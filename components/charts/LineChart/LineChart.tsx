@@ -82,35 +82,47 @@ export function LineChart({
 
   const dataArea =
     selectedMonth === 12
-      ? generateDatesInYear(selectedYear).map((date) => {
-          const formattedDate = getFormattedDate(date);
+      ? Array.from({ length: 12 }, (_, monthIdx) => {
+          const firstDay = new Date(selectedYear, monthIdx, 1);
+          const lastDay = new Date(selectedYear, monthIdx + 1, 0);
 
-          const transactionsUntilDate =
+          const formattedMonth = firstDay.toLocaleDateString("pt-BR", {
+            month: "short",
+            year: "numeric",
+          });
+
+          const transactionsInMonth =
             userData?.user?.transactions?.filter((transaction: any) => {
               const transactionDate = new Date(transaction.createdAt);
-              return transactionDate <= date;
+              return (
+                transactionDate >= firstDay &&
+                transactionDate <= lastDay
+              );
             }) || [];
 
-          const totalGanhos = transactionsUntilDate.reduce(
+          const totalGanhos = transactionsInMonth.reduce(
             (acc: any, transaction: any) =>
               acc + parseFloat(String(transaction.amount).replace(",", ".")),
             0,
           );
 
-          const expensesUntilDate =
+          const expensesInMonth =
             userData?.user?.expense?.filter((expense: any) => {
               const expenseDate = new Date(expense.createdAt);
-              return expenseDate <= date;
+              return (
+                expenseDate >= firstDay &&
+                expenseDate <= lastDay
+              );
             }) || [];
 
-          const totalDespesas = expensesUntilDate.reduce(
+          const totalDespesas = expensesInMonth.reduce(
             (acc: any, expense: any) =>
               acc + parseFloat(String(expense.amount).replace(",", ".")),
             0,
           );
 
           return {
-            month: formattedDate,
+            month: formattedMonth,
             "Saldo Total": totalGanhos - totalDespesas,
           };
         })

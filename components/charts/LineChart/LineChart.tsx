@@ -83,39 +83,32 @@ export function LineChart({
   const dataArea =
     selectedMonth === 12
       ? Array.from({ length: 12 }, (_, monthIdx) => {
-          const firstDay = new Date(selectedYear, monthIdx, 1);
           const lastDay = new Date(selectedYear, monthIdx + 1, 0);
 
-          const formattedMonth = firstDay.toLocaleDateString("pt-BR", {
+          const formattedMonth = lastDay.toLocaleDateString("pt-BR", {
             month: "short",
             year: "numeric",
           });
 
-          const transactionsInMonth =
+          const transactionsUntilMonth =
             userData?.user?.transactions?.filter((transaction: any) => {
               const transactionDate = new Date(transaction.createdAt);
-              return (
-                transactionDate >= firstDay &&
-                transactionDate <= lastDay
-              );
+              return transactionDate <= lastDay;
             }) || [];
 
-          const totalGanhos = transactionsInMonth.reduce(
+          const totalGanhos = transactionsUntilMonth.reduce(
             (acc: any, transaction: any) =>
               acc + parseFloat(String(transaction.amount).replace(",", ".")),
             0,
           );
 
-          const expensesInMonth =
+          const expensesUntilMonth =
             userData?.user?.expense?.filter((expense: any) => {
               const expenseDate = new Date(expense.createdAt);
-              return (
-                expenseDate >= firstDay &&
-                expenseDate <= lastDay
-              );
+              return expenseDate <= lastDay;
             }) || [];
 
-          const totalDespesas = expensesInMonth.reduce(
+          const totalDespesas = expensesUntilMonth.reduce(
             (acc: any, expense: any) =>
               acc + parseFloat(String(expense.amount).replace(",", ".")),
             0,

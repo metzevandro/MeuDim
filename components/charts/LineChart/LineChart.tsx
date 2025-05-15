@@ -13,9 +13,10 @@ interface LineChartProps {
   loading: boolean;
   selectedMonth: number | 12;
   setSelectedMonth: React.Dispatch<React.SetStateAction<number | 12>>;
-  selectedYear: number;
-  setSelectedYear: React.Dispatch<React.SetStateAction<number>>;
+  selectedYear: number | "all";
+  setSelectedYear: React.Dispatch<React.SetStateAction<number | "all">>;
   isYearSelected: boolean;
+  isAllYearsSelected: boolean;
   firstDayOfMonth: Date;
   lastDayOfMonth: Date;
   skeleton: boolean;
@@ -54,6 +55,7 @@ export function LineChart({
   selectedYear,
   setSelectedYear,
   isYearSelected,
+  isAllYearsSelected,
   firstDayOfMonth,
   lastDayOfMonth,
   skeleton,
@@ -80,8 +82,51 @@ export function LineChart({
     };
   }, []);
 
-  const dataArea =
-    selectedMonth === 12
+  const getAllYears = () => {
+    const yearsSet = new Set<number>();
+    userData?.user?.transactions?.forEach((t: any) => {
+      yearsSet.add(new Date(t.createdAt).getFullYear());
+    });
+    userData?.user?.expense?.forEach((e: any) => {
+      yearsSet.add(new Date(e.createdAt).getFullYear());
+    });
+    return Array.from(yearsSet).sort((a, b) => a - b);
+  };
+
+  let dataArea: any[] = [];
+
+  if (isAllYearsSelected) {
+    const years = getAllYears();
+    dataArea = years.map((year) => {
+      const ganhos =
+        userData?.user?.transactions?.reduce((acc: number, transaction: any) => {
+          const transactionDate = new Date(transaction.createdAt);
+          if (transactionDate.getFullYear() === year) {
+            const amount =
+              parseFloat(String(transaction.amount).replace(",", ".")) || 0;
+            return acc + amount;
+          }
+          return acc;
+        }, 0) || 0;
+
+      const despesas =
+        userData?.user?.expense?.reduce((acc: number, expense: any) => {
+          const expenseDate = new Date(expense.createdAt);
+          if (expenseDate.getFullYear() === year) {
+            const amount =
+              parseFloat(String(expense.amount).replace(",", ".")) || 0;
+            return acc + amount;
+          }
+          return acc;
+        }, 0) || 0;
+
+      return {
+        month: year.toString(),
+        "Saldo Total": ganhos - despesas,
+      };
+    });
+  } else if (selectedMonth === 12) {
+    dataArea = typeof selectedYear === "number"
       ? Array.from({ length: 12 }, (_, monthIdx) => {
           const lastDay = new Date(selectedYear, monthIdx + 1, 0);
 
@@ -119,7 +164,10 @@ export function LineChart({
             "Saldo Total": totalGanhos - totalDespesas,
           };
         })
-      : generateDatesInMonth(selectedYear, selectedMonth).map((date) => {
+      : [];
+  } else {
+    dataArea = typeof selectedYear === "number"
+      ? generateDatesInMonth(selectedYear, selectedMonth).map((date) => {
           const formattedDate = getFormattedDate(date);
 
           const transactionsUntilDate =
@@ -150,7 +198,9 @@ export function LineChart({
             month: formattedDate,
             "Saldo Total": totalGanhos - totalDespesas,
           };
-        });
+        })
+      : [];
+  }
 
   return (
     <Card

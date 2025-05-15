@@ -26,25 +26,32 @@ const HomePage = () => {
   const [selectedMonth, setSelectedMonth] = useState<number | 12>(
     new Date().getMonth(),
   );
-  const [selectedYear, setSelectedYear] = useState<number>(
+  const [selectedYear, setSelectedYear] = useState<number | "all">(
     new Date().getFullYear(),
   );
   const isYearSelected = selectedMonth === 12;
+  const isAllYearsSelected = selectedYear === "all";
 
   const firstDayOfMonth =
-    selectedMonth === 12
-      ? new Date(selectedYear, 0, 1)
-      : new Date(selectedYear, selectedMonth, 1);
+    isAllYearsSelected
+      ? new Date(1970, 0, 1)
+      : selectedMonth === 12
+        ? new Date(typeof selectedYear === "number" ? selectedYear : new Date().getFullYear(), 0, 1)
+        : new Date(typeof selectedYear === "number" ? selectedYear : new Date().getFullYear(), selectedMonth, 1);
 
   const lastDayOfMonth =
-    selectedMonth === 12
-      ? new Date(selectedYear, 11, 31)
-      : new Date(selectedYear, selectedMonth + 1, 0);
+    isAllYearsSelected
+      ? new Date(3000, 11, 31)
+      : selectedMonth === 12
+        ? new Date(typeof selectedYear === "number" ? selectedYear : new Date().getFullYear(), 11, 31)
+        : new Date(typeof selectedYear === "number" ? selectedYear : new Date().getFullYear(), selectedMonth + 1, 0);
 
   const dates = [];
-  for (let i = firstDayOfMonth.getDate(); i <= lastDayOfMonth.getDate(); i++) {
-    const date = new Date(selectedYear, isYearSelected ? 0 : selectedMonth, i);
-    dates.push(date);
+  if (typeof selectedYear === "number") {
+    for (let i = firstDayOfMonth.getDate(); i <= lastDayOfMonth.getDate(); i++) {
+      const date = new Date(selectedYear, isYearSelected ? 0 : selectedMonth, i);
+      dates.push(date);
+    }
   }
 
   useEffect(() => {}, [selectedMonth, selectedYear]);
@@ -59,6 +66,14 @@ const HomePage = () => {
     router.push(route);
   };
 
+  const filterByPeriod = (date: Date) => {
+    if (isAllYearsSelected) return true;
+    if (selectedMonth === 12) {
+      return date.getFullYear() === selectedYear;
+    }
+    return date >= firstDayOfMonth && date <= lastDayOfMonth;
+  };
+
   const sumGanhos = () => {
     if (!userData?.user || !Array.isArray(userData.user.transactions)) {
       return "0,00";
@@ -66,12 +81,7 @@ const HomePage = () => {
 
     const total = userData.user.transactions.reduce((acc, transaction) => {
       const transactionDate = new Date(transaction.createdAt);
-      if (
-        (selectedMonth === 12 &&
-          transactionDate.getFullYear() === selectedYear) ||
-        (transactionDate >= firstDayOfMonth &&
-          transactionDate <= lastDayOfMonth)
-      ) {
+      if (filterByPeriod(transactionDate)) {
         const amount =
           typeof transaction.amount === "number"
             ? transaction.amount
@@ -94,10 +104,7 @@ const HomePage = () => {
 
     const total = userData.user.expense.reduce((acc, expense) => {
       const expenseDate = new Date(expense.createdAt);
-      if (
-        (selectedMonth === 12 && expenseDate.getFullYear() === selectedYear) ||
-        (expenseDate >= firstDayOfMonth && expenseDate <= lastDayOfMonth)
-      ) {
+      if (filterByPeriod(expenseDate)) {
         const amount =
           typeof expense.amount === "number"
             ? expense.amount
@@ -160,6 +167,14 @@ const HomePage = () => {
     { value: "12", label: "Todos" },
   ];
 
+  // Adiciona opção "Todos" para anos
+  const yearOptions = [
+    "Todos",
+    ...Array.from({ length: 5 }, (_, index) =>
+      (new Date().getFullYear() - index).toString(),
+    ),
+  ];
+
   const calculatePercentageChange = (
     currentValue: number,
     previousValue: number,
@@ -181,9 +196,22 @@ const HomePage = () => {
 
   const calculateTotalForMonth = (
     transactions: Transaction[],
-    year: number,
+    year: number | "all",
     month: number,
   ) => {
+    if (year === "all") {
+      return transactions.reduce((acc, transaction) => {
+        const transactionDate = new Date(transaction.createdAt);
+        if (selectedMonth === 12 || selectedMonth === transactionDate.getMonth()) {
+          const amount =
+            typeof transaction.amount === "number"
+              ? transaction.amount
+              : parseFloat(transaction.amount.replace(",", ".")) || 0;
+          return acc + amount;
+        }
+        return acc;
+      }, 0);
+    }
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
 
@@ -202,9 +230,22 @@ const HomePage = () => {
 
   const calculateTotalExpensesForMonth = (
     expenses: Expense[],
-    year: number,
+    year: number | "all",
     month: number,
   ) => {
+    if (year === "all") {
+      return expenses.reduce((acc, expense) => {
+        const expenseDate = new Date(expense.createdAt);
+        if (selectedMonth === 12 || selectedMonth === expenseDate.getMonth()) {
+          const amount =
+            typeof expense.amount === "number"
+              ? expense.amount
+              : parseFloat(expense.amount.replace(",", ".")) || 0;
+          return acc + amount;
+        }
+        return acc;
+      }, 0);
+    }
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
 
@@ -221,29 +262,57 @@ const HomePage = () => {
     }, 0);
   };
 
-  const currentMonthGanhos = calculateTotalForMonth(
-    userData?.user?.transactions || [],
-    selectedYear,
-    selectedMonth,
-  );
+  const currentMonthGanhos = isAllYearsSelected
+    ? userData?.user?.transactions?.reduce((acc: number, transaction: any) => {
+        const transactionDate = new Date(transaction.createdAt);
+        if (selectedMonth === 12 || selectedMonth === transactionDate.getMonth()) {
+          const amount =
+            typeof transaction.amount === "number"
+              ? transaction.amount
+              : parseFloat(transaction.amount.replace(",", ".")) || 0;
+          return acc + amount;
+        }
+        return acc;
+      }, 0) || 0
+    : calculateTotalForMonth(
+        userData?.user?.transactions || [],
+        selectedYear,
+        selectedMonth,
+      );
 
-  const previousMonthGanhos = calculateTotalForMonth(
-    userData?.user?.transactions || [],
-    selectedYear,
-    selectedMonth - 1,
-  );
+  const previousMonthGanhos = isAllYearsSelected
+    ? 0
+    : calculateTotalForMonth(
+        userData?.user?.transactions || [],
+        selectedYear,
+        selectedMonth - 1,
+      );
 
-  const currentMonthDespesas = calculateTotalExpensesForMonth(
-    userData?.user?.expense || [],
-    selectedYear,
-    selectedMonth,
-  );
+  const currentMonthDespesas = isAllYearsSelected
+    ? userData?.user?.expense?.reduce((acc: number, expense: any) => {
+        const expenseDate = new Date(expense.createdAt);
+        if (selectedMonth === 12 || selectedMonth === expenseDate.getMonth()) {
+          const amount =
+            typeof expense.amount === "number"
+              ? expense.amount
+              : parseFloat(expense.amount.replace(",", ".")) || 0;
+          return acc + amount;
+        }
+        return acc;
+      }, 0) || 0
+    : calculateTotalExpensesForMonth(
+        userData?.user?.expense || [],
+        selectedYear,
+        selectedMonth,
+      );
 
-  const previousMonthDespesas = calculateTotalExpensesForMonth(
-    userData?.user?.expense || [],
-    selectedYear,
-    selectedMonth - 1,
-  );
+  const previousMonthDespesas = isAllYearsSelected
+    ? 0
+    : calculateTotalExpensesForMonth(
+        userData?.user?.expense || [],
+        selectedYear,
+        selectedMonth - 1,
+      );
 
   const ganhoChangeResult = calculatePercentageChange(
     currentMonthGanhos || 0,
@@ -316,11 +385,15 @@ const HomePage = () => {
 
           <InputSelect
             label="Ano"
-            options={Array.from({ length: 5 }, (_, index) =>
-              (new Date().getFullYear() - index).toString(),
-            )}
-            value={selectedYear.toString()}
-            onChange={(value) => setSelectedYear(parseInt(value))}
+            options={yearOptions}
+            value={
+              selectedYear === "all"
+                ? "Todos"
+                : selectedYear.toString()
+            }
+            onChange={(value) =>
+              setSelectedYear(value === "Todos" ? "all" : parseInt(value))
+            }
           />
         </div>
         <div className="layout-resumo">
@@ -520,6 +593,7 @@ const HomePage = () => {
         <BarChart
           skeleton={skeleton}
           isYearSelected={isYearSelected}
+          isAllYearsSelected={isAllYearsSelected}
           setSelectedMonth={setSelectedMonth}
           setSelectedYear={setSelectedYear}
           userData={userData}
@@ -532,6 +606,7 @@ const HomePage = () => {
         <LineChart
           skeleton={skeleton}
           isYearSelected={isYearSelected}
+          isAllYearsSelected={isAllYearsSelected}
           setSelectedMonth={setSelectedMonth}
           setSelectedYear={setSelectedYear}
           userData={userData}
@@ -546,6 +621,7 @@ const HomePage = () => {
             skeleton={skeleton}
             clientDateType="fonteDeRenda"
             isYearSelected={isYearSelected}
+            isAllYearsSelected={isAllYearsSelected}
             setSelectedMonth={setSelectedMonth}
             setSelectedYear={setSelectedYear}
             userData={userData}
@@ -559,6 +635,7 @@ const HomePage = () => {
             skeleton={skeleton}
             clientDateType="formaDePagamento"
             isYearSelected={isYearSelected}
+            isAllYearsSelected={isAllYearsSelected}
             setSelectedMonth={setSelectedMonth}
             setSelectedYear={setSelectedYear}
             userData={userData}
@@ -574,6 +651,7 @@ const HomePage = () => {
             skeleton={skeleton}
             clientDateType="categoria"
             isYearSelected={isYearSelected}
+            isAllYearsSelected={isAllYearsSelected}
             setSelectedMonth={setSelectedMonth}
             setSelectedYear={setSelectedYear}
             userData={userData}
@@ -588,6 +666,7 @@ const HomePage = () => {
             skeleton={skeleton}
             clientDateType="subcategoria"
             isYearSelected={isYearSelected}
+            isAllYearsSelected={isAllYearsSelected}
             setSelectedMonth={setSelectedMonth}
             setSelectedYear={setSelectedYear}
             userData={userData}

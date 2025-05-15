@@ -22,9 +22,10 @@ interface LineChartProps {
   loading: boolean;
   selectedMonth: number | 12;
   setSelectedMonth: React.Dispatch<React.SetStateAction<number | 12>>;
-  selectedYear: number;
-  setSelectedYear: React.Dispatch<React.SetStateAction<number>>;
+  selectedYear: number | "all";
+  setSelectedYear: React.Dispatch<React.SetStateAction<number | "all">>;
   isYearSelected: boolean;
+  isAllYearsSelected: boolean;
   firstDayOfMonth: Date;
   lastDayOfMonth: Date;
   clientDateType:
@@ -43,6 +44,7 @@ export function PieChart({
   selectedYear,
   setSelectedYear,
   isYearSelected,
+  isAllYearsSelected,
   firstDayOfMonth,
   lastDayOfMonth,
   clientDateType,
@@ -79,10 +81,12 @@ export function PieChart({
         const itemDate = new Date(item.createdAt);
 
         const isInPeriod =
-          selectedMonth === 12
-            ? itemDate.getFullYear() === selectedYear
-            : itemDate >= new Date(firstDayOfMonth) &&
-              itemDate <= new Date(lastDayOfMonth);
+          isAllYearsSelected
+            ? true
+            : selectedMonth === 12
+              ? itemDate.getFullYear() === selectedYear
+              : itemDate >= new Date(firstDayOfMonth) &&
+                itemDate <= new Date(lastDayOfMonth);
 
         if (isInPeriod) {
           let key = "";

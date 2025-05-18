@@ -159,10 +159,14 @@ export function PieChart({
     .map((key, index) => {
       const amount = parseFloat(rawData[key]?.toFixed(2)) || 0;
       const name = getNameById(key);
+      const fill =
+        index < defaultColors.length
+          ? defaultColors[index]
+          : "var(--s-color-chart-default, #cccccc)";
       return {
         name,
         amount,
-        fill: defaultColors[index % defaultColors.length],
+        fill,
         quantity: amount,
         keyName: name,
       };

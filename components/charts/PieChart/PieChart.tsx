@@ -217,13 +217,13 @@ export function PieChart({
             ) : (
               <Chart
                 skeleton={skeleton}
-                nameKey="name"
+                nameKey="keyName"
                 type="donut"
                 width={chartWidth}
                 height={chartHeight}
                 caption
                 data={processedData}
-                dataKey="amount"
+                dataKey="quantity"
                 innerRadius={80}
                 outerRadius={130}
                 label="Total"

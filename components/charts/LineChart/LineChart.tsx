@@ -97,8 +97,10 @@ export function LineChart({
 
   if (isAllYearsSelected) {
     const years = getAllYears();
+    let acumuladoGanhos = 0;
+    let acumuladoDespesas = 0;
     dataArea = years.map((year) => {
-      const ganhos =
+      const ganhosAno =
         userData?.user?.transactions?.reduce((acc: number, transaction: any) => {
           const transactionDate = new Date(transaction.createdAt);
           if (transactionDate.getFullYear() === year) {
@@ -109,7 +111,7 @@ export function LineChart({
           return acc;
         }, 0) || 0;
 
-      const despesas =
+      const despesasAno =
         userData?.user?.expense?.reduce((acc: number, expense: any) => {
           const expenseDate = new Date(expense.createdAt);
           if (expenseDate.getFullYear() === year) {
@@ -120,9 +122,12 @@ export function LineChart({
           return acc;
         }, 0) || 0;
 
+      acumuladoGanhos += ganhosAno;
+      acumuladoDespesas += despesasAno;
+
       return {
         month: year.toString(),
-        "Saldo Total": ganhos - despesas,
+        "Saldo Total": acumuladoGanhos - acumuladoDespesas,
       };
     });
   } else if (selectedMonth === 12) {

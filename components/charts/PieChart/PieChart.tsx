@@ -153,16 +153,28 @@ export function PieChart({
     "var(--s-color-chart-10)",
   ];
 
+  const getUniqueColors = (length: number) => {
+    const colors = [...defaultColors];
+    const assigned: string[] = [];
+    for (let i = 0; i < length; i++) {
+      if (colors.length > 0) {
+        assigned.push(colors.shift()!);
+      } else {
+        assigned.push("var(--s-color-chart-default, #cccccc)");
+      }
+    }
+    return assigned;
+  };
+
   const rawData = processData();
+
+  const colorList = getUniqueColors(Object.keys(rawData).length);
 
   const data: PieData[] = Object.keys(rawData)
     .map((key, index) => {
       const amount = parseFloat(rawData[key]?.toFixed(2)) || 0;
       const name = getNameById(key);
-      const fill =
-        index < defaultColors.length
-          ? defaultColors[index]
-          : "var(--s-color-chart-default, #cccccc)";
+      const fill = colorList[index];
       return {
         name,
         amount,

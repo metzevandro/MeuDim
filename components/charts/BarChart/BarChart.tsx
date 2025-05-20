@@ -61,7 +61,6 @@ export function BarChart({
     };
   }, []);
 
-  // Gera lista de anos presentes nos dados
   const getAllYears = () => {
     const yearsSet = new Set<number>();
     userData?.user?.transactions?.forEach((t: any) => {
@@ -76,7 +75,6 @@ export function BarChart({
   let dataBar: any[] = [];
 
   if (isAllYearsSelected) {
-    // Mostra um valor por ano
     const years = getAllYears();
     dataBar = years.map((year) => {
       const ganhos =

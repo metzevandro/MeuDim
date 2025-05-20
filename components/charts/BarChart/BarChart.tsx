@@ -80,15 +80,18 @@ export function BarChart({
     const years = getAllYears();
     dataBar = years.map((year) => {
       const ganhos =
-        userData?.user?.transactions?.reduce((acc: number, transaction: any) => {
-          const transactionDate = new Date(transaction.createdAt);
-          if (transactionDate.getFullYear() === year) {
-            const amount =
-              parseFloat(String(transaction.amount).replace(",", ".")) || 0;
-            return acc + amount;
-          }
-          return acc;
-        }, 0) || 0;
+        userData?.user?.transactions?.reduce(
+          (acc: number, transaction: any) => {
+            const transactionDate = new Date(transaction.createdAt);
+            if (transactionDate.getFullYear() === year) {
+              const amount =
+                parseFloat(String(transaction.amount).replace(",", ".")) || 0;
+              return acc + amount;
+            }
+            return acc;
+          },
+          0,
+        ) || 0;
 
       const despesas =
         userData?.user?.expense?.reduce((acc: number, expense: any) => {
@@ -108,90 +111,98 @@ export function BarChart({
       };
     });
   } else if (selectedMonth === 12) {
-    dataBar = typeof selectedYear === "number"
-      ? Array.from({ length: 12 }, (_, month) => {
-          const firstDay = new Date(selectedYear, month, 1);
-          const lastDay = new Date(selectedYear, month + 1, 0);
-          const formattedMonth = firstDay.toLocaleString("pt-BR", {
-            month: "short",
-            year: "numeric",
-          });
+    dataBar =
+      typeof selectedYear === "number"
+        ? Array.from({ length: 12 }, (_, month) => {
+            const firstDay = new Date(selectedYear, month, 1);
+            const lastDay = new Date(selectedYear, month + 1, 0);
+            const formattedMonth = firstDay.toLocaleString("pt-BR", {
+              month: "short",
+              year: "numeric",
+            });
 
-          const ganhos =
-            userData?.user?.transactions?.reduce(
-              (acc: number, transaction: any) => {
-                const transactionDate = new Date(transaction.createdAt);
-                if (transactionDate >= firstDay && transactionDate <= lastDay) {
+            const ganhos =
+              userData?.user?.transactions?.reduce(
+                (acc: number, transaction: any) => {
+                  const transactionDate = new Date(transaction.createdAt);
+                  if (
+                    transactionDate >= firstDay &&
+                    transactionDate <= lastDay
+                  ) {
+                    const amount =
+                      parseFloat(
+                        String(transaction.amount).replace(",", "."),
+                      ) || 0;
+                    return acc + amount;
+                  }
+                  return acc;
+                },
+                0,
+              ) || 0;
+
+            const despesas =
+              userData?.user?.expense?.reduce((acc: number, expense: any) => {
+                const expenseDate = new Date(expense.createdAt);
+                if (expenseDate >= firstDay && expenseDate <= lastDay) {
                   const amount =
-                    parseFloat(String(transaction.amount).replace(",", ".")) || 0;
+                    parseFloat(String(expense.amount).replace(",", ".")) || 0;
                   return acc + amount;
                 }
                 return acc;
-              },
-              0,
-            ) || 0;
+              }, 0) || 0;
 
-          const despesas =
-            userData?.user?.expense?.reduce((acc: number, expense: any) => {
-              const expenseDate = new Date(expense.createdAt);
-              if (expenseDate >= firstDay && expenseDate <= lastDay) {
-                const amount =
-                  parseFloat(String(expense.amount).replace(",", ".")) || 0;
-                return acc + amount;
-              }
-              return acc;
-            }, 0) || 0;
-
-          return {
-            month: formattedMonth,
-            ganhos: ganhos,
-            despesas: despesas,
-          };
-        })
-      : [];
+            return {
+              month: formattedMonth,
+              ganhos: ganhos,
+              despesas: despesas,
+            };
+          })
+        : [];
   } else {
-    dataBar = typeof selectedYear === "number"
-      ? Array.from({ length: lastDayOfMonth.getDate() }, (_, day) => {
-          const date = new Date(selectedYear, selectedMonth, day + 1);
-          const formattedMonth = getFormattedDate(date);
+    dataBar =
+      typeof selectedYear === "number"
+        ? Array.from({ length: lastDayOfMonth.getDate() }, (_, day) => {
+            const date = new Date(selectedYear, selectedMonth, day + 1);
+            const formattedMonth = getFormattedDate(date);
 
-          const ganhos = userData?.user?.transactions
-            ?.filter((transaction: any) => {
-              const transactionDate = new Date(transaction.createdAt);
-              return (
-                transactionDate.getDate() === date.getDate() &&
-                transactionDate.getMonth() === date.getMonth() &&
-                transactionDate.getFullYear() === date.getFullYear()
+            const ganhos = userData?.user?.transactions
+              ?.filter((transaction: any) => {
+                const transactionDate = new Date(transaction.createdAt);
+                return (
+                  transactionDate.getDate() === date.getDate() &&
+                  transactionDate.getMonth() === date.getMonth() &&
+                  transactionDate.getFullYear() === date.getFullYear()
+                );
+              })
+              .reduce(
+                (acc: number, transaction: any) =>
+                  acc +
+                  parseFloat(String(transaction.amount).replace(",", ".")),
+                0,
               );
-            })
-            .reduce(
-              (acc: number, transaction: any) =>
-                acc + parseFloat(String(transaction.amount).replace(",", ".")),
-              0,
-            );
 
-          const despesas = userData?.user?.expense
-            ?.filter((expense: any) => {
-              const expenseDate = new Date(expense.createdAt);
-              return (
-                expenseDate.getDate() === date.getDate() &&
-                expenseDate.getMonth() === date.getMonth() &&
-                expenseDate.getFullYear() === date.getFullYear()
+            const despesas = userData?.user?.expense
+              ?.filter((expense: any) => {
+                const expenseDate = new Date(expense.createdAt);
+                return (
+                  expenseDate.getDate() === date.getDate() &&
+                  expenseDate.getMonth() === date.getMonth() &&
+                  expenseDate.getFullYear() === date.getFullYear()
+                );
+              })
+              .reduce(
+                (acc: number, expense: any) =>
+                  acc + parseFloat(String(expense.amount).replace(",", ".")),
+                0,
               );
-            })
-            .reduce(
-              (acc: number, expense: any) =>
-                acc + parseFloat(String(expense.amount).replace(",", ".")),
-              0,
-            );
 
-          return {
-            month: formattedMonth,
-            ganhos: ganhos,
-            despesas: despesas,
-          };
-        })
-      : [];
+            return {
+              month: formattedMonth,
+              ganhos: ganhos,
+              despesas: despesas,
+            };
+          })
+        : [];
   }
 
   return (

@@ -80,13 +80,12 @@ export function PieChart({
       expenses.forEach((item: any) => {
         const itemDate = new Date(item.createdAt);
 
-        const isInPeriod =
-          isAllYearsSelected
-            ? true
-            : selectedMonth === 12
-              ? itemDate.getFullYear() === selectedYear
-              : itemDate >= new Date(firstDayOfMonth) &&
-                itemDate <= new Date(lastDayOfMonth);
+        const isInPeriod = isAllYearsSelected
+          ? true
+          : selectedMonth === 12
+            ? itemDate.getFullYear() === selectedYear
+            : itemDate >= new Date(firstDayOfMonth) &&
+              itemDate <= new Date(lastDayOfMonth);
 
         if (isInPeriod) {
           let key = "";

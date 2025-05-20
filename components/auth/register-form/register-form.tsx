@@ -1,14 +1,11 @@
-// React e hooks
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-// Bibliotecas externas
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-// Componentes do design system
 import {
   Button,
   Input,
@@ -19,25 +16,13 @@ import {
   FooterModal,
 } from "design-system-zeroz";
 
-// Módulos
 import { RegisterSchema } from "@/schemas/index";
 import { register } from "@/actions/register";
 import { login } from "@/actions/login";
 import { createInitialData } from "@/actions/createInitialData";
 
-// Styles
 import "./register-form.scss";
 
-/**
- * O componente RegisterForm é um formulário para os usuários se registrarem na plataforma.
- * Ele utiliza o hook useForm do react-hook-form para gerenciar o estado do formulário e
- * o zod resolver para validar os dados do formulário com base no RegisterSchema.
- * O formulário possui 3 campos: nome, email e senha. Quando o formulário é enviado,
- * a função onSubmit é chamada, que executa a função register do módulo actions, passando
- * os dados do formulário como argumento. Se o registro for bem-sucedido, o usuário é
- * redirecionado para a página de login. Se houver um erro, a mensagem de erro é exibida
- * em uma notificação.
- */
 export const RegisterForm = () => {
   const router = useRouter();
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -110,8 +95,8 @@ export const RegisterForm = () => {
   };
 
   const handleModalCancel = async () => {
-    if (isConfirmingCancel) return; // Prevent cancel action during confirmation
-    setIsConfirmingCancel(true); // Set "Não, obrigado" button to loading
+    if (isConfirmingCancel) return;
+    setIsConfirmingCancel(true);
     try {
       await loginUser();
     } catch (error) {
@@ -139,9 +124,6 @@ export const RegisterForm = () => {
 
   const { errors } = form.formState;
 
-  /**
-   * A função navigateTo redireciona o usuário para a rota especificada.
-   */
   const navigateTo = (route: string) => {
     router.push(route);
   };

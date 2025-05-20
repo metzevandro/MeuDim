@@ -101,15 +101,18 @@ export function LineChart({
     let acumuladoDespesas = 0;
     dataArea = years.map((year) => {
       const ganhosAno =
-        userData?.user?.transactions?.reduce((acc: number, transaction: any) => {
-          const transactionDate = new Date(transaction.createdAt);
-          if (transactionDate.getFullYear() === year) {
-            const amount =
-              parseFloat(String(transaction.amount).replace(",", ".")) || 0;
-            return acc + amount;
-          }
-          return acc;
-        }, 0) || 0;
+        userData?.user?.transactions?.reduce(
+          (acc: number, transaction: any) => {
+            const transactionDate = new Date(transaction.createdAt);
+            if (transactionDate.getFullYear() === year) {
+              const amount =
+                parseFloat(String(transaction.amount).replace(",", ".")) || 0;
+              return acc + amount;
+            }
+            return acc;
+          },
+          0,
+        ) || 0;
 
       const despesasAno =
         userData?.user?.expense?.reduce((acc: number, expense: any) => {
@@ -131,80 +134,82 @@ export function LineChart({
       };
     });
   } else if (selectedMonth === 12) {
-    dataArea = typeof selectedYear === "number"
-      ? Array.from({ length: 12 }, (_, monthIdx) => {
-          const lastDay = new Date(selectedYear, monthIdx + 1, 0);
+    dataArea =
+      typeof selectedYear === "number"
+        ? Array.from({ length: 12 }, (_, monthIdx) => {
+            const lastDay = new Date(selectedYear, monthIdx + 1, 0);
 
-          const formattedMonth = lastDay.toLocaleDateString("pt-BR", {
-            month: "short",
-            year: "numeric",
-          });
+            const formattedMonth = lastDay.toLocaleDateString("pt-BR", {
+              month: "short",
+              year: "numeric",
+            });
 
-          const transactionsUntilMonth =
-            userData?.user?.transactions?.filter((transaction: any) => {
-              const transactionDate = new Date(transaction.createdAt);
-              return transactionDate <= lastDay;
-            }) || [];
+            const transactionsUntilMonth =
+              userData?.user?.transactions?.filter((transaction: any) => {
+                const transactionDate = new Date(transaction.createdAt);
+                return transactionDate <= lastDay;
+              }) || [];
 
-          const totalGanhos = transactionsUntilMonth.reduce(
-            (acc: any, transaction: any) =>
-              acc + parseFloat(String(transaction.amount).replace(",", ".")),
-            0,
-          );
+            const totalGanhos = transactionsUntilMonth.reduce(
+              (acc: any, transaction: any) =>
+                acc + parseFloat(String(transaction.amount).replace(",", ".")),
+              0,
+            );
 
-          const expensesUntilMonth =
-            userData?.user?.expense?.filter((expense: any) => {
-              const expenseDate = new Date(expense.createdAt);
-              return expenseDate <= lastDay;
-            }) || [];
+            const expensesUntilMonth =
+              userData?.user?.expense?.filter((expense: any) => {
+                const expenseDate = new Date(expense.createdAt);
+                return expenseDate <= lastDay;
+              }) || [];
 
-          const totalDespesas = expensesUntilMonth.reduce(
-            (acc: any, expense: any) =>
-              acc + parseFloat(String(expense.amount).replace(",", ".")),
-            0,
-          );
+            const totalDespesas = expensesUntilMonth.reduce(
+              (acc: any, expense: any) =>
+                acc + parseFloat(String(expense.amount).replace(",", ".")),
+              0,
+            );
 
-          return {
-            month: formattedMonth,
-            "Saldo Total": totalGanhos - totalDespesas,
-          };
-        })
-      : [];
+            return {
+              month: formattedMonth,
+              "Saldo Total": totalGanhos - totalDespesas,
+            };
+          })
+        : [];
   } else {
-    dataArea = typeof selectedYear === "number"
-      ? generateDatesInMonth(selectedYear, selectedMonth).map((date) => {
-          const formattedDate = getFormattedDate(date);
+    dataArea =
+      typeof selectedYear === "number"
+        ? generateDatesInMonth(selectedYear, selectedMonth).map((date) => {
+            const formattedDate = getFormattedDate(date);
 
-          const transactionsUntilDate =
-            userData?.user?.transactions?.filter((transaction: any) => {
-              const transactionDate = new Date(transaction.createdAt);
-              return transactionDate <= date;
-            }) || [];
+            const transactionsUntilDate =
+              userData?.user?.transactions?.filter((transaction: any) => {
+                const transactionDate = new Date(transaction.createdAt);
+                return transactionDate <= date;
+              }) || [];
 
-          const totalGanhos = transactionsUntilDate.reduce(
-            (acc: any, transaction: any) =>
-              acc + parseFloat(String(transaction.amount).replace(",", ".")),
-            0,
-          );
+            const totalGanhos = transactionsUntilDate.reduce(
+              (acc: any, transaction: any) =>
+                acc + parseFloat(String(transaction.amount).replace(",", ".")),
+              0,
+            );
 
-          const expensesUntilDate =
-            userData?.user?.expense?.filter((expense: any) => {
-              const expenseDate = new Date(expense.createdAt);
-              return expenseDate <= date;
-            }) || [];
+            const expensesUntilDate =
+              userData?.user?.expense?.filter((expense: any) => {
+                const expenseDate = new Date(expense.createdAt);
+                return expenseDate <= date;
+              }) || [];
 
-          const totalDespesas = expensesUntilDate.reduce(
-            (acc: any, expense: any) =>
-              acc + parseFloat(String(expense.amount).replace(",", ".")),
-            0,
-          );
+            const totalDespesas = expensesUntilDate.reduce(
+              (acc: any, expense: any) =>
+                acc + parseFloat(String(expense.amount).replace(",", ".")),
+              0,
+            );
 
-          return {
-            month: formattedDate,
-            "Saldo Total": totalGanhos - totalDespesas,
-          };
-        })
-      : [];
+            return {
+              month: formattedDate,
+              "Saldo Total": totalGanhos - totalDespesas,
+            };
+          })
+        : [];
   }
 
   return (

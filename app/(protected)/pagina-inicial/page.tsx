@@ -32,24 +32,54 @@ const HomePage = () => {
   const isYearSelected = selectedMonth === 12;
   const isAllYearsSelected = selectedYear === "all";
 
-  const firstDayOfMonth =
-    isAllYearsSelected
-      ? new Date(1970, 0, 1)
-      : selectedMonth === 12
-        ? new Date(typeof selectedYear === "number" ? selectedYear : new Date().getFullYear(), 0, 1)
-        : new Date(typeof selectedYear === "number" ? selectedYear : new Date().getFullYear(), selectedMonth, 1);
+  const firstDayOfMonth = isAllYearsSelected
+    ? new Date(1970, 0, 1)
+    : selectedMonth === 12
+      ? new Date(
+          typeof selectedYear === "number"
+            ? selectedYear
+            : new Date().getFullYear(),
+          0,
+          1,
+        )
+      : new Date(
+          typeof selectedYear === "number"
+            ? selectedYear
+            : new Date().getFullYear(),
+          selectedMonth,
+          1,
+        );
 
-  const lastDayOfMonth =
-    isAllYearsSelected
-      ? new Date(3000, 11, 31)
-      : selectedMonth === 12
-        ? new Date(typeof selectedYear === "number" ? selectedYear : new Date().getFullYear(), 11, 31)
-        : new Date(typeof selectedYear === "number" ? selectedYear : new Date().getFullYear(), selectedMonth + 1, 0);
+  const lastDayOfMonth = isAllYearsSelected
+    ? new Date(3000, 11, 31)
+    : selectedMonth === 12
+      ? new Date(
+          typeof selectedYear === "number"
+            ? selectedYear
+            : new Date().getFullYear(),
+          11,
+          31,
+        )
+      : new Date(
+          typeof selectedYear === "number"
+            ? selectedYear
+            : new Date().getFullYear(),
+          selectedMonth + 1,
+          0,
+        );
 
   const dates = [];
   if (typeof selectedYear === "number") {
-    for (let i = firstDayOfMonth.getDate(); i <= lastDayOfMonth.getDate(); i++) {
-      const date = new Date(selectedYear, isYearSelected ? 0 : selectedMonth, i);
+    for (
+      let i = firstDayOfMonth.getDate();
+      i <= lastDayOfMonth.getDate();
+      i++
+    ) {
+      const date = new Date(
+        selectedYear,
+        isYearSelected ? 0 : selectedMonth,
+        i,
+      );
       dates.push(date);
     }
   }
@@ -202,7 +232,10 @@ const HomePage = () => {
     if (year === "all") {
       return transactions.reduce((acc, transaction) => {
         const transactionDate = new Date(transaction.createdAt);
-        if (selectedMonth === 12 || selectedMonth === transactionDate.getMonth()) {
+        if (
+          selectedMonth === 12 ||
+          selectedMonth === transactionDate.getMonth()
+        ) {
           const amount =
             typeof transaction.amount === "number"
               ? transaction.amount
@@ -265,7 +298,10 @@ const HomePage = () => {
   const currentMonthGanhos = isAllYearsSelected
     ? userData?.user?.transactions?.reduce((acc: number, transaction: any) => {
         const transactionDate = new Date(transaction.createdAt);
-        if (selectedMonth === 12 || selectedMonth === transactionDate.getMonth()) {
+        if (
+          selectedMonth === 12 ||
+          selectedMonth === transactionDate.getMonth()
+        ) {
           const amount =
             typeof transaction.amount === "number"
               ? transaction.amount
@@ -386,11 +422,7 @@ const HomePage = () => {
           <InputSelect
             label="Ano"
             options={yearOptions}
-            value={
-              selectedYear === "all"
-                ? "Todos"
-                : selectedYear.toString()
-            }
+            value={selectedYear === "all" ? "Todos" : selectedYear.toString()}
             onChange={(value) =>
               setSelectedYear(value === "Todos" ? "all" : parseInt(value))
             }

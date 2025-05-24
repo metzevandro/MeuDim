@@ -412,7 +412,7 @@ const HomePage = () => {
                 (option) => option.value === selectedMonth.toString(),
               )?.label || "Ano"
             }
-            onChange={(value) =>
+            onChange={(value: any) =>
               setSelectedMonth(
                 monthOptions.findIndex((option) => option.label === value),
               )
@@ -423,7 +423,7 @@ const HomePage = () => {
             label="Ano"
             options={yearOptions}
             value={selectedYear === "all" ? "Todos" : selectedYear.toString()}
-            onChange={(value) =>
+            onChange={(value: any) =>
               setSelectedYear(value === "Todos" ? "all" : parseInt(value))
             }
           />

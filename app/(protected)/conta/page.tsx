@@ -107,7 +107,7 @@ const SettingsPage = () => {
               skeleton={skeleton}
               label="Nome"
               value={form.watch("name")}
-              onChange={(e) =>
+              onChange={(e: any) =>
                 form.setValue("name", e.target.value, { shouldDirty: true })
               }
             />

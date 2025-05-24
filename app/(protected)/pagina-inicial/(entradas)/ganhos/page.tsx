@@ -223,7 +223,7 @@ const HomePage = () => {
       content={
         <AsideContent>
           <DataPicker
-            onChange={(date) => form.setValue("date", date)}
+            onChange={(date: any) => form.setValue("date", date)}
             value={form.watch("date")}
             label="Data"
           />
@@ -431,7 +431,7 @@ const HomePage = () => {
           content={
             <AsideContent>
               <DataPicker
-                onChange={(date) => form.setValue("date", date)}
+                onChange={(date: any) => form.setValue("date", date)}
                 value={form.watch("date")}
                 label="Data"
               />

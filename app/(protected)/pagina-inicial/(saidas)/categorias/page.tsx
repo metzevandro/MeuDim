@@ -281,14 +281,14 @@ export default function CategoryPage() {
               label="Nome"
               placeholder="Ex: Comida"
               value={form.watch("name")}
-              onChange={(e) => form.setValue("name", e.target.value)}
+              onChange={(e: any) => form.setValue("name", e.target.value)}
             />
             <div style={{ display: "flex", gap: "8px", alignItems: "end" }}>
               <Input
                 label="Subcategoria"
                 placeholder="Ex: Ifood"
                 value={form.watch("subcategoria") || ""}
-                onChange={(e) => form.setValue("subcategoria", e.target.value)}
+                onChange={(e: any) => form.setValue("subcategoria", e.target.value)}
               />
               <div style={{ width: "min-content" }}>
                 <Button
@@ -441,7 +441,7 @@ export default function CategoryPage() {
             data={data}
             withCheckbox={true}
             onUpdateSelectedRows={handleUpdateSelectedRows}
-            onSelectedRowsChange={(selectedRows) =>
+            onSelectedRowsChange={(selectedRows: any ) =>
               setSelectedIdsForModal(selectedRows)
             }
             headerSelectedChildren={
@@ -484,14 +484,14 @@ export default function CategoryPage() {
                 label="Nome"
                 placeholder="Ex: Comida"
                 value={form.watch("name")}
-                onChange={(e) => form.setValue("name", e.target.value)}
+                onChange={(e: any) => form.setValue("name", e.target.value)}
               />
               <div style={{ display: "flex", gap: "8px", alignItems: "end" }}>
                 <Input
                   label="Subcategoria"
                   placeholder="Ex: Ifood"
                   value={form.watch("subcategoria") || ""}
-                  onChange={(e) =>
+                  onChange={(e: any) =>
                     form.setValue("subcategoria", e.target.value)
                   }
                 />

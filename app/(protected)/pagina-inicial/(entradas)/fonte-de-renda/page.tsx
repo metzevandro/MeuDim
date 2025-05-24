@@ -258,7 +258,7 @@ export default function FonteDeRendaPage() {
         <AsideContent>
           <Input
             value={form.watch("name") || ""}
-            onChange={(e) => form.setValue("name", e.target.value)}
+            onChange={(e: any) => form.setValue("name", e.target.value)}
             label="Nome"
             placeholder="Ex: Investimentos"
           />
@@ -384,7 +384,7 @@ export default function FonteDeRendaPage() {
             <AsideContent>
               <Input
                 value={form.watch("name") || ""}
-                onChange={(e) => form.setValue("name", e.target.value)}
+                onChange={(e: any) => form.setValue("name", e.target.value)}
                 label="Nome"
                 placeholder="Ex: Investimentos"
               />

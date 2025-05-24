@@ -87,7 +87,7 @@ export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
                   type="email"
                   placeholder="carlos@gmail.com"
                   name="email"
-                  onChange={(e) => form.setValue("email", e.target.value)}
+                  onChange={(e: any) => form.setValue("email", e.target.value)}
                   autoComplete="email"
                 />
                 <InputWithRef
@@ -99,7 +99,7 @@ export const LoginForm = forwardRef<HTMLDivElement>((props, ref) => {
                   type="password"
                   placeholder="••••••••"
                   name="password"
-                  onChange={(e) => form.setValue("password", e.target.value)}
+                  onChange={(e: any) => form.setValue("password", e.target.value)}
                   value={form.watch("password")}
                   autoComplete="current-password"
                 />

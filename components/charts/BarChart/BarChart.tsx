@@ -211,7 +211,7 @@ export function BarChart({
           <div className="chart-container" ref={chartContainerRef}>
             <Chart
               skeleton={skeleton}
-              tooltipFormatter={(value) =>
+              tooltipFormatter={(value: any) =>
                 `R$ ${value.toFixed(2).replace(".", ",")}`
               }
               lineStyles={{

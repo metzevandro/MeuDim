@@ -150,7 +150,7 @@ export const RegisterForm = () => {
               <div className="input-field">
                 <Input
                   disabled={isPending}
-                  onChange={(e) => form.setValue("name", e.target.value)}
+                  onChange={(e: any) => form.setValue("name", e.target.value)}
                   value={form.watch("name")}
                   label="Nome"
                   placeholder="Carlos Antônio"
@@ -160,7 +160,7 @@ export const RegisterForm = () => {
 
                 <Input
                   disabled={isPending}
-                  onChange={(e) => form.setValue("email", e.target.value)}
+                  onChange={(e: any) => form.setValue("email", e.target.value)}
                   value={form.watch("email")}
                   label="Email"
                   placeholder="carlos@gmail.com"
@@ -170,7 +170,7 @@ export const RegisterForm = () => {
 
                 <Input
                   disabled={isPending}
-                  onChange={(e) => form.setValue("password", e.target.value)}
+                  onChange={(e: any) => form.setValue("password", e.target.value)}
                   value={form.watch("password")}
                   label="Senha"
                   type="password"

@@ -220,7 +220,7 @@ export function LineChart({
           <div className="chart-container" ref={chartContainerRef}>
             <Chart
               skeleton={skeleton}
-              tooltipFormatter={(value) => {
+              tooltipFormatter={(value: any) => {
                 const formattedValue = typeof value === "number" ? value : 0;
                 return `R$ ${formattedValue.toFixed(2).replace(".", ",")}`;
               }}

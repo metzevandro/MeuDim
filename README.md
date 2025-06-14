@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<p align="center">
+  <img src="public/meuDim.svg" alt="MeuDim logo" width="120" />
+</p>
 
-## Getting Started
+# 💸 MeuDim
 
-First, run the development server:
+O **MeuDim** é um aplicativo de controle financeiro pessoal, desenvolvido para ajudar você a entender para onde seu dinheiro está indo e tomar decisões mais conscientes sobre suas finanças.
+
+## ✨ Funcionalidades
+
+- **Registro de Despesas:** Cadastre seus gastos, categorizando-os em categorias e subcategorias.
+- **Registro de Ganhos:** Registre suas receitas, identificando as fontes de renda.
+- **Formas de Pagamento:** Associe despesas a diferentes formas de pagamento (cartão, dinheiro, etc).
+- **Dashboard Interativo:** Visualize gráficos financeiros e utilize filtros por data para analisar suas finanças.
+- **Visão Clara:** Tenha uma visão consolidada dos seus gastos e ganhos, facilitando o planejamento financeiro.
+
+## 🚀 Começando
+
+Para rodar o projeto localmente:
 
 ```bash
+npm install
 npm run dev
-# or
+# ou
+yarn install
 yarn dev
-# or
+# ou
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000) no seu navegador para acessar o aplicativo.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tecnologias
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- [Next.js](https://nextjs.org/)
+- [React](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [next/font](https://nextjs.org/docs/basic-features/font-optimization) para otimização de fontes
 
-## Learn More
+## 📊 Dashboard
 
-To learn more about Next.js, take a look at the following resources:
+O dashboard do MeuDim oferece gráficos dinâmicos e filtros por período, permitindo uma análise detalhada dos seus gastos e ganhos.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📂 Estrutura do Projeto
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- `app/` - Páginas e componentes principais do aplicativo
+- `components/` - Componentes reutilizáveis
 
-## Deploy on Vercel
+## 🤝 Contribuição
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
+
+---
+Desenvolvido com 💸 por [Seu Nome ou Equipe].

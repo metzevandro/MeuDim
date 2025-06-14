@@ -1,12 +1,12 @@
-<p align="center">
-  <img src="public/meuDim.svg" alt="MeuDim logo" width="120" />
+<p align="left">
+  <img src="public/meuDim.svg" alt="MeuDim logo" width="150" />
 </p>
 
-# 💸 MeuDim
+# MeuDim
 
 O **MeuDim** é um aplicativo de controle financeiro pessoal, desenvolvido para ajudar você a entender para onde seu dinheiro está indo e tomar decisões mais conscientes sobre suas finanças.
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 - **Registro de Despesas:** Cadastre seus gastos, categorizando-os em categorias e subcategorias.
 - **Registro de Ganhos:** Registre suas receitas, identificando as fontes de renda.
@@ -14,7 +14,7 @@ O **MeuDim** é um aplicativo de controle financeiro pessoal, desenvolvido para 
 - **Dashboard Interativo:** Visualize gráficos financeiros e utilize filtros por data para analisar suas finanças.
 - **Visão Clara:** Tenha uma visão consolidada dos seus gastos e ganhos, facilitando o planejamento financeiro.
 
-## 🚀 Começando
+## Rodando o Projeto
 
 Para rodar o projeto localmente:
 
@@ -31,13 +31,6 @@ pnpm dev
 
 Abra [http://localhost:3000](http://localhost:3000) no seu navegador para acessar o aplicativo.
 
-## 🛠️ Tecnologias
-
-- [Next.js](https://nextjs.org/)
-- [React](https://react.dev/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [next/font](https://nextjs.org/docs/basic-features/font-optimization) para otimização de fontes
-
 ## 📊 Dashboard
 
 O dashboard do MeuDim oferece gráficos dinâmicos e filtros por período, permitindo uma análise detalhada dos seus gastos e ganhos.
@@ -47,13 +40,13 @@ O dashboard do MeuDim oferece gráficos dinâmicos e filtros por período, permi
 - `app/` - Páginas e componentes principais do aplicativo
 - `components/` - Componentes reutilizáveis
 
-## 🤝 Contribuição
+## Contribuição
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT.
+Este projeto está sob a licença [MIT](./LICENSE).
 
 ---
-Desenvolvido com 💸 por [Seu Nome ou Equipe].
+Desenvolvido por Evandro Metz.

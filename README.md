@@ -2,8 +2,6 @@
   <img src="public/meuDim.svg" alt="MeuDim logo" width="150" />
 </p>
 
-# MeuDim
-
 O **MeuDim** é um aplicativo de controle financeiro pessoal, desenvolvido para ajudar você a entender para onde seu dinheiro está indo e tomar decisões mais conscientes sobre suas finanças.
 
 ## Funcionalidades
@@ -35,7 +33,7 @@ Abra [http://localhost:3000](http://localhost:3000) no seu navegador para acessa
 
 O dashboard do MeuDim oferece gráficos dinâmicos e filtros por período, permitindo uma análise detalhada dos seus gastos e ganhos.
 
-## 📂 Estrutura do Projeto
+## Estrutura do Projeto
 
 - `app/` - Páginas e componentes principais do aplicativo
 - `components/` - Componentes reutilizáveis
@@ -44,13 +42,14 @@ O dashboard do MeuDim oferece gráficos dinâmicos e filtros por período, permi
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
 
-## 📄 Licença
+## Licença
 
 Este projeto está sob a licença [MIT](./LICENSE).
 
 ---
-Desenvolvido por Evandro Metz.
 
-## 🔗 Projeto em produção
+## Projeto em produção
 
 [Acesse aqui](https://financas-azure.vercel.app)
+
+Desenvolvido por Evandro Metz.

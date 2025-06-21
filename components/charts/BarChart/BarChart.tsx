@@ -2,11 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   BarChart as Chart,
 } from "design-system-zeroz";
-
 import "./BarChart.scss";
 
 interface BarChartProps {
@@ -23,27 +21,48 @@ interface BarChartProps {
   skeleton: boolean;
 }
 
-function getFormattedDate(date: Date): string {
-  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-}
+const getFormattedDate = (date: Date) =>
+  date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+
+const parseAmount = (value: any) =>
+  parseFloat(String(value).replace(",", ".")) || 0;
+
+const sumValuesByPeriod = (
+  items: any[],
+  startDate: Date,
+  endDate: Date
+): number =>
+  items?.reduce((acc: number, item: any) => {
+    const date = new Date(item.createdAt);
+    return date >= startDate && date <= endDate
+      ? acc + parseAmount(item.amount)
+      : acc;
+  }, 0) || 0;
+
+const sumValuesByYear = (items: any[], year: number): number =>
+  items?.reduce((acc: number, item: any) => {
+    const date = new Date(item.createdAt);
+    return date.getFullYear() === year ? acc + parseAmount(item.amount) : acc;
+  }, 0) || 0;
+
+const getAllYears = (transactions: any[], expenses: any[]): number[] => {
+  const yearsSet = new Set<number>();
+  [...(transactions || []), ...(expenses || [])].forEach((item) => {
+    yearsSet.add(new Date(item.createdAt).getFullYear());
+  });
+  return Array.from(yearsSet).sort((a, b) => a - b);
+};
 
 export function BarChart({
   userData,
   selectedMonth,
-  setSelectedMonth,
   selectedYear,
-  setSelectedYear,
-  isYearSelected,
   isAllYearsSelected,
-  firstDayOfMonth,
   lastDayOfMonth,
   skeleton,
 }: BarChartProps) {
   const [chartWidth, setChartWidth] = useState(0);
   const [chartHeight, setChartHeight] = useState(0);
-  const [randomData, setRandomData] = useState<
-    { ganhos: number; despesas: number }[]
-  >([]);
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,155 +72,73 @@ export function BarChart({
         setChartHeight(chartContainerRef.current.offsetHeight);
       }
     };
-
     updateDimensions();
     window.addEventListener("resize", updateDimensions);
-    return () => {
-      window.removeEventListener("resize", updateDimensions);
-    };
+    return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
-  const getAllYears = () => {
-    const yearsSet = new Set<number>();
-    userData?.user?.transactions?.forEach((t: any) => {
-      yearsSet.add(new Date(t.createdAt).getFullYear());
-    });
-    userData?.user?.expense?.forEach((e: any) => {
-      yearsSet.add(new Date(e.createdAt).getFullYear());
-    });
-    return Array.from(yearsSet).sort((a, b) => a - b);
+  const buildDataBar = () => {
+    const transactions = userData?.user?.transactions || [];
+    const expenses = userData?.user?.expense || [];
+
+    if (isAllYearsSelected) {
+      return getAllYears(transactions, expenses).map((year) => ({
+        month: year.toString(),
+        Ganhos: sumValuesByYear(transactions, year),
+        Despesas: sumValuesByYear(expenses, year),
+      }));
+    }
+
+    if (selectedMonth === 12 && typeof selectedYear === "number") {
+      return Array.from({ length: 12 }, (_, month) => {
+        const start = new Date(selectedYear, month, 1);
+        const end = new Date(selectedYear, month + 1, 0);
+        const label = start.toLocaleString("pt-BR", {
+          month: "short",
+          year: "numeric",
+        });
+
+        return {
+          month: label,
+          Ganhos: sumValuesByPeriod(transactions, start, end),
+          Despesas: sumValuesByPeriod(expenses, start, end),
+        };
+      });
+    }
+
+    if (typeof selectedYear === "number") {
+      return Array.from({ length: lastDayOfMonth.getDate() }, (_, day) => {
+        const date = new Date(selectedYear, selectedMonth, day + 1);
+        const label = getFormattedDate(date);
+
+        const filterByDate = (items: any[]) =>
+          items.filter((i) => {
+            const d = new Date(i.createdAt);
+            return (
+              d.getDate() === date.getDate() &&
+              d.getMonth() === date.getMonth() &&
+              d.getFullYear() === date.getFullYear()
+            );
+          });
+
+        const Ganhos = filterByDate(transactions).reduce(
+          (acc, item) => acc + parseAmount(item.amount),
+          0
+        );
+
+        const Despesas = filterByDate(expenses).reduce(
+          (acc, item) => acc + parseAmount(item.amount),
+          0
+        );
+
+        return { month: label, Ganhos, Despesas };
+      });
+    }
+
+    return [];
   };
 
-  let dataBar: any[] = [];
-
-  if (isAllYearsSelected) {
-    const years = getAllYears();
-    dataBar = years.map((year) => {
-      const ganhos =
-        userData?.user?.transactions?.reduce(
-          (acc: number, transaction: any) => {
-            const transactionDate = new Date(transaction.createdAt);
-            if (transactionDate.getFullYear() === year) {
-              const amount =
-                parseFloat(String(transaction.amount).replace(",", ".")) || 0;
-              return acc + amount;
-            }
-            return acc;
-          },
-          0,
-        ) || 0;
-
-      const despesas =
-        userData?.user?.expense?.reduce((acc: number, expense: any) => {
-          const expenseDate = new Date(expense.createdAt);
-          if (expenseDate.getFullYear() === year) {
-            const amount =
-              parseFloat(String(expense.amount).replace(",", ".")) || 0;
-            return acc + amount;
-          }
-          return acc;
-        }, 0) || 0;
-
-      return {
-        month: year.toString(),
-        ganhos,
-        despesas,
-      };
-    });
-  } else if (selectedMonth === 12) {
-    dataBar =
-      typeof selectedYear === "number"
-        ? Array.from({ length: 12 }, (_, month) => {
-            const firstDay = new Date(selectedYear, month, 1);
-            const lastDay = new Date(selectedYear, month + 1, 0);
-            const formattedMonth = firstDay.toLocaleString("pt-BR", {
-              month: "short",
-              year: "numeric",
-            });
-
-            const ganhos =
-              userData?.user?.transactions?.reduce(
-                (acc: number, transaction: any) => {
-                  const transactionDate = new Date(transaction.createdAt);
-                  if (
-                    transactionDate >= firstDay &&
-                    transactionDate <= lastDay
-                  ) {
-                    const amount =
-                      parseFloat(
-                        String(transaction.amount).replace(",", "."),
-                      ) || 0;
-                    return acc + amount;
-                  }
-                  return acc;
-                },
-                0,
-              ) || 0;
-
-            const despesas =
-              userData?.user?.expense?.reduce((acc: number, expense: any) => {
-                const expenseDate = new Date(expense.createdAt);
-                if (expenseDate >= firstDay && expenseDate <= lastDay) {
-                  const amount =
-                    parseFloat(String(expense.amount).replace(",", ".")) || 0;
-                  return acc + amount;
-                }
-                return acc;
-              }, 0) || 0;
-
-            return {
-              month: formattedMonth,
-              ganhos: ganhos,
-              despesas: despesas,
-            };
-          })
-        : [];
-  } else {
-    dataBar =
-      typeof selectedYear === "number"
-        ? Array.from({ length: lastDayOfMonth.getDate() }, (_, day) => {
-            const date = new Date(selectedYear, selectedMonth, day + 1);
-            const formattedMonth = getFormattedDate(date);
-
-            const ganhos = userData?.user?.transactions
-              ?.filter((transaction: any) => {
-                const transactionDate = new Date(transaction.createdAt);
-                return (
-                  transactionDate.getDate() === date.getDate() &&
-                  transactionDate.getMonth() === date.getMonth() &&
-                  transactionDate.getFullYear() === date.getFullYear()
-                );
-              })
-              .reduce(
-                (acc: number, transaction: any) =>
-                  acc +
-                  parseFloat(String(transaction.amount).replace(",", ".")),
-                0,
-              );
-
-            const despesas = userData?.user?.expense
-              ?.filter((expense: any) => {
-                const expenseDate = new Date(expense.createdAt);
-                return (
-                  expenseDate.getDate() === date.getDate() &&
-                  expenseDate.getMonth() === date.getMonth() &&
-                  expenseDate.getFullYear() === date.getFullYear()
-                );
-              })
-              .reduce(
-                (acc: number, expense: any) =>
-                  acc + parseFloat(String(expense.amount).replace(",", ".")),
-                0,
-              );
-
-            return {
-              month: formattedMonth,
-              ganhos: ganhos,
-              despesas: despesas,
-            };
-          })
-        : [];
-  }
+  const dataBar = buildDataBar();
 
   return (
     <Card
@@ -211,21 +148,17 @@ export function BarChart({
           <div className="chart-container" ref={chartContainerRef}>
             <Chart
               skeleton={skeleton}
-              tooltipFormatter={(value: any) =>
+              tooltipFormatter={(value: number) =>
                 `R$ ${value.toFixed(2).replace(".", ",")}`
               }
               lineStyles={{
-                despesas: {
-                  color: "var(--s-color-fill-warning)",
-                },
-                ganhos: {
-                  color: "var(--s-color-fill-success)",
-                },
+                Despesas: { color: "var(--s-color-fill-warning)" },
+                Ganhos: { color: "var(--s-color-fill-success)" },
               }}
               data={dataBar}
               height={chartHeight}
               width={chartWidth}
-              caption={true}
+              caption
             />
           </div>
         </CardContent>

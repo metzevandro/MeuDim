@@ -81,6 +81,26 @@ export function BarChart({
     const transactions = userData?.user?.transactions || [];
     const expenses = userData?.user?.expense || [];
 
+    if (selectedMonth === 12 && selectedYear === "all") {
+      const years = getAllYears(transactions, expenses);
+      return years.flatMap((year) =>
+        Array.from({ length: 12 }, (_, month) => {
+          const start = new Date(year, month, 1);
+          const end = new Date(year, month + 1, 0);
+          const label = start.toLocaleString("pt-BR", {
+            month: "short",
+            year: "numeric",
+          });
+
+          return {
+            month: label,
+            Ganhos: sumValuesByPeriod(transactions, start, end),
+            Despesas: sumValuesByPeriod(expenses, start, end),
+          };
+        })
+      );
+    }
+
     if (isAllYearsSelected) {
       return getAllYears(transactions, expenses).map((year) => ({
         month: year.toString(),

@@ -54,6 +54,27 @@ const buildDataArea = (
   const transactions = userData?.user?.transactions || [];
   const expenses = userData?.user?.expense || [];
 
+  if (selectedMonth === 12 && selectedYear === "all") {
+    const years = getAllYears(transactions, expenses);
+    return years.flatMap((year) =>
+      Array.from({ length: 12 }, (_, monthIdx) => {
+        const date = new Date(year, monthIdx + 1, 0);
+        const label = date.toLocaleDateString("pt-BR", {
+          month: "short",
+          year: "numeric",
+        });
+
+        const totalGanhos = sumUntilDate(transactions, date);
+        const totalDespesas = sumUntilDate(expenses, date);
+
+        return {
+          month: label,
+          "Saldo Total": totalGanhos - totalDespesas,
+        };
+      })
+    );
+  }
+
   if (isAllYearsSelected) {
     let acumuladoGanhos = 0;
     let acumuladoDespesas = 0;

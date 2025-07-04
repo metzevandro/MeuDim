@@ -45,6 +45,12 @@ const sumUntilDate = (items: any[], date: Date) =>
     ?.filter((item: any) => new Date(item.createdAt) <= date)
     .reduce((acc: number, item: any) => acc + parseAmount(item.amount), 0) || 0;
 
+const getEndOfDay = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+};
+
 const buildDataArea = (
   userData: any,
   selectedYear: number | "all",
@@ -58,7 +64,8 @@ const buildDataArea = (
     const years = getAllYears(transactions, expenses);
     return years.flatMap((year) =>
       Array.from({ length: 12 }, (_, monthIdx) => {
-        const date = new Date(year, monthIdx + 1, 0);
+        const lastDay = new Date(year, monthIdx + 1, 0);
+        const date = getEndOfDay(lastDay);
         const label = date.toLocaleDateString("pt-BR", {
           month: "short",
           year: "numeric",
@@ -79,11 +86,9 @@ const buildDataArea = (
     let acumuladoGanhos = 0;
     let acumuladoDespesas = 0;
     return getAllYears(transactions, expenses).map((year) => {
-      const ganhosAno = sumUntilDate(
-        transactions,
-        new Date(year, 11, 31)
-      );
-      const despesasAno = sumUntilDate(expenses, new Date(year, 11, 31));
+      const date = getEndOfDay(new Date(year, 11, 31));
+      const ganhosAno = sumUntilDate(transactions, date);
+      const despesasAno = sumUntilDate(expenses, date);
       acumuladoGanhos += ganhosAno;
       acumuladoDespesas += despesasAno;
 
@@ -96,7 +101,8 @@ const buildDataArea = (
 
   if (selectedMonth === 12 && typeof selectedYear === "number") {
     return Array.from({ length: 12 }, (_, monthIdx) => {
-      const date = new Date(selectedYear, monthIdx + 1, 0);
+      const lastDay = new Date(selectedYear, monthIdx + 1, 0);
+      const date = getEndOfDay(lastDay);
       const label = date.toLocaleDateString("pt-BR", {
         month: "short",
         year: "numeric",
@@ -113,11 +119,14 @@ const buildDataArea = (
   }
 
   if (typeof selectedYear === "number") {
-    return generateMonthDates(selectedYear, selectedMonth).map((date) => ({
-      month: getFormattedDate(date),
-      "Saldo Total":
-        sumUntilDate(transactions, date) - sumUntilDate(expenses, date),
-    }));
+    return generateMonthDates(selectedYear, selectedMonth).map((date) => {
+      const endOfDay = getEndOfDay(date);
+      return {
+        month: getFormattedDate(date),
+        "Saldo Total":
+          sumUntilDate(transactions, endOfDay) - sumUntilDate(expenses, endOfDay),
+      };
+    });
   }
 
   return [];

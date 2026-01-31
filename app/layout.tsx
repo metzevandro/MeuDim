@@ -8,7 +8,6 @@ import { SessionProvider } from "next-auth/react";
 import React from "react";
 import LayoutPage from "@/app/(protected)/_components/layout";
 import Provider from "./(protected)/_components/provider";
-import Loader from "./(protected)/_components/loader";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -39,11 +38,9 @@ export default async function RootLayout({
         <body className={inter.className}>
           <Analytics />
           <SpeedInsights />
-          <Loader>
             <Provider>
               <LayoutPage>{children}</LayoutPage>
             </Provider>
-          </Loader>
         </body>
       </html>
     </SessionProvider>

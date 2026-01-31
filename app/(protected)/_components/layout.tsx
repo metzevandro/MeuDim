@@ -14,7 +14,6 @@ import {
   DropdownTitle,
 } from "design-system-zeroz";
 import { useTheme } from "@/data/useTheme";
-import { Sair } from "@/actions/logout";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@/data/provider";
 import { useLogout } from "./sair";

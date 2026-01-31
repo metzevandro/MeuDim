@@ -6,7 +6,7 @@ import { getUserById } from "@/data/user";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-export const settings = async (values: z.infer<typeof SettingsSchema>) => {
+export const updateAccountInformation = async (values: z.infer<typeof SettingsSchema>) => {
   const user = await currentUser();
 
   if (!user || !user.id) {

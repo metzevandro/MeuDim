@@ -18,7 +18,7 @@ import {
 
 import { RegisterSchema } from "@/schemas/index";
 import { register } from "@/actions/register";
-import { login } from "@/actions/login";
+import { login } from "@/actions/auth/login";
 import { createInitialData } from "@/actions/createInitialData";
 
 import "./register-form.scss";

@@ -9,7 +9,7 @@ import * as z from "zod";
 import { Input, Button, Link, Notification } from "design-system-zeroz";
 
 import { LoginSchema } from "@/schemas";
-import { login } from "@/actions/login";
+import { login } from "@/actions/auth/login";
 
 import "./login-form.scss";
 

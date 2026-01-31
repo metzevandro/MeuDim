@@ -2,9 +2,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   AtualizarCategoria,
-  CriarCategoria,
+  CreateCategory,
   ExcluirCategoria,
-} from "@/actions/categoria";
+} from "@/actions/category";
 import { NovaCategoriaSchema } from "@/schemas";
 import { z } from "zod";
 import {
@@ -138,7 +138,7 @@ export default function CategoryPage() {
         subcategoria: subcategoriasMap["new"] || [],
       };
 
-      const data = await CriarCategoria(categoriaValues);
+      const data = await CreateCategory(categoriaValues);
 
       if (data.error) {
         setNotificationOpen(true);

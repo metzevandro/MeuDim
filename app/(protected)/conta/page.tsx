@@ -12,7 +12,7 @@ import {
   SavebarTrigger,
 } from "design-system-zeroz";
 import { SettingsSchema } from "@/schemas";
-import { settings } from "@/actions/settings";
+import { updateAccountInformation } from "@/actions//account/updateAccountInformation";
 
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
@@ -62,7 +62,7 @@ const SettingsPage = () => {
   const formChanged = form.watch("name") !== formValues.name;
 
   const handleCancel = () => {
-    form.reset(formValues); // Reset para os valores iniciais
+    form.reset(formValues); 
   };
 
   const atualizarSettings = async () => {
@@ -70,7 +70,7 @@ const SettingsPage = () => {
       const settingsValues = {
         ...form.getValues(),
       };
-      const data = await settings(settingsValues);
+      const data = await updateAccountInformation(settingsValues);
 
       if (data.error) {
         setError(data.error ?? "");

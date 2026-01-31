@@ -13,15 +13,15 @@ enum UserRole {
 }
 
 model User {
-  id       String    @id @default(cuid())
+  id       String   @id @default(cuid())
   name     String?
-  email    String?   @unique
+  email    String?  @unique
   image    String?
   password String?
-  role     UserRole  @default(USER)
-  accounts Account[]
+  role     UserRole @default(USER)
 
-  expenses    Expense[]
+  accounts     Account[]
+  expenses     Expense[]
   transactions Transaction[]
 }
 
@@ -31,13 +31,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
+
+  refreshToken  String? @db.Text
+  accessToken   String? @db.Text
+  expiresAt     Int?
+  tokenType     String?
+  scope         String?
+  idToken       String? @db.Text
+  sessionState  String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -45,68 +46,72 @@ model Account {
 }
 
 model Transaction {
-  id         String       @id @default(cuid())
-  amount     Float        
-  accountId  String
-  createdAt  DateTime  
-  categoryId String
-  category   FonteDeRenda @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  user       User         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
+  amount        Float
+  accountId     String
+  createdAt     DateTime
+  incomeSourceId String
+
+  incomeSource IncomeSource @relation(fields: [incomeSourceId], references: [id], onDelete: Restrict)
+  user         User         @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
 
 model Expense {
-  id                 String            @id @default(cuid())
-  amount             Float             
-  accountId          String
-  createdAt          DateTime        
-  categoriaId        String
-  subcategoriaId     String?
-  formaDePagamentoId String?           
-  user               User              @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  Categoria          Categoria?        @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
-  Subcategoria       Subcategoria?     @relation(fields: [subcategoriaId], references: [id], onDelete: Restrict)
-  FormaDePagamento   FormaDePagamento? @relation(fields: [formaDePagamentoId], references: [id], onDelete: Restrict)
+  id              String   @id @default(cuid())
+  amount          Float
+  accountId        String
+  createdAt        DateTime
+
+  categoryId       String
+  subcategoryId    String?
+  paymentMethodId  String?
+
+  user           User          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category       Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategory    Subcategory?   @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
+  paymentMethod  PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
 }
 
-model Categoria {
+model Category {
   id        String   @id @default(cuid())
   name      String
   userId    String
   createdAt DateTime
 
-  expenses       Expense[]      
-  subcategorias  Subcategoria[]
+  expenses      Expense[]
+  subcategories Subcategory[]
 
   @@unique([name, userId])
 }
 
-model Subcategoria {
-  id          String @id @default(cuid())
-  name        String
-  categoriaId String
+model Subcategory {
+  id         String @id @default(cuid())
+  name       String
+  categoryId String
 
-  categoria Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
-  expenses  Expense[] 
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  expenses Expense[]
 
-  @@unique([name, categoriaId])
+  @@unique([name, categoryId])
 }
 
-model FormaDePagamento {
+model PaymentMethod {
   id        String   @id @default(cuid())
   name      String
   userId    String
   createdAt DateTime
 
-  expenses Expense[] 
+  expenses Expense[]
 
   @@unique([name, userId])
 }
 
-model FonteDeRenda {
-  id          String        @id @default(cuid())
-  name        String
-  userId      String
-  createdAt   DateTime
+model IncomeSource {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  createdAt DateTime
+
   transactions Transaction[]
 
   @@unique([name, userId])

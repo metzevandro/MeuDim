@@ -115,7 +115,7 @@ const HomePage = () => {
         const amount =
           typeof transaction.amount === "number"
             ? transaction.amount
-            : parseFloat(transaction.amount.replace(",", ".")) || 0;
+            : parseFloat(transaction.amount) || 0;
         return acc + amount;
       }
       return acc;
@@ -128,17 +128,17 @@ const HomePage = () => {
   };
 
   const sumDespesas = () => {
-    if (!userData?.user || !Array.isArray(userData.user.expense)) {
+    if (!userData?.user || !Array.isArray(userData.user.expenses)) {
       return "0,00";
     }
 
-    const total = userData.user.expense.reduce((acc, expense) => {
+    const total = userData.user.expenses.reduce((acc, expense) => {
       const expenseDate = new Date(expense.createdAt);
       if (filterByPeriod(expenseDate)) {
         const amount =
           typeof expense.amount === "number"
             ? expense.amount
-            : parseFloat(expense.amount.replace(",", ".")) || 0;
+            : parseFloat(expense.amount) || 0;
         return acc + amount;
       }
       return acc;
@@ -160,16 +160,16 @@ const HomePage = () => {
         const amount =
           typeof transaction.amount === "number"
             ? transaction.amount
-            : parseFloat(transaction.amount.replace(",", ".")) || 0;
+            : parseFloat(transaction.amount) || 0;
         return acc + amount;
       }, 0) || 0;
 
     const totalDespesas =
-      userData.user.expense?.reduce((acc, expense) => {
+      userData.user.expenses?.reduce((acc, expense) => {
         const amount =
           typeof expense.amount === "number"
             ? expense.amount
-            : parseFloat(expense.amount.replace(",", ".")) || 0;
+            : parseFloat(expense.amount) || 0;
         return acc + amount;
       }, 0) || 0;
 
@@ -239,7 +239,7 @@ const HomePage = () => {
           const amount =
             typeof transaction.amount === "number"
               ? transaction.amount
-              : parseFloat(transaction.amount.replace(",", ".")) || 0;
+              : parseFloat(transaction.amount) || 0;
           return acc + amount;
         }
         return acc;
@@ -254,7 +254,7 @@ const HomePage = () => {
         const amount =
           typeof transaction.amount === "number"
             ? transaction.amount
-            : parseFloat(transaction.amount.replace(",", ".")) || 0;
+            : parseFloat(transaction.amount) || 0;
         return acc + amount;
       }
       return acc;
@@ -273,7 +273,7 @@ const HomePage = () => {
           const amount =
             typeof expense.amount === "number"
               ? expense.amount
-              : parseFloat(expense.amount.replace(",", ".")) || 0;
+              : parseFloat(expense.amount) || 0;
           return acc + amount;
         }
         return acc;
@@ -288,7 +288,7 @@ const HomePage = () => {
         const amount =
           typeof expense.amount === "number"
             ? expense.amount
-            : parseFloat(expense.amount.replace(",", ".")) || 0;
+            : parseFloat(expense.amount) || 0;
         return acc + amount;
       }
       return acc;
@@ -325,7 +325,7 @@ const HomePage = () => {
       );
 
   const currentMonthDespesas = isAllYearsSelected
-    ? userData?.user?.expense?.reduce((acc: number, expense: any) => {
+    ? userData?.user?.expenses?.reduce((acc: number, expense: any) => {
         const expenseDate = new Date(expense.createdAt);
         if (selectedMonth === 12 || selectedMonth === expenseDate.getMonth()) {
           const amount =
@@ -337,7 +337,7 @@ const HomePage = () => {
         return acc;
       }, 0) || 0
     : calculateTotalExpensesForMonth(
-        userData?.user?.expense || [],
+        userData?.user?.expenses || [],
         selectedYear,
         selectedMonth,
       );
@@ -345,7 +345,7 @@ const HomePage = () => {
   const previousMonthDespesas = isAllYearsSelected
     ? 0
     : calculateTotalExpensesForMonth(
-        userData?.user?.expense || [],
+        userData?.user?.expenses || [],
         selectedYear,
         selectedMonth - 1,
       );

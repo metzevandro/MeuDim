@@ -1,65 +1,128 @@
-export interface Subcategorias {
+// Enums
+export type UserRole = "ADMIN" | "USER";
+
+// ================== CORE MODELS ==================
+
+export interface User {
   id: string;
-  name: string;
-  categoriaId: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  password?: string | null;
+  role: UserRole;
+
+  accounts: Account[];
+  expenses: Expense[];
+  transactions: Transaction[];
 }
 
-export interface FonteDeRenda {
+// ================== AUTH ==================
+
+export interface Account {
   id: string;
-  name: string;
   userId: string;
-  createdAt: string;
+  type: string;
+  provider: string;
+  providerAccountId: string;
+
+  refreshToken?: string | null;
+  accessToken?: string | null;
+  expiresAt?: number | null;
+  tokenType?: string | null;
+  scope?: string | null;
+  idToken?: string | null;
+  sessionState?: string | null;
+
+  user: User;
 }
+
+// ================== FINANCE ==================
+
+export interface Transaction {
+  id: string;
+  amount: number;
+  accountId: string;
+  createdAt: string; // ou Date
+  incomeSourceId: string;
+
+  incomeSource: IncomeSource;
+  user: User;
+}
+
+export interface Expense {
+  id: string;
+  amount: number;
+  accountId: string;
+  createdAt: string;
+
+  categoryId: string;
+  subcategoryId?: string | null;
+  paymentMethodId?: string | null;
+
+  user: User;
+  category: Category;
+  subcategory?: Subcategory | null;
+  paymentMethod?: PaymentMethod | null;
+}
+
+// ================== CATEGORY ==================
 
 export interface Category {
   id: string;
   name: string;
   userId: string;
   createdAt: string;
-  subcategorias: Subcategorias[];
+
+  expenses: Expense[];
+  subcategories: Subcategory[];
 }
 
-export interface Transaction {
+export interface Subcategory {
   id: string;
   name: string;
-  amount: string;
-  createdAt: string;
-  userId: string;
   categoryId: string;
+
   category: Category;
+  expenses: Expense[];
 }
 
-export interface FormaDePagamento {
+// ================== PAYMENT & INCOME ==================
+
+export interface PaymentMethod {
   id: string;
   name: string;
   userId: string;
   createdAt: string;
+
+  expenses: Expense[];
 }
 
-export interface Expense {
+export interface IncomeSource {
   id: string;
   name: string;
-  amount: string;
-  createdAt: string;
   userId: string;
-  categoriaId: string;
-  formaDePagamentoId: string;
-  formaDePagamento: FormaDePagamento;
-  subcategoriaId: string;
-}
+  createdAt: string;
 
-export interface User {
-  name?: string;
-  email?: string;
-  image: string | null;
-  id: string;
-  role: string;
-  formaDePagamento: FormaDePagamento[];
-  categoria: Category[];
   transactions: Transaction[];
-  expense: Expense[];
-  categories: FonteDeRenda[];
 }
+
+// ================== TOKENS ==================
+
+export interface VerificationToken {
+  id: string;
+  email: string;
+  token: string;
+  expires: string;
+}
+
+export interface PasswordResetToken {
+  id: string;
+  email: string;
+  token: string;
+  expires: string;
+}
+
+// ================== SESSION ==================
 
 export interface UserData {
   user: User;

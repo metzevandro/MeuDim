@@ -1,9 +1,18 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { Client } from "@neondatabase/serverless";
 
-declare global {
-  var prisma: PrismaClient | undefined;
-}
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const db = globalThis.prisma || new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
 
-if (process.env.NODE_ENV !== "production") globalThis.prisma = db;
+export const db =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    adapter: new PrismaNeon(
+      new Client({ connectionString })
+    ),
+    log: ["error"],
+  });
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;

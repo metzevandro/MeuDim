@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { neonConfig } from "@neondatabase/serverless";
+import { PrismaClient } from "./generated/prisma/client";
 
 // Evita que ws tente usar `bufferutil` (que às vezes é resolvido sem a função mask em bundlers)
 process.env.WS_NO_BUFFER_UTIL = "1";

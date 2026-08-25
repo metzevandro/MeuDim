@@ -2,15 +2,15 @@
 import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
-import { ExpenseSchema } from "@/schemas";
+import { expenseSchema } from "@/schemas";
 import { z } from "zod";
 
 export const updateExpense = async (
-  values: z.infer<typeof ExpenseSchema>,
+  values: z.infer<typeof expenseSchema>,
   expenseId: string,
 ) => {
   try {
-    const validatedFields = ExpenseSchema.parse(values);
+    const validatedFields = expenseSchema.parse(values);
     const user = await currentUser();
 
     if (!user || !user.id) {
@@ -23,10 +23,10 @@ export const updateExpense = async (
       return { error: "Não autorizado" };
     }
 
-    const { data, categoria, valor, formaDePagamento, subcategoria } =
+    const { date, categoryId, amount, paymentMethodId, subcategoryId } =
       validatedFields;
 
-    const [day, month, year] = data.split("/");
+    const [day, month, year] = date.split("/");
     const formattedDate = new Date(
       Date.UTC(
         parseInt(year, 10),
@@ -42,39 +42,39 @@ export const updateExpense = async (
       return { error: "Data inválida" };
     }
 
-    const categoryExists = await db.categoria.findFirst({
-      where: { name: categoria, userId: dbUser.id },
+    const categoryExists = await db.category.findFirst({
+      where: { id: categoryId, userId: dbUser.id },
     });
 
     if (!categoryExists) {
       return { error: "A categoria especificada não existe" };
     }
 
-    const formaDePagamentoExiste = await db.formaDePagamento.findFirst({
-      where: { name: formaDePagamento, userId: dbUser.id },
+    const paymentMethodExists = await db.paymentMethod.findFirst({
+      where: { id: paymentMethodId, userId: dbUser.id },
     });
 
-    if (!formaDePagamentoExiste) {
+    if (!paymentMethodExists) {
       return { error: "A forma de pagamento especificada não existe" };
     }
 
-    const subcategoriaExiste = await db.subcategoria.findFirst({
-      where: { name: subcategoria, categoriaId: categoryExists.id },
+    const subcategoryExists = await db.subcategory.findFirst({
+      where: { id: subcategoryId, categoryId: categoryExists.id },
     });
 
-    if (!subcategoriaExiste) {
+    if (!subcategoryExists) {
       return { error: "A subcategoria especificada não existe" };
     }
 
     const expenseExists = await db.expense.findFirst({
-      where: { id: expenseId, accountId: dbUser.id },
+      where: { id: expenseId, userId: dbUser.id },
     });
 
     if (!expenseExists) {
       return { error: "A despesa especificada não existe" };
     }
 
-    const formattedAmount = parseFloat(valor.replace(",", "."));
+    const formattedAmount = parseFloat(amount.replace(",", "."));
 
     if (isNaN(formattedAmount) || formattedAmount <= 0) {
       return { error: "Valor inválido ou menor que R$ 0,00" };
@@ -85,9 +85,9 @@ export const updateExpense = async (
       data: {
         amount: formattedAmount,
         createdAt: formattedDate.toISOString(),
-        categoriaId: categoryExists.id,
-        formaDePagamentoId: formaDePagamentoExiste.id,
-        subcategoriaId: subcategoriaExiste?.id,
+        categoryId: categoryExists.id,
+        paymentMethodId: paymentMethodExists.id,
+        subcategoryId: subcategoryExists?.id,
       },
     });
 

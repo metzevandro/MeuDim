@@ -4,12 +4,12 @@ import * as z from "zod";
 import { AuthError } from "next-auth";
 
 import { signIn } from "@/auth";
-import { LoginSchema } from "@/schemas";
+import { loginSchema } from "@/schemas";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { getUserByEmail } from "@/data/user";
 
-export const login = async (values: z.infer<typeof LoginSchema>) => {
-  const validatedFields = LoginSchema.safeParse(values);
+export const login = async (values: z.infer<typeof loginSchema>) => {
+  const validatedFields = loginSchema.safeParse(values);
 
   if (!validatedFields.success) {
     return { error: "error" };

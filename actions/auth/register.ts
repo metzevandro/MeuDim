@@ -1,12 +1,11 @@
 "use server";
 import * as z from "zod";
 import bcrypt from "bcrypt";
-import { RegisterSchema } from "@/schemas";
+import { registerSchema } from "@/schemas";
 import { db } from "@/lib/db";
 
-export const register = async (values: z.infer<typeof RegisterSchema>) => {
-  const validatedFields = RegisterSchema.safeParse(values);
-
+export const register = async (values: z.infer<typeof registerSchema>) => {
+  const validatedFields = registerSchema.safeParse(values);
   if (!validatedFields.success) {
     return { error: "error" };
   }
@@ -36,6 +35,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 
     return { success: "Usuário criado", userId: newUser.id };
   } catch (error) {
+    console.error("Erro ao registrar usuário:", error);
     return { error: "Erro ao registrar usuário." };
   }
 };

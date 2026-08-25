@@ -1,14 +1,15 @@
 "use server";
+
+import { categorySchema } from "@/schemas";
 import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
+import z from "zod";
 
-export const CreateCategory = async (values: {
-  name: string;
-  date: Date;
-  subcategoria: string[];
-}) => {
-  const { name, date, subcategoria } = values;
+export const createCategory = async (
+  values: z.infer<typeof categorySchema>,
+) => {
+  const { name, subcategoria } = values;
 
   try {
     const user = await currentUser();
@@ -21,19 +22,19 @@ export const CreateCategory = async (values: {
       return { error: "Não autorizado" };
     }
 
-    await db.categoria.create({
+    await db.category.create({
       data: {
-        createdAt: date,
+        createdAt: new Date(),
         name,
         userId: dbUser.id,
-        subcategorias: {
+        subcategories: {
           create: subcategoria.map((subcategoriaName) => ({
             name: subcategoriaName,
           })),
         },
       },
       include: {
-        subcategorias: true,
+        subcategories: true,
       },
     });
 
@@ -43,4 +44,3 @@ export const CreateCategory = async (values: {
     return { error: "Erro ao criar a categoria" };
   }
 };
-

@@ -6,13 +6,6 @@ import { db } from "@/lib/db";
 import authConfig from "@/auth.config";
 import { getUserById } from "@/data/user";
 import { getAccountByUserId } from "./data/account";
-import {
-  getCategoriaByUserId,
-  getCategoriesByUserId,
-  getExpenseByUserId,
-  getFormaDePagamentoByUserId,
-  getTransactionsByUserId,
-} from "./data/transactions";
 
 export const {
   handlers: { GET, POST },
@@ -58,33 +51,6 @@ export const {
         if (token.isOAuth) {
           session.user.isOAuth = token.isOAuth as boolean;
         }
-      }
-
-      if (!session.user.transactions) {
-        const transactions = await getTransactionsByUserId(session.user.id);
-        session.user.transactions = transactions;
-      }
-
-      if (!session.user.expense) {
-        const expense = await getExpenseByUserId(session.user.id);
-        session.user.expense = expense;
-      }
-
-      if (!session.user.transactions.categories) {
-        const categories = await getCategoriesByUserId(session.user.id);
-        session.user.categories = categories;
-      }
-
-      if (!session.user.categoria) {
-        const categoria = await getCategoriaByUserId(session.user.id);
-        session.user.categoria = categoria;
-      }
-
-      if (!session.user.formasDePagamento) {
-        const formaDePagamento = await getFormaDePagamentoByUserId(
-          session.user.id,
-        );
-        session.user.formaDePagamento = formaDePagamento;
       }
 
       return session;

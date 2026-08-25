@@ -1,21 +1,22 @@
-import { UserRole } from "@prisma/client";
+import {
+  UserRole,
+  Earning,
+  Expense,
+  Category,
+  IncomeSource,
+  PaymentMethod,
+} from "@prisma/client";
 import NextAuth, { type DefaultSession } from "next-auth";
 
 export type ExtendedUser = NextAuth.DefaultSession["user"] & {
   role: UserRole;
   id: string;
   isOAuth: boolean;
-  username: string;
-  transactions: {
-    id: string;
-    amount: number;
-    createdAt: string;
-    category: {
-      id: string;
-      createdAt: string;
-      name: string;
-    };
-  };
+  eanings: Earning[];
+  expenses: Expense[];
+  categories: Category[];
+  incomeSources: IncomeSource[];
+  paymentMethods: PaymentMethod[];
 };
 
 declare module "next-auth" {

@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.scss";
-import "design-system-zeroz/dist/index.esm.css";
-import "design-system-zeroz/src/scss/tokens/tokens.scss";
 import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
 import React from "react";
@@ -10,8 +8,12 @@ import LayoutPage from "@/app/(protected)/_components/layout";
 import Provider from "./(protected)/_components/provider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import "../node_modules/design-system-zeroz/dist/styles.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  display: "optional",
+});
 
 export const metadata: Metadata = {
   title: "MeuDim",
@@ -28,19 +30,14 @@ export default async function RootLayout({
 
   return (
     <SessionProvider session={session}>
-      <html lang="pt-br" data-company="whitelabel">
-        <head>
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-          />
-        </head>
+      <html lang="pt-BR" data-company="whitelabel">
         <body className={inter.className}>
           <Analytics />
           <SpeedInsights />
-            <Provider>
-              <LayoutPage>{children}</LayoutPage>
-            </Provider>
+
+          <Provider>
+            <LayoutPage>{children}</LayoutPage>
+          </Provider>
         </body>
       </html>
     </SessionProvider>

@@ -3,9 +3,7 @@ import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
 
-export const deletePaymenteMethod = async (
-  formaDePagamentoIds: string[],
-) => {
+export const deletePaymenteMethod = async (paymentMethodsIds: string[]) => {
   try {
     const user = await currentUser();
 
@@ -14,18 +12,18 @@ export const deletePaymenteMethod = async (
     const dbUser = await getUserById(user.id);
     if (!dbUser) return { error: "Não autorizado" };
 
-    const formasDePagamento = await db.formaDePagamento.findMany({
-      where: { id: { in: formaDePagamentoIds }, userId: dbUser.id },
+    const paymentMethods = await db.paymentMethod.findMany({
+      where: { id: { in: paymentMethodsIds }, userId: dbUser.id },
     });
 
-    if (formasDePagamento.length !== formaDePagamentoIds.length) {
+    if (paymentMethods.length !== paymentMethodsIds.length) {
       return {
         error: "Uma ou mais formas de pagamento especificadas não existem",
       };
     }
 
     const hasExpenses = await db.expense.findMany({
-      where: { formaDePagamentoId: { in: formaDePagamentoIds } },
+      where: { paymentMethodId: { in: paymentMethodsIds } },
     });
 
     if (hasExpenses.length > 0) {
@@ -35,12 +33,12 @@ export const deletePaymenteMethod = async (
       };
     }
 
-    await db.formaDePagamento.deleteMany({
-      where: { id: { in: formaDePagamentoIds } },
+    await db.paymentMethod.deleteMany({
+      where: { id: { in: paymentMethodsIds } },
     });
 
     return {
-      success: `Forma${formaDePagamentoIds.length > 1 ? "s" : ""} de pagamento excluída${formaDePagamentoIds.length > 1 ? "s" : ""} com sucesso`,
+      success: `Forma${paymentMethodsIds.length > 1 ? "s" : ""} de pagamento excluída${paymentMethodsIds.length > 1 ? "s" : ""} com sucesso`,
     };
   } catch {
     return { error: "Erro ao excluir as formas de pagamento" };

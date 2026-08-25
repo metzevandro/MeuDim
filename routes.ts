@@ -4,14 +4,14 @@
  * @type {string[]}
  */
 
-export const publicRoutes = ["/auth/login", "/auth/criar-conta"];
+export const publicRoutes = ["/auth/login", "/auth/register"];
 
 /**
  * Uma array de rotas que são usadas para autenticação
  * @type {string[]}
  */
 
-export const authRoutes = ["/auth/login", "/auth/criar-conta", "/auth/error"];
+export const authRoutes = ["/auth/login", "/auth/register", "/auth/error"];
 
 /**
  * Prefixo para as rotas da API de autenticação
@@ -25,4 +25,4 @@ export const apiAuthPrefix = "/api/auth";
  * @type {string}
  */
 
-export const DEFAULT_LOGIN_REDIRECT = "/pagina-inicial";
+export const DEFAULT_LOGIN_REDIRECT = "/dashboard";

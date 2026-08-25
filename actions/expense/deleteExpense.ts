@@ -18,7 +18,7 @@ export const deleteExpense = async (expenseIds: string[]) => {
     }
 
     const expenses = await db.expense.findMany({
-      where: { id: { in: expenseIds }, accountId: dbUser.id },
+      where: { id: { in: expenseIds }, userId: dbUser.id },
     });
 
     if (expenses.length !== expenseIds.length) {

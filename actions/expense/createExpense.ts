@@ -2,85 +2,85 @@
 import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
-import { ExpenseSchema } from "@/schemas";
+import { expenseSchema } from "@/schemas";
 import { z } from "zod";
 
-export const createExpense = async (values: z.infer<typeof ExpenseSchema>) => {
+export const createExpense = async (values: z.infer<typeof expenseSchema>) => {
+  const validatedFields = expenseSchema.parse(values);
+  const user = await currentUser();
+
+  if (!user || !user.id) {
+    return { error: "Não autorizado" };
+  }
+
+  const dbUser = await getUserById(user.id);
+
+  if (!dbUser) {
+    return { error: "Não autorizado" };
+  }
+
+  const { date, categoryId, amount, paymentMethodId, subcategoryId } =
+    validatedFields;
+
+  const [day, month, year] = date.split("/");
+  const formattedDate = new Date(
+    Date.UTC(
+      parseInt(year, 10),
+      parseInt(month, 10) - 1,
+      parseInt(day, 10),
+      12,
+      0,
+      0,
+    ),
+  );
+
+  if (isNaN(formattedDate.getTime())) {
+    return { error: "Data inválida" };
+  }
+
+  const categoryExists = await db.category.findFirst({
+    where: { id: categoryId, userId: dbUser.id },
+  });
+
+  if (!categoryExists) {
+    return { error: "A categoria especificada não existe" };
+  }
+
+  const paymentMethodExists = await db.paymentMethod.findFirst({
+    where: { id: paymentMethodId, userId: dbUser.id },
+  });
+
+  if (!paymentMethodExists) {
+    return { error: "A forma de pagamento especificada não existe" };
+  }
+
+  const subcategoriaExiste = await db.subcategory.findFirst({
+    where: { id: subcategoryId, categoryId: categoryExists.id },
+  });
+
+  if (!subcategoriaExiste) {
+    return { error: "A subcategoria especificada não existe" };
+  }
+
+  const formattedAmount = parseFloat(amount.replace(",", "."));
+
+  if (formattedAmount <= 0) {
+    return { error: "Valor deve ser maior que R$ 0,00" };
+  }
+
+  if (isNaN(formattedAmount)) {
+    return { error: "Valor inválido" };
+  }
+
   try {
-    const validatedFields = ExpenseSchema.parse(values);
-    const user = await currentUser();
-
-    if (!user || !user.id) {
-      return { error: "Não autorizado" };
-    }
-
-    const dbUser = await getUserById(user.id);
-
-    if (!dbUser) {
-      return { error: "Não autorizado" };
-    }
-
-    const { data, categoria, valor, formaDePagamento, subcategoria } =
-      validatedFields;
-
-    const [day, month, year] = data.split("/");
-    const formattedDate = new Date(
-      Date.UTC(
-        parseInt(year, 10),
-        parseInt(month, 10) - 1,
-        parseInt(day, 10),
-        12,
-        0,
-        0,
-      ),
-    );
-
-    if (isNaN(formattedDate.getTime())) {
-      return { error: "Data inválida" };
-    }
-
-    const categoryExists = await db.categoria.findFirst({
-      where: { name: categoria, userId: dbUser.id },
-    });
-
-    if (!categoryExists) {
-      return { error: "A categoria especificada não existe" };
-    }
-
-    const formaDePagamentoExiste = await db.formaDePagamento.findFirst({
-      where: { name: formaDePagamento, userId: dbUser.id },
-    });
-
-    if (!formaDePagamentoExiste) {
-      return { error: "A forma de pagamento especificada não existe" };
-    }
-
-    const subcategoriaExiste = await db.subcategoria.findFirst({
-      where: { name: subcategoria, categoriaId: categoryExists.id },
-    });
-
-    if (!subcategoriaExiste) {
-      return { error: "A subcategoria especificada não existe" };
-    }
-
-    const formattedAmount = parseFloat(valor.replace(",", "."));
-
-    if (formattedAmount <= 0) {
-      return { error: "Valor deve ser maior que R$ 0,00" };
-    }
-
-    if (isNaN(formattedAmount)) {
-      return { error: "Valor inválido" };
-    }
-
     await db.expense.create({
       data: {
         amount: formattedAmount,
-        accountId: dbUser.id,
+        userId: dbUser.id,
         createdAt: formattedDate.toISOString(),
-        categoriaId: categoryExists.id,
-        formaDePagamentoId: formaDePagamentoExiste.id,
-        subcategoriaId: subcategoriaExiste?.id,
+        categoryId: categoryExists.id,
+        paymentMethodId: paymentMethodExists.id,
+        subcategoryId: subcategoriaExiste?.id,
       },
     });
 

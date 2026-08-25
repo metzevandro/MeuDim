@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const SettingsSchema = z
+export const accountSchema = z
   .object({
     username: z.optional(z.string()),
     name: z.optional(z.string()),
@@ -8,76 +8,86 @@ export const SettingsSchema = z
     password: z.optional(z.string().min(6)),
     newPassword: z.optional(z.string().min(6)),
   })
-  .refine(
-    (data) => {
-      if (data.password && !data.newPassword) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "New password is required!",
-      path: ["newPassword"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.newPassword && !data.password) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Password is required!",
-      path: ["password"],
-    },
-  );
+  .refine((data) => !(data.password && !data.newPassword), {
+    message: "New password is required!",
+    path: ["newPassword"],
+  })
+  .refine((data) => !(data.newPassword && !data.password), {
+    message: "Password is required!",
+    path: ["password"],
+  });
 
-export const NovaSenhaSchema = z.object({
+export const newPasswordSchema = z.object({
   password: z.string().min(8, "É necessário no mínimo 8 caracteres!"),
 });
 
-export const ResetSchema = z.object({
+export const resetSchema = z.object({
   email: z.string().email("É necessário um email!"),
 });
 
-export const LoginSchema = z.object({
+export const loginSchema = z.object({
   email: z.string().email("É necessário um email!"),
   password: z.string().min(1, "É necessário senha!"),
 });
 
-export const RegisterSchema = z.object({
+export const registerSchema = z.object({
   email: z.string().email("É necessário um email!"),
   password: z.string().min(8, "É necessário no mínimo 8 caracteres!"),
   name: z.string().min(1, "É necessário seu nome!"),
 });
 
-export const TransactionSchema = z.object({
-  amount: z.string(),
-  date: z.string(),
-  category: z.string(),
+export const earningSchema = z.object({
+  amount: z
+    .string()
+    .min(1, "Valor é obrigatório")
+    .refine((v) => {
+      const parsed = parseFloat(v.replace(",", "."));
+      return !isNaN(parsed) && parsed > 0;
+    }, "Valor deve ser maior que R$ 0,00")
+    .refine((v) => {
+      const parsed = parseFloat(v.replace(",", "."));
+      return parsed <= 999999999.99;
+    }, "Valor excede o limite permitido"),
+  incomeSourceId: z.string().min(1, "Fonte de renda é obrigatória"),
+  date: z.string().min(1, "Data é obrigatória"),
 });
 
-export const ExpenseSchema = z.object({
-  valor: z.string().min(0, "O valor deve ser maior ou igual a 0"),
-  data: z.string().nonempty("A data é obrigatória"),
-  categoria: z.string().nonempty("A categoria é obrigatória"),
-  formaDePagamento: z.string().nonempty("A forma de pagamento é obrigatória"),
-  subcategoria: z.string().nonempty("A subcategoria é obrigatória"),
+export const expenseSchema = z.object({
+  amount: z
+    .string()
+    .min(1, "Valor é obrigatório")
+    .refine((v) => {
+      const parsed = parseFloat(v.replace(",", "."));
+      return !isNaN(parsed) && parsed > 0;
+    }, "Valor deve ser maior que R$ 0,00")
+    .refine((v) => {
+      const parsed = parseFloat(v.replace(",", "."));
+      return parsed <= 999999999.99;
+    }, "Valor excede o limite permitido"),
+  categoryId: z.string().cuid("Categoria inválida"),
+  subcategoryId: z.string().cuid("Subcategoria inválida"),
+  paymentMethodId: z.string().cuid("Forma de pagamento inválida"),
+  date: z.string().min(1, "Data é obrigatória"),
 });
 
-export const NewCategorySchema = z.object({
-  name: z.string().min(1, "É necessário um nome para a fonte de renda!"),
-  date: z.date(),
+export const categorySchema = z.object({
+  name: z.string().min(1, "É necessário um nome para a categoria!"),
+
+  subcategoria: z
+    .array(z.string().min(1, "O nome da subcategoria não pode estar vazio!"))
+    .default([]),
 });
 
-export const NovaCategoriaSchema = z.object({
-  name: z.string().min(1, "É necessário um nome para a fonte de renda!"),
-  date: z.date(),
-  subcategoria: z.string(),
+export const subcategorySchema = z.object({
+  name: z.string().min(1, "É necessário um nome para a subcategoria!"),
+  categoryId: z.string().cuid("Categoria inválida"),
 });
 
-export const FormaDePagamentoSchema = z.object({
+export const paymentMethodSchema = z.object({
   name: z.string().min(1, "O nome da forma de pagamento é obrigatório."),
+});
+
+export const incomeSourceSchema = z.object({
+  name: z.string().min(1, "É necessário um nome para a fonte de renda!"),
   date: z.date(),
 });

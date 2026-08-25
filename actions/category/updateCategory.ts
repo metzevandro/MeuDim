@@ -2,16 +2,14 @@
 import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
+import z from "zod";
+import { categorySchema } from "@/schemas";
 
 export const updateCategory = async (
-  values: {
-    name: string;
-    date: Date;
-    subcategoria: string[];
-  },
+  values: z.infer<typeof categorySchema>,
   categoryId: string,
 ) => {
-  const { name, date, subcategoria } = values;
+  const { name, subcategoria } = values;
 
   if (!Array.isArray(subcategoria)) {
     return { error: "Subcategorias devem ser um array" };
@@ -28,21 +26,21 @@ export const updateCategory = async (
       return { error: "Não autorizado" };
     }
 
-    await db.categoria.update({
+    await db.category.update({
       where: { id: categoryId },
       data: {
-        createdAt: date,
+        createdAt: new Date(),
         name,
         userId: dbUser.id,
-        subcategorias: {
+        subcategories: {
           deleteMany: {},
-          create: subcategoria.map((subcategoriaName) => ({
-            name: subcategoriaName,
+          create: subcategoria.map((subcategoryName) => ({
+            name: subcategoryName,
           })),
         },
       },
       include: {
-        subcategorias: true,
+        subcategories: true,
       },
     });
 

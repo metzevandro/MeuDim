@@ -1,5 +1,5 @@
 import { UserData } from "@/actions/fetch";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 const API = process.env.NEXT_PUBLIC_APP_URL;
 
 interface UserContextType {
@@ -16,7 +16,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [skeleton, setSkeleton] = useState(false);
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     setSkeleton(true);
     try {
       const response = await fetch(`${API}/api/auth/session`);
@@ -27,11 +27,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setSkeleton(false);
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUserData(null);
-  };
+  }, []);
 
   return (
     <UserContext.Provider

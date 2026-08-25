@@ -1,10 +1,18 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
+
 
 enum UserRole {
   ADMIN
@@ -21,7 +29,7 @@ model User {
 
   accounts     Account[]
   expenses     Expense[]
-  transactions Transaction[]
+  earnings Earning[]
 }
 
 model Account {
@@ -44,28 +52,28 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-model Transaction {
+model Earning {
   id            String   @id @default(cuid())
-  amount        Float
-  accountId     String
-  createdAt     DateTime
+  amount        Decimal  @db.Decimal(10, 2)
+  userId        String
+  createdAt     DateTime @default(now())
   incomeSourceId String
 
   incomeSource IncomeSource @relation(fields: [incomeSourceId], references: [id], onDelete: Restrict)
-  user         User         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Expense {
   id              String   @id @default(cuid())
-  amount          Float
-  accountId        String
-  createdAt        DateTime
+  amount          Decimal  @db.Decimal(12, 2)
+  userId          String
+  createdAt       DateTime @default(now())
 
   categoryId       String
   subcategoryId    String?
   paymentMethodId  String?
 
-  user           User          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   category       Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   subcategory    Subcategory?   @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
   paymentMethod  PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
@@ -111,7 +119,7 @@ model IncomeSource {
   userId    String
   createdAt DateTime
 
-  transactions Transaction[]
+  earnings Earning[]
 
   @@unique([name, userId])
 }

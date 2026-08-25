@@ -1,12 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import "./PieChart.scss";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  PieChart as Chart,
-  EmptyState,
-} from "design-system-zeroz";
+import { PieChart as Chart, EmptyState } from "design-system-zeroz";
+import Card from "design-system-zeroz/Card";
 
 interface PieData {
   name: string;
@@ -16,26 +11,32 @@ interface PieData {
   keyName: string;
 }
 
-interface PieChartProps {
-  userData: any;
-  loading: boolean;
-  selectedMonth: number | 12;
-  setSelectedMonth: React.Dispatch<React.SetStateAction<number | 12>>;
-  selectedYear: number | "all";
-  setSelectedYear: React.Dispatch<React.SetStateAction<number | "all">>;
-  isYearSelected: boolean;
-  isAllYearsSelected: boolean;
-  firstDayOfMonth: Date;
-  lastDayOfMonth: Date;
-  clientDateType:
-    | "formaDePagamento"
-    | "categoria"
-    | "subcategoria"
-    | "fonteDeRenda";
-  skeleton: boolean;
+interface EarningItem {
+  amount: unknown;
+  incomeSourceId: string;
+  incomeSource?: { id: string; name: string } | null;
 }
 
-const parseAmount = (value: any) =>
+interface ExpenseItem {
+  amount: unknown;
+  categoryId: string;
+  subcategoryId?: string | null;
+  paymentMethodId?: string | null;
+  category?: { id: string; name: string } | null;
+  subcategory?: { id: string; name: string } | null;
+  paymentMethod?: { id: string; name: string } | null;
+}
+
+interface PieChartProps {
+  earnings: EarningItem[];
+  expenses: ExpenseItem[];
+  clientDateType:
+    "formaDePagamento" | "categoria" | "subcategoria" | "fonteDeRenda";
+  skeleton: boolean;
+  loading: boolean;
+}
+
+const parseAmount = (value: unknown) =>
   parseFloat(String(value).replace(",", ".")) || 0;
 
 const getUniqueColors = (length: number): string[] => {
@@ -49,72 +50,98 @@ const getUniqueColors = (length: number): string[] => {
     "var(--s-color-chart-9)",
     "var(--s-color-chart-10)",
   ];
-  return Array.from({ length }, (_, i) => base[i] || "var(--s-color-chart-default, #cccccc)");
-};
-
-const isInPeriod = (
-  date: Date,
-  isAllYearsSelected: boolean,
-  selectedYear: number | "all",
-  selectedMonth: number | 12,
-  firstDay: Date,
-  lastDay: Date
-): boolean => {
-  if (isAllYearsSelected) return true;
-  if (selectedMonth === 12)
-    return date.getFullYear() === selectedYear;
-  return date >= firstDay && date <= lastDay;
-};
-
-const getItemKey = (item: any, type: PieChartProps["clientDateType"]): string => {
-  switch (type) {
-    case "formaDePagamento": return item.formaDePagamentoId;
-    case "categoria": return item.categoriaId;
-    case "subcategoria": return item.subcategoriaId;
-    case "fonteDeRenda": return item.categoryId;
-    default: return "";
-  }
-};
-
-const getNameById = (userData: any, key: string, type: PieChartProps["clientDateType"]): string => {
-  switch (type) {
-    case "formaDePagamento":
-      return userData?.user?.formaDePagamento?.find((x: any) => x.id === key)?.name || "Forma de Pagamento Desconhecida";
-    case "categoria":
-      return userData?.user?.categoria?.find((x: any) => x.id === key)?.name || "Categoria Desconhecida";
-    case "subcategoria":
-      return userData?.user?.categoria?.flatMap((cat: any) => cat.subcategorias || []).find((x: any) => x.id === key)?.name || `Subcategoria Desconhecida (${key})`;
-    case "fonteDeRenda":
-      return userData?.user?.categories?.find((x: any) => x.id === key)?.name || "Fonte de Renda Desconhecida";
-    default:
-      return "Desconhecido";
-  }
+  return Array.from(
+    { length },
+    (_, i) => base[i] || "var(--s-color-chart-default, #cccccc)",
+  );
 };
 
 const getTitleByType = (type: PieChartProps["clientDateType"]) => {
   switch (type) {
-    case "formaDePagamento": return "Forma de Pagamento";
-    case "categoria": return "Categoria";
-    case "subcategoria": return "Subcategoria";
-    case "fonteDeRenda": return "Fonte de Renda";
-    default: return "Dados";
+    case "formaDePagamento":
+      return "Forma de Pagamento";
+    case "categoria":
+      return "Categoria";
+    case "subcategoria":
+      return "Subcategoria";
+    case "fonteDeRenda":
+      return "Fonte de Renda";
+    default:
+      return "Dados";
   }
 };
 
 const getDescriptionByType = (type: PieChartProps["clientDateType"]) => {
-  return type === "fonteDeRenda" ? "Ganhos" : "Despesas";
+  return type === "fonteDeRenda" ? "ganhos" : "despesas";
+};
+
+const aggregate = (
+  earnings: EarningItem[],
+  expenses: ExpenseItem[],
+  type: PieChartProps["clientDateType"],
+): { key: string; name: string; total: number }[] => {
+  const totals = new Map<string, { name: string; total: number }>();
+
+  const add = (
+    key: string | null | undefined,
+    name: string,
+    amount: number,
+  ) => {
+    if (!key) return;
+    const current = totals.get(key) || { name, total: 0 };
+    current.total += amount;
+    totals.set(key, current);
+  };
+
+  if (type === "fonteDeRenda") {
+    earnings.forEach((item) => {
+      add(
+        item.incomeSourceId,
+        item.incomeSource?.name || "Fonte de Renda Desconhecida",
+        parseAmount(item.amount),
+      );
+    });
+  } else if (type === "categoria") {
+    expenses.forEach((item) => {
+      add(
+        item.categoryId,
+        item.category?.name || "Categoria Desconhecida",
+        parseAmount(item.amount),
+      );
+    });
+  } else if (type === "subcategoria") {
+    expenses.forEach((item) => {
+      if (!item.subcategoryId) return;
+      add(
+        item.subcategoryId,
+        item.subcategory?.name || "Subcategoria Desconhecida",
+        parseAmount(item.amount),
+      );
+    });
+  } else if (type === "formaDePagamento") {
+    expenses.forEach((item) => {
+      if (!item.paymentMethodId) return;
+      add(
+        item.paymentMethodId,
+        item.paymentMethod?.name || "Forma de Pagamento Desconhecida",
+        parseAmount(item.amount),
+      );
+    });
+  }
+
+  return Array.from(totals.entries()).map(([key, { name, total }]) => ({
+    key,
+    name,
+    total,
+  }));
 };
 
 export function PieChart({
-  userData,
-  loading,
-  selectedMonth,
-  selectedYear,
-  isAllYearsSelected,
-  firstDayOfMonth,
-  lastDayOfMonth,
+  earnings,
+  expenses,
   clientDateType,
   skeleton,
+  loading,
 }: PieChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartWidth, setChartWidth] = useState(0);
@@ -132,93 +159,67 @@ export function PieChart({
     return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
-  const processedData = useMemo(() => {
-    const source =
-      clientDateType === "fonteDeRenda"
-        ? userData?.user?.transactions
-        : userData?.user?.expense;
+  const processedData: PieData[] = useMemo(() => {
+    const grouped = aggregate(
+      earnings || [],
+      expenses || [],
+      clientDateType,
+    ).filter((item) => item.total > 0);
 
-    if (!Array.isArray(source)) return [];
+    const colors = getUniqueColors(grouped.length);
 
-    const totals: Record<string, number> = {};
-
-    source.forEach((item: any) => {
-      const date = new Date(item.createdAt);
-      if (
-        isInPeriod(date, isAllYearsSelected, selectedYear, selectedMonth, firstDayOfMonth, lastDayOfMonth)
-      ) {
-        const key = getItemKey(item, clientDateType);
-        const amount = parseAmount(item.amount);
-        totals[key] = (totals[key] || 0) + amount;
-      }
+    return grouped.map((item, index) => {
+      const amount = parseFloat(item.total.toFixed(2));
+      return {
+        name: item.name,
+        amount,
+        fill: colors[index],
+        quantity: amount,
+        keyName: item.name,
+      };
     });
-
-    const keys = Object.keys(totals);
-    const colors = getUniqueColors(keys.length);
-
-    return keys
-      .map((key, index) => {
-        const amount = parseFloat(totals[key].toFixed(2));
-        const name = getNameById(userData, key, clientDateType);
-        return {
-          name,
-          amount,
-          fill: colors[index],
-          quantity: amount,
-          keyName: name,
-        };
-      })
-      .filter((item) => item.amount > 0);
-  }, [
-    userData,
-    selectedMonth,
-    selectedYear,
-    isAllYearsSelected,
-    firstDayOfMonth,
-    lastDayOfMonth,
-    clientDateType,
-  ]);
+  }, [earnings, expenses, clientDateType]);
 
   const title = getTitleByType(clientDateType);
   const description = getDescriptionByType(clientDateType);
 
   return (
-    <Card
-      header={<CardHeader title={title} description="" />}
-      content={
-        <CardContent>
-          <div className="chart-container" ref={chartContainerRef}>
-            {!loading && processedData.length === 0 ? (
-              <EmptyState
-                icon="database"
-                title="Sem dados no período selecionado"
-                description={`Altere o período selecionado ou registre novas ${description}.`}
-              />
-            ) : (
-              <Chart
-                skeleton={skeleton}
-                nameKey="keyName"
-                type="donut"
-                width={chartWidth}
-                height={chartHeight}
-                caption
-                data={processedData}
-                dataKey="quantity"
-                innerRadius={80}
-                outerRadius={130}
-                label="Total"
-                tooltipFormatter={(value: number) =>
-                  `R$ ${value.toFixed(2).replace(".", ",")}`
-                }
-                labelFormatter={(value: number) =>
-                  `R$ ${value.toFixed(2).replace(".", ",")}`
-                }
-              />
-            )}
-          </div>
-        </CardContent>
-      }
-    />
+    <Card>
+      <Card.Header>
+        <h1>{title}</h1>
+      </Card.Header>
+      <Card.Content>
+        <div className="chart-container" ref={chartContainerRef}>
+          {!loading && processedData.length === 0 ? (
+            <EmptyState
+              icon="database"
+              title="Sem dados no período selecionado"
+              description={`Altere o período selecionado ou registre novos ${description}.`}
+            />
+          ) : (
+            <Chart
+              skeleton={skeleton || loading}
+              nameKey="keyName"
+              type="donut"
+              width={chartWidth}
+              height={chartHeight}
+              caption
+              data={processedData}
+              dataKey="quantity"
+              innerRadius={80}
+              outerRadius={130}
+              label="Total"
+              tooltipFormatter={(value: number) =>
+                `R$ ${value.toFixed(2).replace(".", ",")}`
+              }
+              labelFormatter={(value: number) =>
+                `R$ ${value.toFixed(2).replace(".", ",")}`
+              }
+            />
+          )}
+        </div>
+      </Card.Content>
+    </Card>
   );
 }
 

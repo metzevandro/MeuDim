@@ -24,11 +24,15 @@ body,
 
   .input-field {
     display: flex;
-    width: fit-content;
+    flex-wrap: wrap;
     gap: var(--s-spacing-xx-small);
 
-    * {
-      min-width: 120px;
+    .input-select-root:first-child {
+      min-width: 140px;
+    }
+
+    .input-root {
+      max-width: 140px;
     }
   }
 }
@@ -37,6 +41,15 @@ body,
   .layout-page {
     .layout-resumo {
       flex-direction: column;
+    }
+
+    .input-field {
+      width: 100%;
+
+      .input-select-button {
+        min-width: 0;
+        flex: 1 1 auto;
+      }
     }
   }
 }

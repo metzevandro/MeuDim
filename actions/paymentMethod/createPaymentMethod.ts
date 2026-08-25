@@ -2,14 +2,14 @@
 import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
-import { FormaDePagamentoSchema } from "@/schemas";
+import { paymentMethodSchema } from "@/schemas";
 import z from "zod";
 
 export const createPaymentMethod = async (
-  values: z.infer<typeof FormaDePagamentoSchema>,
+  values: z.infer<typeof paymentMethodSchema>,
 ) => {
   try {
-    const validatedFields = FormaDePagamentoSchema.parse(values);
+    const validatedFields = paymentMethodSchema.parse(values);
     const user = await currentUser();
 
     if (!user || !user.id) return { error: "Não autorizado" };
@@ -17,11 +17,11 @@ export const createPaymentMethod = async (
     const dbUser = await getUserById(user.id);
     if (!dbUser) return { error: "Não autorizado" };
 
-    const { name, date } = validatedFields;
+    const { name } = validatedFields;
 
-    await db.formaDePagamento.create({
+    await db.paymentMethod.create({
       data: {
-        createdAt: new Date(date),
+        createdAt: new Date(),
         name: name.trim(),
         userId: dbUser.id,
       },

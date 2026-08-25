@@ -1,18 +1,18 @@
 "use server";
 import { db } from "@/lib/db";
 
-const categorias = [
+const categories = [
   {
-    categoria: "Alimentação",
-    subcategorias: ["Delivery", "Lanches", "Restaurantes", "Supermercado"],
+    category: "Alimentação",
+    subcategories: ["Delivery", "Lanches", "Restaurantes", "Supermercado"],
   },
   {
-    categoria: "Animais de estimação",
-    subcategorias: ["Alimentação de pets", "Produtos para pets", "Veterinário"],
+    category: "Animais de estimação",
+    subcategories: ["Alimentação de pets", "Produtos para pets", "Veterinário"],
   },
   {
-    categoria: "Compras",
-    subcategorias: [
+    category: "Compras",
+    subcategories: [
       "Acessórios",
       "Calçados",
       "Cosméticos e beleza",
@@ -25,16 +25,16 @@ const categorias = [
     ],
   },
   {
-    categoria: "Doações e caridade",
-    subcategorias: ["Ajuda a familiares ou amigos", "Doações a instituições"],
+    category: "Doações e caridade",
+    subcategories: ["Ajuda a familiares ou amigos", "Doações a instituições"],
   },
   {
-    categoria: "Educação",
-    subcategorias: ["Cursos", "Livros", "Materiais", "Mensalidades"],
+    category: "Educação",
+    subcategories: ["Cursos", "Livros", "Materiais", "Mensalidades"],
   },
   {
-    categoria: "Habitação",
-    subcategorias: [
+    category: "Habitação",
+    subcategories: [
       "Aluguel",
       "Condomínio",
       "Contas de água",
@@ -46,8 +46,8 @@ const categorias = [
     ],
   },
   {
-    categoria: "Investimentos",
-    subcategorias: [
+    category: "Investimentos",
+    subcategories: [
       "Ações e fundos",
       "Aportes em poupança",
       "Criptomoedas",
@@ -55,12 +55,12 @@ const categorias = [
     ],
   },
   {
-    categoria: "Lazer",
-    subcategorias: ["Cinema", "Evento", "Hobbie", "Show", "Teatro", "Viagens"],
+    category: "Lazer",
+    subcategories: ["Cinema", "Evento", "Hobbie", "Show", "Teatro", "Viagens"],
   },
   {
-    categoria: "Saúde",
-    subcategorias: [
+    category: "Saúde",
+    subcategories: [
       "Consultas médicas",
       "Dentista",
       "Exames",
@@ -69,8 +69,8 @@ const categorias = [
     ],
   },
   {
-    categoria: "Seguros",
-    subcategorias: [
+    category: "Seguros",
+    subcategories: [
       "Outros seguros",
       "Seguro de celular",
       "Seguro de vida",
@@ -78,8 +78,8 @@ const categorias = [
     ],
   },
   {
-    categoria: "Serviços e assinaturas",
-    subcategorias: [
+    category: "Serviços e assinaturas",
+    subcategories: [
       "Amazon Prime",
       "Apple TV",
       "iCloud",
@@ -91,8 +91,8 @@ const categorias = [
     ],
   },
   {
-    categoria: "Transporte",
-    subcategorias: [
+    category: "Transporte",
+    subcategories: [
       "Combustível",
       "Estacionamento",
       "Manutenção do veículo",
@@ -104,50 +104,51 @@ const categorias = [
   },
 ];
 
-const formaDePagamento = [
+const paymentMethods = [
   "Cartão de crédito",
   "Cartão de débito",
   "Dinheiro",
   "PIX",
 ];
-const fonteDeRenda = ["Freelance", "Investimentos", "Salário"];
+
+const incomeSources = ["Freelance", "Investimentos", "Salário"];
 
 export const createInitialData = async (userId: string) => {
   const currentDate = new Date();
 
-  for (const categoria of categorias) {
-    const newCategoria = await db.categoria.create({
+  for (const category of categories) {
+    const newCategory = await db.category.create({
       data: {
-        name: categoria.categoria,
+        name: category.category,
         userId: userId,
         createdAt: currentDate,
       },
     });
 
-    for (const subcategoria of categoria.subcategorias) {
-      await db.subcategoria.create({
+    for (const subcategory of category.subcategories) {
+      await db.subcategory.create({
         data: {
-          name: subcategoria,
-          categoriaId: newCategoria.id,
+          name: subcategory,
+          categoryId: newCategory.id,
         },
       });
     }
   }
 
-  for (const forma of formaDePagamento) {
-    await db.formaDePagamento.create({
+  for (const paymentMethod of paymentMethods) {
+    await db.paymentMethod.create({
       data: {
-        name: forma,
+        name: paymentMethod,
         userId: userId,
         createdAt: currentDate,
       },
     });
   }
 
-  for (const fonte of fonteDeRenda) {
-    await db.fonteDeRenda.create({
+  for (const incomeSource of incomeSources) {
+    await db.incomeSource.create({
       data: {
-        name: fonte,
+        name: incomeSource,
         userId: userId,
         createdAt: currentDate,
       },

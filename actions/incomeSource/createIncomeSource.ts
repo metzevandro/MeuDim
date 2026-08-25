@@ -2,13 +2,13 @@
 import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
-import { NewCategorySchema } from "@/schemas";
+import { incomeSourceSchema } from "@/schemas";
 import { z } from "zod";
 
 export const createIncomeSource = async (
-  values: z.infer<typeof NewCategorySchema>,
+  values: z.infer<typeof incomeSourceSchema>,
 ) => {
-  const validatedFields = NewCategorySchema.safeParse(values);
+  const validatedFields = incomeSourceSchema.safeParse(values);
   const user = await currentUser();
 
   if (!validatedFields.success) {
@@ -27,7 +27,7 @@ export const createIncomeSource = async (
   const { name, date } = validatedFields.data;
 
   try {
-    await db.fonteDeRenda.create({
+    await db.incomeSource.create({
       data: {
         createdAt: date,
         name: name,

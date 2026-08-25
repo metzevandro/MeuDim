@@ -15,16 +15,16 @@ export const deleteCategory = async (categoryIds: string[]) => {
       return { error: "Não autorizado" };
     }
 
-    const categorias = await db.categoria.findMany({
+    const categories = await db.category.findMany({
       where: { id: { in: categoryIds }, userId: dbUser.id },
     });
 
-    if (categorias.length !== categoryIds.length) {
+    if (categories.length !== categoryIds.length) {
       return { error: "Uma ou mais categorias especificadas não existem" };
     }
 
     const hasExpenses = await db.expense.findMany({
-      where: { categoriaId: { in: categoryIds } },
+      where: { categoryId: { in: categoryIds } },
     });
 
     if (hasExpenses.length > 0) {
@@ -33,7 +33,7 @@ export const deleteCategory = async (categoryIds: string[]) => {
       };
     }
 
-    await db.categoria.deleteMany({
+    await db.category.deleteMany({
       where: { id: { in: categoryIds } },
     });
 

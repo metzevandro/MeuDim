@@ -11,15 +11,15 @@ import {
   Input,
   Link,
   Notification,
-  InputCheckbox,
   Modal,
   FooterModal,
+  Checkbox,
 } from "design-system-zeroz";
 
-import { RegisterSchema } from "@/schemas/index";
-import { register } from "@/actions/register";
+import { registerSchema } from "@/schemas/index";
+import { register } from "@/actions/auth/register";
 import { login } from "@/actions/auth/login";
-import { createInitialData } from "@/actions/createInitialData";
+import { createInitialData } from "@/actions/account/createInitialAccountData";
 
 import "./register-form.scss";
 
@@ -34,8 +34,8 @@ export const RegisterForm = () => {
   const [isConfirmingConfirm, setIsConfirmingConfirm] = useState(false);
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
 
-  const form = useForm<z.infer<typeof RegisterSchema>>({
-    resolver: zodResolver(RegisterSchema),
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -43,7 +43,7 @@ export const RegisterForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+  const onSubmit = (values: z.infer<typeof registerSchema>) => {
     setSuccess("");
     setError("");
 
@@ -170,7 +170,9 @@ export const RegisterForm = () => {
 
                 <Input
                   disabled={isPending}
-                  onChange={(e: any) => form.setValue("password", e.target.value)}
+                  onChange={(e: any) =>
+                    form.setValue("password", e.target.value)
+                  }
                   value={form.watch("password")}
                   label="Senha"
                   type="password"
@@ -180,7 +182,7 @@ export const RegisterForm = () => {
                 />
 
                 <div style={{ width: "fit-content" }}>
-                  <InputCheckbox
+                  <Checkbox
                     label="Concordo com os Termos e Privacidade."
                     required
                     disabled={isPending}
@@ -191,13 +193,15 @@ export const RegisterForm = () => {
               <footer>
                 <Button
                   size="md"
-                  variant={isPending ? "is-loading" : "primary"}
-                  label="Criar conta"
+                  variant="primary"
+                  isLoading={isPending}
                   type="submit"
-                />
+                >
+                  Criar conta
+                </Button>
                 <p onClick={() => navigateTo("/auth/login")}>
                   Já possui uma conta?
-                  <Link content="Faça seu login." />
+                  <Link>Faça seu login.</Link>
                 </p>
               </footer>
             </form>
@@ -250,18 +254,21 @@ export const RegisterForm = () => {
             >
               <Button
                 size="md"
-                variant={isConfirmingConfirm ? "is-loading" : "primary"}
-                label="Confirmar"
+                variant="primary"
+                isLoading={isConfirmingConfirm}
                 onClick={handleModalConfirm}
                 disabled={isConfirmingCancel || isConfirmingConfirm}
-              />
+              >
+                Confirmar
+              </Button>
               <Button
                 size="md"
-                variant={isConfirmingCancel ? "is-loading" : "secondary"}
-                label="Não, obrigado"
+                variant="secondary"
                 onClick={handleModalCancel}
                 disabled={isConfirmingCancel || isConfirmingConfirm}
-              />
+              >
+                Não, obrigado.
+              </Button>
             </div>
           </FooterModal>
         }

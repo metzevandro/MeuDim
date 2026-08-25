@@ -1,7 +1,4 @@
-// Enums
 export type UserRole = "ADMIN" | "USER";
-
-// ================== CORE MODELS ==================
 
 export interface User {
   id: string;
@@ -11,12 +8,13 @@ export interface User {
   password?: string | null;
   role: UserRole;
 
+  categories: Category[];
+  incomeSources: IncomeSource[];
+  paymentMethods: PaymentMethod[];
   accounts: Account[];
   expenses: Expense[];
-  transactions: Transaction[];
+  earnings: Earning[];
 }
-
-// ================== AUTH ==================
 
 export interface Account {
   id: string;
@@ -36,13 +34,11 @@ export interface Account {
   user: User;
 }
 
-// ================== FINANCE ==================
-
-export interface Transaction {
+export interface Earning {
   id: string;
   amount: number;
-  accountId: string;
-  createdAt: string; // ou Date
+  userId: string;
+  createdAt: Date;
   incomeSourceId: string;
 
   incomeSource: IncomeSource;
@@ -52,8 +48,8 @@ export interface Transaction {
 export interface Expense {
   id: string;
   amount: number;
-  accountId: string;
-  createdAt: string;
+  userId: string;
+  createdAt: Date;
 
   categoryId: string;
   subcategoryId?: string | null;
@@ -64,8 +60,6 @@ export interface Expense {
   subcategory?: Subcategory | null;
   paymentMethod?: PaymentMethod | null;
 }
-
-// ================== CATEGORY ==================
 
 export interface Category {
   id: string;
@@ -86,8 +80,6 @@ export interface Subcategory {
   expenses: Expense[];
 }
 
-// ================== PAYMENT & INCOME ==================
-
 export interface PaymentMethod {
   id: string;
   name: string;
@@ -103,10 +95,8 @@ export interface IncomeSource {
   userId: string;
   createdAt: string;
 
-  transactions: Transaction[];
+  earnings: Earning[];
 }
-
-// ================== TOKENS ==================
 
 export interface VerificationToken {
   id: string;
@@ -121,8 +111,6 @@ export interface PasswordResetToken {
   token: string;
   expires: string;
 }
-
-// ================== SESSION ==================
 
 export interface UserData {
   user: User;

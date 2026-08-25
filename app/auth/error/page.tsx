@@ -1,6 +1,6 @@
 "use client";
-import { EmptyState } from "design-system-zeroz";
-import "./auth-error-page.css";
+import { Button, EmptyState } from "design-system-zeroz";
+import "./styles.scss";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -17,8 +17,7 @@ const AuthErrorPage = () => {
         title="Ops!"
         description="Aconteceu um erro!"
         icon="warning"
-        buttonContentPrimary="Voltar para a página de login"
-        onClickActionPrimary={login}
+        actions={<Button onClick={login}>Voltar para a página de login</Button>}
       />
     </div>
   );

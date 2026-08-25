@@ -1,6 +1,6 @@
 import { Progress } from "design-system-zeroz";
 
-import "./Progress.scss";
+import "./styles.scss";
 
 interface AuthProgressProps {
   loading: number;

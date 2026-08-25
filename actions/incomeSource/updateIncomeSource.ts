@@ -2,18 +2,17 @@
 import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
 import { db } from "@/lib/db";
-import { NewCategorySchema } from "@/schemas";
+import { incomeSourceSchema } from "@/schemas";
 import { z } from "zod";
 
 export const updateIncomeSource = async (
-  values: z.infer<typeof NewCategorySchema>,
-  categoryId: string,
+  values: z.infer<typeof incomeSourceSchema>,
+  incomeSourceId: string,
 ) => {
-  const validatedFields = NewCategorySchema.safeParse(values);
+  const validatedFields = incomeSourceSchema.safeParse(values);
   const user = await currentUser();
 
   if (!validatedFields.success) {
-    console.log("Validation error:", validatedFields.error);
     return { error: "Os itens estão informados incorretamente" };
   }
 
@@ -29,8 +28,8 @@ export const updateIncomeSource = async (
   const { name, date } = validatedFields.data;
 
   try {
-    await db.fonteDeRenda.update({
-      where: { id: categoryId },
+    await db.incomeSource.update({
+      where: { id: incomeSourceId },
       data: {
         createdAt: date,
         name: name,

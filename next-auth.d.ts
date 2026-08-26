@@ -5,7 +5,7 @@ import {
   Category,
   IncomeSource,
   PaymentMethod,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/client";
 import NextAuth, { type DefaultSession } from "next-auth";
 
 export type ExtendedUser = NextAuth.DefaultSession["user"] & {

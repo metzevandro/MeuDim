@@ -116,42 +116,23 @@ const incomeSources = ["Freelance", "Investimentos", "Salário"];
 export const createInitialData = async (userId: string) => {
   const currentDate = new Date();
 
-  for (const category of categories) {
-    const newCategory = await db.category.create({
-      data: {
-        name: category.category,
-        userId: userId,
-        createdAt: currentDate,
-      },
-    });
-
-    for (const subcategory of category.subcategories) {
-      await db.subcategory.create({
-        data: {
-          name: subcategory,
-          categoryId: newCategory.id,
-        },
+  await Promise.all([
+    ...categories.map(async (category) => {
+      const newCategory = await db.category.create({
+        data: { name: category.category, userId, createdAt: currentDate },
       });
-    }
-  }
-
-  for (const paymentMethod of paymentMethods) {
-    await db.paymentMethod.create({
-      data: {
-        name: paymentMethod,
-        userId: userId,
-        createdAt: currentDate,
-      },
-    });
-  }
-
-  for (const incomeSource of incomeSources) {
-    await db.incomeSource.create({
-      data: {
-        name: incomeSource,
-        userId: userId,
-        createdAt: currentDate,
-      },
-    });
-  }
+      await db.subcategory.createMany({
+        data: category.subcategories.map((name) => ({
+          name,
+          categoryId: newCategory.id,
+        })),
+      });
+    }),
+    db.paymentMethod.createMany({
+      data: paymentMethods.map((name) => ({ name, userId, createdAt: currentDate })),
+    }),
+    db.incomeSource.createMany({
+      data: incomeSources.map((name) => ({ name, userId, createdAt: currentDate })),
+    }),
+  ]);
 };

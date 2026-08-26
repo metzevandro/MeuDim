@@ -10,7 +10,6 @@ import {
   Button,
   Input,
   Link,
-  Notification,
   Modal,
   FooterModal,
   Checkbox,
@@ -22,12 +21,16 @@ import { login } from "@/actions/auth/login";
 import { createInitialData } from "@/actions/account/createInitialAccountData";
 
 import "./register-form.scss";
+import { AppNotification } from "@/components/notification/AppNotification";
 
 export const RegisterForm = () => {
   const router = useRouter();
-  const [notificationOpen, setNotificationOpen] = useState(false);
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    message: string;
+    isError: boolean;
+  }>({ open: false, message: "", isError: false });
+
   const [isPending, startTransition] = useTransition();
   const [showModal, setShowModal] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -43,16 +46,15 @@ export const RegisterForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof registerSchema>) => {
-    setSuccess("");
-    setError("");
+  const closeNotification = () => {
+    setNotification((prev) => ({ ...prev, open: false }));
+  };
 
+  const onSubmit = (values: z.infer<typeof registerSchema>) => {
     startTransition(() => {
       register(values)
         .then((data) => {
           if (data.error) {
-            setError(data.error);
-
             if (data.field === "email") {
               form.setError("email", { type: "manual", message: data.error });
             } else {
@@ -62,16 +64,28 @@ export const RegisterForm = () => {
                 message: data.error,
               });
             }
+            setNotification({
+              open: true,
+              message: data.error,
+              isError: true,
+            });
           } else if (data.success && data.userId) {
-            setSuccess(data.success);
             setUserId(data.userId);
             setShowModal(true);
+            setNotification({
+              open: true,
+              message: data.success,
+              isError: false,
+            });
           }
-          setNotificationOpen(true);
         })
         .catch((error) => {
           console.error(error);
-          setError("Erro ao se registrar. Tente novamente mais tarde.");
+          setNotification({
+            open: true,
+            message: "Erro ao se registrar. Tente novamente mais tarde.",
+            isError: true,
+          });
         });
     });
   };
@@ -85,9 +99,11 @@ export const RegisterForm = () => {
       await loginUser();
     } catch (error) {
       console.error("Erro ao confirmar no modal:", error);
-      setError(
-        "Erro ao processar sua solicitação. Tente novamente mais tarde.",
-      );
+      setNotification({
+        open: true,
+        message: "Erro ao processar sua solicitação. Tente novamente mais tarde.",
+        isError: true,
+      });
     } finally {
       setIsConfirmingConfirm(false);
       setShowModal(false);
@@ -101,9 +117,11 @@ export const RegisterForm = () => {
       await loginUser();
     } catch (error) {
       console.error("Erro ao cancelar no modal:", error);
-      setError(
-        "Erro ao processar sua solicitação. Tente novamente mais tarde.",
-      );
+      setNotification({
+        open: true,
+        message: "Erro ao processar sua solicitação. Tente novamente mais tarde.",
+        isError: true,
+      });
     } finally {
       setIsConfirmingCancel(false);
       setShowModal(false);
@@ -115,9 +133,17 @@ export const RegisterForm = () => {
       const values = form.getValues();
       const loginData = await login(values);
       if (loginData.error) {
-        setError(loginData.error);
-      } else {
-        setSuccess(loginData.success);
+        setNotification({
+          open: true,
+          message: loginData.error,
+          isError: true,
+        });
+      } else if (loginData.success) {
+        setNotification({
+          open: true,
+          message: loginData.success,
+          isError: false,
+        });
       }
     } catch (error) {}
   };
@@ -219,24 +245,14 @@ export const RegisterForm = () => {
           />
         </div>
       </div>
-      {error && (
-        <Notification
-          title={error}
-          type="float"
-          variant="warning"
-          icon="warning"
-          isOpen={notificationOpen}
-        />
-      )}
-      {success && (
-        <Notification
-          title={success}
-          type="float"
-          variant="success"
-          icon="check_circle"
-          isOpen={notificationOpen}
-        />
-      )}
+
+      <AppNotification
+        isOpen={notification.open}
+        message={notification.message}
+        isError={notification.isError}
+        onClose={closeNotification}
+      />
+
       <Modal
         title="Deseja pré-cadastrar dados iniciais?"
         description="Categorias, subcategorias, fontes de renda e formas de pagamento serão criadas automaticamente."

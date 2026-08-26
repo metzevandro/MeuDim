@@ -7,12 +7,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { Input, Button, Link, Notification } from "design-system-zeroz";
+import { Input, Button, Link } from "design-system-zeroz";
 
 import { loginSchema } from "@/schemas";
 import { login } from "@/actions/auth/login";
 
 import "./loginForm.scss";
+
+import { AppNotification } from "@/components/notification/AppNotification";
 
 const InputWithRef = forwardRef<
   HTMLInputElement,
@@ -21,14 +23,18 @@ const InputWithRef = forwardRef<
 InputWithRef.displayName = "InputWithRef";
 
 export const LoginForm = forwardRef<HTMLDivElement, {}>((props, ref) => {
-  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    message: string;
+    isError: boolean;
+  }>({ open: false, message: "", isError: false });
+
   const searchParams = useSearchParams();
   const urlError =
     searchParams?.get("error") === "OAuthAccountNotLinked"
       ? "O email já esta em uso"
       : "";
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
+
   const [isPending, startTransition] = useTransition();
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -38,20 +44,28 @@ export const LoginForm = forwardRef<HTMLDivElement, {}>((props, ref) => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof loginSchema>) => {
-    setSuccess("");
-    setError("");
+  const closeNotification = () => {
+    setNotification((prev) => ({ ...prev, open: false }));
+  };
 
+  const onSubmit = (values: z.infer<typeof loginSchema>) => {
     startTransition(() => {
       login(values).then((data) => {
         if (data && data.error) {
-          setError(data.error);
           form.setError("email", { type: "manual", message: data.error });
           form.setError("password", { type: "manual", message: data.error });
+          setNotification({
+            open: true,
+            message: data.error,
+            isError: true,
+          });
         } else if (data && data.success) {
-          setSuccess(data.success);
+          setNotification({
+            open: true,
+            message: data.success,
+            isError: false,
+          });
         }
-        setNotificationOpen(true);
       });
     });
   };
@@ -131,24 +145,13 @@ export const LoginForm = forwardRef<HTMLDivElement, {}>((props, ref) => {
           <video src="/video.mp4" autoPlay muted loop playsInline />
         </div>
       </div>
-      {error && (
-        <Notification
-          title={error || urlError}
-          type="float"
-          variant="warning"
-          icon="warning"
-          isOpen={notificationOpen}
-        />
-      )}
-      {success && (
-        <Notification
-          title={success}
-          type="float"
-          variant="success"
-          icon="check_circle"
-          isOpen={notificationOpen}
-        />
-      )}
+
+      <AppNotification
+        isOpen={notification.open}
+        message={notification.message}
+        isError={notification.isError}
+        onClose={closeNotification}
+      />
     </>
   );
 });

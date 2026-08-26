@@ -41,12 +41,12 @@ export function useExpenseForm() {
   useEffect(() => {
     fetch("/api/payment-methods")
       .then((res) => res.json())
-      .then((data) => setPaymentMethods(Array.isArray(data) ? data : []))
+      .then((data) => setPaymentMethods(Array.isArray(data?.items) ? data?.items : []))
       .catch(() => setPaymentMethods([]));
 
     fetch("/api/categories")
       .then((res) => res.json())
-      .then((data) => setCategories(Array.isArray(data) ? data : []))
+      .then((data) => setCategories(Array.isArray(data?.items) ? data?.items : []))
       .catch(() => setCategories([]));
   }, []);
 

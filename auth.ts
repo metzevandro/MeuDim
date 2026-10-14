@@ -58,8 +58,8 @@ export const {
       return token;
     },
   },
-adapter: PrismaAdapter(db as any),  
-session: {
+  adapter: PrismaAdapter(db as any),
+  session: {
     strategy: "jwt",
   },
   providers: [

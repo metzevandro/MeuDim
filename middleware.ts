@@ -4,6 +4,7 @@ import {
   DEFAULT_LOGIN_REDIRECT,
   apiAuthPrefix,
   authRoutes,
+  neutralRoutes,
   publicRoutes,
 } from "@/routes";
 
@@ -11,34 +12,26 @@ const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { nextUrl } = req;
+  const { pathname, search } = nextUrl;
   const isLoggedIn = !!req.auth;
+  const redirect = (to: string) => Response.redirect(new URL(to, nextUrl));
 
-  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  const isApiRoute = nextUrl.pathname.startsWith("/api");
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  if (pathname.startsWith(apiAuthPrefix)) return;
 
-  if (isApiAuthRoute) return;
-
-  if (isApiRoute) {
-    if (!isLoggedIn) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-    return;
+  if (pathname.startsWith("/api")) {
+    if (isLoggedIn) return;
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (isLoggedIn) {
-    if (isAuthRoute) return;
-    if (isPublicRoute || nextUrl.pathname === "/") {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, req.url));
-    }
+  if (neutralRoutes.includes(pathname)) return;
+
+  if (authRoutes.includes(pathname) || publicRoutes.includes(pathname)) {
+    return isLoggedIn ? redirect(DEFAULT_LOGIN_REDIRECT) : undefined;
   }
 
-  if (!isLoggedIn && !isPublicRoute) {
-    return Response.redirect(new URL("/auth/login", req.url));
+  if (!isLoggedIn) {
+    const callbackUrl = encodeURIComponent(pathname + search);
+    return redirect(`/auth/login?callbackUrl=${callbackUrl}`);
   }
 });
 

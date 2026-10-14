@@ -4,14 +4,21 @@
  * @type {string[]}
  */
 
-export const publicRoutes = ["/auth/login", "/auth/register"];
+export const publicRoutes = ["/"];
 
 /**
  * Uma array de rotas que são usadas para autenticação
  * @type {string[]}
  */
 
-export const authRoutes = ["/auth/login", "/auth/register", "/auth/error"];
+export const authRoutes = ["/auth/login", "/auth/register"];
+
+/**
+ * Um array de rotas que são usadas durante erro na autenticação
+ * @type {string[]}
+ */
+
+export const neutralRoutes = ["/auth/error"]
 
 /**
  * Prefixo para as rotas da API de autenticação

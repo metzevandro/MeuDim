@@ -11,7 +11,7 @@ import {
   PaymentMethodTable,
   PaymentMethodForm,
   PaymentMethodDeleteModal,
-} from "./_components";
+} from "./_components/index";
 import { PAYMENT_METHOD_TEXTS } from "./_utils/const";
 import { transformPaymentMethodForTable } from "./_utils/transformers";
 import { AppNotification } from "@/components/notification/AppNotification";

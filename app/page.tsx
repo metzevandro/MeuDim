@@ -123,7 +123,9 @@ function ScreenFrame({
         {allFailed ? (
           <div className="landing-frame-placeholder">
             <Icon icon="image" size="lg" />
-            <span>Adicione as imagens em public{light} e public{dark}</span>
+            <span>
+              Adicione as imagens em public{light} e public{dark}
+            </span>
           </div>
         ) : (
           <>
@@ -150,7 +152,8 @@ function ScreenFrame({
   );
 }
 
-const delay = (i: number) => ({ "--delay": `${i * 90}ms` } as React.CSSProperties);
+const delay = (i: number) =>
+  ({ "--delay": `${i * 90}ms` }) as React.CSSProperties;
 
 export default function Home() {
   const router = useRouter();
@@ -159,9 +162,11 @@ export default function Home() {
 
   useEffect(() => {
     const els = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-reveal]")
+      document.querySelectorAll<HTMLElement>("[data-reveal]"),
     );
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     if (reduced || !("IntersectionObserver" in window)) {
       els.forEach((el) => el.classList.add("is-visible"));
@@ -178,7 +183,7 @@ export default function Home() {
           }
         });
       },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
     );
     els.forEach((el) => observer.observe(el));
 
@@ -199,7 +204,13 @@ export default function Home() {
     <div className={`landing${revealReady ? " reveal-ready" : ""}`}>
       <header className={`landing-header${scrolled ? " is-scrolled" : ""}`}>
         <div className="landing-container landing-header-inner">
-          <Image src="/meuDim.svg" alt="MeuDim" width={112} height={32} priority />
+          <Image
+            src="/meuDim.svg"
+            alt="MeuDim"
+            width={112}
+            height={32}
+            priority
+          />
           <div className="landing-actions">
             <Button variant="secondary" size="md" onClick={goToLogin}>
               Entrar
@@ -215,12 +226,16 @@ export default function Home() {
         <section className="landing-hero">
           <div className="landing-container landing-hero-inner">
             <div className="landing-hero-text" data-reveal="up">
-              <Badge label="Controle financeiro pessoal" type="light" variant="primary" />
+              <Badge
+                label="Controle financeiro pessoal"
+                type="light"
+                variant="primary"
+              />
               <h1>Entenda para onde seu dinheiro está indo</h1>
               <p>
                 O MeuDim ajuda você a registrar ganhos e despesas, organizar por
-                categorias e acompanhar tudo em um dashboard claro, para
-                decidir melhor sobre as suas finanças.
+                categorias e acompanhar tudo em um dashboard claro, para decidir
+                melhor sobre as suas finanças.
               </p>
               <div className="landing-actions">
                 <Button variant="primary" size="md" onClick={goToRegister}>
@@ -231,7 +246,11 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="landing-hero-media" data-reveal="left" style={delay(2)}>
+            <div
+              className="landing-hero-media"
+              data-reveal="left"
+              style={delay(2)}
+            >
               <video
                 src="/video.mp4"
                 autoPlay
@@ -248,20 +267,22 @@ export default function Home() {
           <div className="landing-container">
             <header className="landing-section-header" data-reveal="up">
               <h2>Funcionalidades</h2>
-              <p>Tudo o que você precisa para ter o controle das suas finanças.</p>
+              <p>
+                Tudo o que você precisa para ter o controle das suas finanças.
+              </p>
             </header>
             <div className="landing-grid">
               {features.map((feature, i) => (
                 <div key={feature.title} data-reveal="up" style={delay(i % 3)}>
-                <Card>
-                  <Card.Header>
-                    <span className="landing-feature-icon">
-                      <Icon icon={feature.icon} size="md" />
-                    </span>
-                    <h1>{feature.title}</h1>
-                    <p>{feature.description}</p>
-                  </Card.Header>
-                </Card>
+                  <Card>
+                    <Card.Header>
+                      <span className="landing-feature-icon">
+                        <Icon icon={feature.icon} size="md" />
+                      </span>
+                      <h1>{feature.title}</h1>
+                      <p>{feature.description}</p>
+                    </Card.Header>
+                  </Card>
                 </div>
               ))}
             </div>
@@ -272,7 +293,10 @@ export default function Home() {
           <div className="landing-container">
             <header className="landing-section-header" data-reveal="up">
               <h2>Veja o MeuDim por dentro</h2>
-              <p>Uma olhada nas telas do sistema para entender como tudo funciona.</p>
+              <p>
+                Uma olhada nas telas do sistema para entender como tudo
+                funciona.
+              </p>
             </header>
             <div className="landing-showcase">
               {screens.map((screen, i) => (
@@ -280,13 +304,20 @@ export default function Home() {
                   key={screen.title}
                   className={`landing-showcase-row${i % 2 ? " reverse" : ""}`}
                 >
-                  <div className="landing-showcase-text" data-reveal={i % 2 ? "right" : "left"}>
+                  <div
+                    className="landing-showcase-text"
+                    data-reveal={i % 2 ? "right" : "left"}
+                  >
                     <span className="landing-step-number">{i + 1}</span>
                     <h3>{screen.title}</h3>
                     <p>{screen.description}</p>
                   </div>
                   <div data-reveal={i % 2 ? "left" : "right"} style={delay(1)}>
-                    <ScreenFrame light={screen.light} dark={screen.dark} alt={`Tela de ${screen.title} do MeuDim`} />
+                    <ScreenFrame
+                      light={screen.light}
+                      dark={screen.dark}
+                      alt={`Tela de ${screen.title} do MeuDim`}
+                    />
                   </div>
                 </article>
               ))}
@@ -354,7 +385,9 @@ export default function Home() {
 
       <footer className="landing-footer">
         <div className="landing-container">
-          <p>© {new Date().getFullYear()} MeuDim. Desenvolvido por Evandro Metz.</p>
+          <p>
+            © {new Date().getFullYear()} MeuDim. Desenvolvido por Evandro Metz.
+          </p>
         </div>
       </footer>
     </div>

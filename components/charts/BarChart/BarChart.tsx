@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { BarChart as Chart, EmptyState } from "design-system-zeroz";
+import { Card, BarChart as Chart, EmptyState } from "design-system-zeroz";
 import "./BarChart.scss";
-import Card from "design-system-zeroz/Card";
 
 interface BarSeriesPoint extends Record<string, unknown> {
   month: string;

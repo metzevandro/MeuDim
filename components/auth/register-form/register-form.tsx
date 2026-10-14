@@ -101,7 +101,8 @@ export const RegisterForm = () => {
       console.error("Erro ao confirmar no modal:", error);
       setNotification({
         open: true,
-        message: "Erro ao processar sua solicitação. Tente novamente mais tarde.",
+        message:
+          "Erro ao processar sua solicitação. Tente novamente mais tarde.",
         isError: true,
       });
     } finally {
@@ -119,7 +120,8 @@ export const RegisterForm = () => {
       console.error("Erro ao cancelar no modal:", error);
       setNotification({
         open: true,
-        message: "Erro ao processar sua solicitação. Tente novamente mais tarde.",
+        message:
+          "Erro ao processar sua solicitação. Tente novamente mais tarde.",
         isError: true,
       });
     } finally {

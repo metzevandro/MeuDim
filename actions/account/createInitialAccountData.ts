@@ -129,10 +129,18 @@ export const createInitialData = async (userId: string) => {
       });
     }),
     db.paymentMethod.createMany({
-      data: paymentMethods.map((name) => ({ name, userId, createdAt: currentDate })),
+      data: paymentMethods.map((name) => ({
+        name,
+        userId,
+        createdAt: currentDate,
+      })),
     }),
     db.incomeSource.createMany({
-      data: incomeSources.map((name) => ({ name, userId, createdAt: currentDate })),
+      data: incomeSources.map((name) => ({
+        name,
+        userId,
+        createdAt: currentDate,
+      })),
     }),
   ]);
 };

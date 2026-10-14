@@ -18,7 +18,7 @@ export const authRoutes = ["/auth/login", "/auth/register"];
  * @type {string[]}
  */
 
-export const neutralRoutes = ["/auth/error"]
+export const neutralRoutes = ["/auth/error"];
 
 /**
  * Prefixo para as rotas da API de autenticação

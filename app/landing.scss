@@ -217,7 +217,9 @@
     border: var(--s-border-width-hairline) solid var(--s-color-border-default);
     border-radius: var(--s-border-radius-medium);
     box-shadow: var(--s-shadow-dropdown);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
 
     &:hover {
       transform: translateY(-4px);
@@ -296,7 +298,9 @@
 
   &.reveal-ready [data-reveal] {
     opacity: 0;
-    transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
     transition-delay: var(--delay, 0ms);
     will-change: opacity, transform;
 

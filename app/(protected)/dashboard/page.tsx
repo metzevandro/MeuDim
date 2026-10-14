@@ -5,6 +5,7 @@ import {
   InputSelect,
   Page,
   Skeleton,
+  Card,
 } from "design-system-zeroz";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -15,7 +16,6 @@ import { LineChart } from "@/components/charts/LineChart/LineChart";
 import { useUser } from "@/data/provider";
 
 import "./styles.scss";
-import Card from "design-system-zeroz/Card";
 
 type Granularity = "dia" | "mes" | "ano";
 type PresetKey =
@@ -506,7 +506,7 @@ const HomePage = () => {
                   isSkeleton={skeleton}
                   variant="primary"
                   size="md"
-                  onClick={() => navigateTo("/pagina-inicial/ganhos")}
+                  onClick={() => navigateTo("/earnings")}
                 >
                   Adicionar Ganho
                 </Button>
@@ -514,7 +514,7 @@ const HomePage = () => {
                   isSkeleton={skeleton}
                   variant="secondary"
                   size="md"
-                  onClick={() => navigateTo("/pagina-inicial/ganhos")}
+                  onClick={() => navigateTo("/earnings")}
                 >
                   Consultar Ganhos
                 </Button>
@@ -602,7 +602,7 @@ const HomePage = () => {
                   isSkeleton={skeleton}
                   variant="primary"
                   size="md"
-                  onClick={() => navigateTo("/pagina-inicial/despesas")}
+                  onClick={() => navigateTo("/expenses")}
                 >
                   Adicionar despesa
                 </Button>
@@ -610,7 +610,7 @@ const HomePage = () => {
                   isSkeleton={skeleton}
                   variant="secondary"
                   size="md"
-                  onClick={() => navigateTo("/pagina-inicial/despesas")}
+                  onClick={() => navigateTo("/expenses")}
                 >
                   Consultar despesas
                 </Button>

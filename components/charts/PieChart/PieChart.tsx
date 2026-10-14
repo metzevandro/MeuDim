@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import "./PieChart.scss";
-import { PieChart as Chart, EmptyState } from "design-system-zeroz";
-import Card from "design-system-zeroz/Card";
+import { PieChart as Chart, EmptyState, Card } from "design-system-zeroz";
 
 interface PieData {
   name: string;

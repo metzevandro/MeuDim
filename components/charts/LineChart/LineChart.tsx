@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { LineChart as Chart, EmptyState } from "design-system-zeroz";
+import { LineChart as Chart, EmptyState, Card } from "design-system-zeroz";
 import "./LineChart.scss";
-import Card from "design-system-zeroz/Card";
 
 interface LineSeriesPoint extends Record<string, unknown> {
   month: string;

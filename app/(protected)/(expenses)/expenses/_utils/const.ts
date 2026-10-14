@@ -20,6 +20,7 @@ export const LOADING_CONFIG = {
 export const EXPENSE_TEXTS = {
   PAGE_TITLE: "Despesas",
   BUTTON_ADD: "Adicionar despesa",
+  BUTTON_IMPORT: "Importar despesas",
   BUTTON_UPDATE: "Salvar alterações",
   BUTTON_CANCEL: "Cancelar",
   BUTTON_DELETE: "Excluir",

@@ -24,7 +24,9 @@ export function useEarningForm() {
   useEffect(() => {
     fetch("/api/income-sources")
       .then((res) => res.json())
-      .then((data) => setIncomeSources(Array.isArray(data?.items) ? data?.items : []))
+      .then((data) =>
+        setIncomeSources(Array.isArray(data?.items) ? data?.items : []),
+      )
       .catch(() => setIncomeSources([]));
   }, []);
 

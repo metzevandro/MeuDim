@@ -191,6 +191,8 @@ export function useExpenseData() {
     update,
     delete: delete_,
     refetch: fetchExpenses,
+    search,
+    sort,
     handleSearch,
     handleSort,
     page,

@@ -11,9 +11,12 @@ import { EarningTable } from "./_components/EarningTable";
 import { EarningEmpty } from "./_components/EarningEmpty";
 import { EarningForm } from "./_components/EarningForm";
 import { EarningDeleteModal } from "./_components/EarningDeleteModal";
+import { EarningImportModal } from "./_components/EarningImportModal";
 import { AppNotification } from "@/components/notification/AppNotification";
 import { EARNING_TEXTS } from "./_utils/const";
 import { transformEarningsForTable } from "./_utils/transformers";
+
+import "./styles.scss";
 
 export default function FonteDeRendaPage() {
   const { userData } = useUser();
@@ -33,6 +36,9 @@ export default function FonteDeRendaPage() {
     handleSearch,
     handleSort,
     onPageChange,
+    refetch,
+    search,
+    sort,
     page,
     totalItems,
   } = useEarningData();
@@ -42,6 +48,7 @@ export default function FonteDeRendaPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const clearSelectionRef = React.useRef<((ids: string[]) => void) | null>(
     null,
@@ -117,6 +124,13 @@ export default function FonteDeRendaPage() {
     }
   }, [selectedRows, deleteIncomeSource, startLoading, stopLoading]);
 
+  const handleImported = useCallback(() => {
+    setSelectedRows([]);
+    clearSelectionRef.current?.([]);
+    onPageChange(1);
+    refetch(search, sort, 1);
+  }, [onPageChange, refetch, search, sort]);
+
   const tableData = useMemo(
     () => transformEarningsForTable(earnings),
     [earnings],
@@ -138,10 +152,16 @@ export default function FonteDeRendaPage() {
         namePage={EARNING_TEXTS.PAGE_TITLE}
         actions={
           <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsImportModalOpen(true)}
+              disabled={loadingData}
+            >
+              {EARNING_TEXTS.BUTTON_IMPORT}
+            </Button>
             <Button onClick={handleToggleAddAside} disabled={loadingData}>
               {EARNING_TEXTS.BUTTON_ADD}
             </Button>
-            ,
           </>
         }
       >
@@ -188,6 +208,12 @@ export default function FonteDeRendaPage() {
           onConfirm={handleConfirmDelete}
           onCancel={() => setIsDeleteModalOpen(false)}
           isLoading={loadingProgress > 0}
+        />
+
+        <EarningImportModal
+          modalOpen={isImportModalOpen}
+          setModalOpen={setIsImportModalOpen}
+          onImported={handleImported}
         />
       </Page>
 

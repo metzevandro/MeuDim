@@ -14,3 +14,12 @@
     height: 32px;
   }
 }
+body:has(.transactions-import-preview) {
+  .modal-root {
+    min-width: 60%;
+  }
+
+  .input-select-root {
+    width: 100%;
+  }
+}

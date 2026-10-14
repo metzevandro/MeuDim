@@ -19,7 +19,8 @@ export const LOADING_CONFIG = {
 
 export const EARNING_TEXTS = {
   PAGE_TITLE: "Ganhos",
-  BUTTON_ADD: "Adicionar ganho",
+  BUTTON_ADD: "Adicionar ganhos",
+  BUTTON_IMPORT: "Importar ganhos",
   BUTTON_UPDATE: "Salvar alterações",
   BUTTON_CANCEL: "Cancelar",
   BUTTON_DELETE: "Excluir",

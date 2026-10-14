@@ -11,9 +11,12 @@ import { ExpenseTable } from "./_components/ExpenseTable";
 import { ExpenseEmpty } from "./_components/ExpenseEmpty";
 import { ExpenseForm } from "./_components/ExpenseForm";
 import { ExpenseDeleteModal } from "./_components/ExpenseDeleteModal";
+import { ExpenseImportModal } from "./_components/ExpenseImportModal";
 import { AppNotification } from "@/components/notification/AppNotification";
 import { EXPENSE_TEXTS } from "./_utils/const";
 import { transformExpensesForTable } from "./_utils/transformers";
+
+import "./styles.scss";
 
 export default function DespesasPage() {
   const { userData } = useUser();
@@ -35,6 +38,9 @@ export default function DespesasPage() {
     page,
     totalItems,
     onPageChange,
+    refetch,
+    search,
+    sort,
   } = useExpenseData();
   const form = useExpenseForm();
 
@@ -42,6 +48,7 @@ export default function DespesasPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const clearSelectionRef = React.useRef<((ids: string[]) => void) | null>(
     null,
@@ -119,6 +126,13 @@ export default function DespesasPage() {
     }
   }, [selectedRows, removeExpense, startLoading, stopLoading]);
 
+  const handleImported = useCallback(() => {
+    setSelectedRows([]);
+    clearSelectionRef.current?.([]);
+    onPageChange(1);
+    refetch(search, sort, 1);
+  }, [onPageChange, refetch, search, sort]);
+
   const tableData = useMemo(
     () => transformExpensesForTable(expenses),
     [expenses],
@@ -140,10 +154,15 @@ export default function DespesasPage() {
         namePage={EXPENSE_TEXTS.PAGE_TITLE}
         actions={
           <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsImportModalOpen(true)}
+            >
+              {EXPENSE_TEXTS.BUTTON_IMPORT}
+            </Button>
             <Button onClick={handleToggleAddAside}>
               {EXPENSE_TEXTS.BUTTON_ADD}
             </Button>
-            ,
           </>
         }
       >
@@ -196,6 +215,12 @@ export default function DespesasPage() {
           onConfirm={handleConfirmDelete}
           onCancel={() => setIsDeleteModalOpen(false)}
           isLoading={loadingProgress > 0}
+        />
+
+        <ExpenseImportModal
+          modalOpen={isImportModalOpen}
+          setModalOpen={setIsImportModalOpen}
+          onImported={handleImported}
         />
       </Page>
 

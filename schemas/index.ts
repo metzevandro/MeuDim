@@ -91,3 +91,37 @@ export const incomeSourceSchema = z.object({
   name: z.string().min(1, "É necessário um nome para a fonte de renda!"),
   date: z.date(),
 });
+
+export const importTransactionsSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        importKey: z.string().min(1).max(300),
+        date: z.string().refine((v) => !isNaN(Date.parse(v)), "Data inválida"),
+        title: z.string().min(1).max(300),
+        amount: z.number().positive("Valor deve ser maior que R$ 0,00"),
+        categoryId: z.string().cuid("Categoria inválida"),
+        subcategoryId: z.string().cuid("Subcategoria inválida"),
+        paymentMethodId: z.string().cuid("Forma de pagamento inválida"),
+        learn: z.boolean(),
+      }),
+    )
+    .min(1, "Nenhuma transação para importar")
+    .max(2000, "Limite de 2000 transações por importação"),
+});
+
+export const importEarningsSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        importKey: z.string().min(1).max(300),
+        date: z.string().refine((v) => !isNaN(Date.parse(v)), "Data inválida"),
+        title: z.string().min(1).max(300),
+        amount: z.number().positive("Valor deve ser maior que R$ 0,00"),
+        incomeSourceId: z.string().cuid("Fonte de renda inválida"),
+        learn: z.boolean(),
+      }),
+    )
+    .min(1, "Nenhuma transação para importar")
+    .max(2000, "Limite de 2000 transações por importação"),
+});

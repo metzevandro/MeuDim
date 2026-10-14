@@ -26,21 +26,38 @@ export const updateCategory = async (
       return { error: "Não autorizado" };
     }
 
+    const newNames = [
+      ...new Set(subcategoria.map((s) => s.trim()).filter(Boolean)),
+    ];
+
+    const existing = await db.subcategory.findMany({
+      where: { categoryId },
+      include: { _count: { select: { expenses: true } } },
+    });
+
+    const existingNames = existing.map((s) => s.name);
+
+    const toCreate = newNames.filter((n) => !existingNames.includes(n));
+    const toRemove = existing.filter((s) => !newNames.includes(s.name));
+
+    const inUse = toRemove.filter((s) => s._count.expenses > 0);
+    if (inUse.length > 0) {
+      return {
+        error: `Não é possível remover: ${inUse
+          .map((s) => s.name)
+          .join(", ")} (possuem despesas vinculadas)`,
+      };
+    }
+
     await db.category.update({
       where: { id: categoryId },
       data: {
-        createdAt: new Date(),
         name,
         userId: dbUser.id,
         subcategories: {
-          deleteMany: {},
-          create: subcategoria.map((subcategoryName) => ({
-            name: subcategoryName,
-          })),
+          deleteMany: { id: { in: toRemove.map((s) => s.id) } },
+          create: toCreate.map((n) => ({ name: n })),
         },
-      },
-      include: {
-        subcategories: true,
       },
     });
 

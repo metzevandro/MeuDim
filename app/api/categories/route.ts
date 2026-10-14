@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { Prisma } from "@/lib/generated/prisma/client"
+import { Prisma } from "@/lib/generated/prisma/client";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
@@ -17,6 +17,8 @@ export async function GET(request: Request) {
     const sortField = searchParams.get("sortField") ?? "createdAt";
     const sortOrder = (searchParams.get("sortOrder") ??
       "desc") as Prisma.SortOrder;
+
+    const hasPagination = searchParams.has("page");
 
     const page = Math.max(1, Number(searchParams.get("page")) || 1);
     const pageSize = Math.min(
@@ -35,8 +37,10 @@ export async function GET(request: Request) {
       db.category.findMany({
         where,
         orderBy: { [sortField]: sortOrder },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        ...(hasPagination && {
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
         include: {
           subcategories: true,
         },
@@ -44,7 +48,11 @@ export async function GET(request: Request) {
       db.category.count({ where }),
     ]);
 
-    return NextResponse.json({ items, totalItems, page, pageSize });
+    return NextResponse.json({
+      items,
+      totalItems,
+      ...(hasPagination && { page, pageSize }),
+    });
   } catch (e) {
     console.error("API ERROR:", e);
     return NextResponse.json({ error: "DB error" }, { status: 500 });

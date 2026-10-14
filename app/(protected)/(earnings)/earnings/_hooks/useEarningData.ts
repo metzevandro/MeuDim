@@ -181,6 +181,8 @@ export function useEarningData() {
     update,
     delete: delete_,
     refetch: fetchEarnings,
+    search,
+    sort,
     handleSearch,
     handleSort,
     page,

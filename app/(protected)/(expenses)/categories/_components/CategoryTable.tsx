@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from "react";
-import { Button, Bagde, DataTable, SortState } from "design-system-zeroz";
+import { Button, Badge, DataTable, SortState } from "design-system-zeroz";
 import {
   CATEGORY_TEXTS,
   TABLE_ROWS_PER_PAGE,
@@ -28,9 +28,16 @@ function renderSubcategoriesCell(subcategories: SubcategoryRaw[]) {
   });
 
   return (
-    <div style={{ display: "flex", gap: "4px", flexWrap: "nowrap" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "4px",
+        flexWrap: "nowrap",
+        whiteSpace: "nowrap",
+      }}
+    >
       {displayed.map((sub, index) => (
-        <Bagde
+        <Badge
           key={sub.id ?? index}
           label={sub.name}
           type="light"
@@ -38,7 +45,7 @@ function renderSubcategoriesCell(subcategories: SubcategoryRaw[]) {
         />
       ))}
       {remainingCount > 0 && (
-        <Bagde label={`+${remainingCount}`} type="light" variant="primary" />
+        <Badge label={`+${remainingCount}`} type="light" variant="primary" />
       )}
     </div>
   );
